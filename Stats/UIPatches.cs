@@ -213,7 +213,7 @@ namespace RealismMod
                     ammoAttributes.Add(fireRateAtt);
                 }
 
-                float pelletCount = ammoTemplate.ProjectileCount;
+        /*        float pelletCount = ammoTemplate.ProjectileCount;
                 if (pelletCount > 1)
                 {
                     ItemAttributeClass pelletAtt = new ItemAttributeClass(ENewItemAttributeId.ProjectileCount);
@@ -224,7 +224,7 @@ namespace RealismMod
                     pelletAtt.LabelVariations = EItemAttributeLabelVariations.None;
                     ammoAttributes.Add(pelletAtt);
                 }
-
+*/
                 float fragChance = ammoTemplate.FragmentationChance * 100;
                 if (fragChance > 0)
                 {

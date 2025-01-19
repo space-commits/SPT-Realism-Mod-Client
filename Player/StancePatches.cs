@@ -66,8 +66,9 @@ namespace RealismMod
             {
                 _mountClamp = Mathf.Lerp(_mountClamp, 0f, 0.1f);
             }
-
-            StanceController.MountingPivotUpdate(player, pwa, _mountClamp, StanceController.GetDeltaTime());
+            float pivotPoint = WeaponStats.IsUsingBipod ? 1.5f : 0.75f;
+            float aimPivot = WeaponStats.IsUsingBipod ? 0.15f : 0.25f;
+            StanceController.MountingPivotUpdate(player, pwa, _mountClamp, StanceController.GetDeltaTime(), pivotPoint, aimPivot);
         }
 
         private static void ModifyBSGCollisions(ProceduralWeaponAnimation pwa, FirearmController fc)
@@ -606,7 +607,7 @@ namespace RealismMod
 
                     string weapClass = __instance.Item.WeapClass;
 
-                    Vector3 downDir = WeaponStats.HasBipod ? new Vector3(_startDownDir.x, _startDownDir.y, _startDownDir.z + -0.15f) : _startDownDir;
+                    Vector3 downDir = WeaponStats.IsUsingBipod ? new Vector3(_startDownDir.x, _startDownDir.y, _startDownDir.z + -0.21f) : _startDownDir;
 
                     Vector3 startDown = weapTransform.position + weapTransform.TransformDirection(downDir);
                     Vector3 startLeft = weapTransform.position + weapTransform.TransformDirection(_startLeftDir);
@@ -622,14 +623,16 @@ namespace RealismMod
         
                     RaycastHit raycastHit;
 
-                    if (IsBracingProne(player) ||
+                    if (PluginConfig.OverrideMounting.Value) 
+                    {
+                        if (IsBracingProne(player) ||
                         CheckForCoverCollision(EBracingDirection.Top, startDown, forwardDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass) ||
                         CheckForCoverCollision(EBracingDirection.Left, startLeft, leftDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass) ||
-                        CheckForCoverCollision(EBracingDirection.Right, startRight, rightDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass)) 
-                    {
-                        return;
+                        CheckForCoverCollision(EBracingDirection.Right, startRight, rightDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass))
+                        {
+                            return;
+                        }
                     }
-
                     StanceController.IsBracing = false;
                 }
 
@@ -638,14 +641,12 @@ namespace RealismMod
                     float mountOrientationBonus = StanceController.BracingDirection == EBracingDirection.Top ? 0.75f : 1f;
                     float mountingRecoilLimit = StanceController.TreatWeaponAsPistolStance ? 0.25f : 0.75f;
                     float recoilBonus = 
-                        StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun && WeaponStats.HasBipod ? 0.5f :
-                        StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun ? 0.65f :
-                        StanceController.IsMounting && WeaponStats.HasBipod ? 0.7f :
+                        StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun && WeaponStats.IsUsingBipod ? 0.4f :
+                        StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun ? 0.75f :
+                        StanceController.IsMounting && WeaponStats.IsUsingBipod ? 0.45f :
                         StanceController.IsMounting ? 0.85f :
                         0.95f;
-                    float swayBonus = StanceController.IsMounting ? 0.35f : 0.65f;
-                    swayBonus = StanceController.IsMounting && WeaponStats.HasBipod ? swayBonus * 0.8f : swayBonus;
-
+                    float swayBonus = StanceController.IsMounting && WeaponStats.IsUsingBipod ? 0.05f : StanceController.IsMounting ? 0.35f : 0.65f;
                     StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, recoilBonus * mountOrientationBonus, 0.04f);
                     StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, swayBonus * mountOrientationBonus, 0.04f);
                 }
@@ -947,11 +948,12 @@ namespace RealismMod
 
             if (player.IsYourPlayer)
             {
+                float tiltTolerance = WeaponStats.IsUsingBipod ? 0.5f : 2.5f;
                 if (!StanceController.IsMounting)
                 {
                     tiltBeforeMount = tilt;
                 }
-                else if (Math.Abs(tiltBeforeMount - tilt) > 2.5f)
+                else if (Math.Abs(tiltBeforeMount - tilt) > tiltTolerance)
                 {
                     StanceController.IsMounting = false;
                     tiltBeforeMount = 0f;
@@ -1333,7 +1335,7 @@ namespace RealismMod
             float poseRotOffset = (1f - player.MovementContext.PoseLevel) * -0.03f;
             poseRotOffset += player.IsInPronePose ? -0.03f : 0f;
             float maskFactor = doMaskOffset? -0.025f + ergoOffset : 0f;
-            float baseRotOffset = pwa.IsAiming || StanceController.IsMounting ? 0f : poseRotOffset + ergoOffset;
+            float baseRotOffset = pwa.IsAiming || StanceController.IsMounting || StanceController.IsBracing ? 0f : poseRotOffset + ergoOffset;
 
             float rotX = 0f;
             float rotY = Mathf.Clamp(baseRotOffset + maskFactor + magOffset, -0.5f, 0f);

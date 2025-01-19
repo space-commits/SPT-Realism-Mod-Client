@@ -798,6 +798,7 @@ namespace RealismMod
 
         private void LoadStancePatches()
         {
+            new TacticalReloadPatch().Enable();
             new WeaponOverlapViewPatch().Enable();
             new CollisionPatch().Enable();
             new WeaponOverlappingPatch().Enable();

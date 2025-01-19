@@ -170,7 +170,7 @@ namespace RealismMod
             SetUpAudio(_gasMaskAudioSource, 1f, 0f);
             SetUpAudio(_gasAnalyserSource, 1f, 1f);
             SetUpAudio(_geigerAudioSource, 1f, 1f);
-            SetUpAudio(_toggleDeviceSource, 1f, 0.5f);
+            SetUpAudio(_toggleDeviceSource, 1f, 0.37f);
             SetUpAudio(_foodPoisoningSfx, 0.75f, 0f);
         }
 

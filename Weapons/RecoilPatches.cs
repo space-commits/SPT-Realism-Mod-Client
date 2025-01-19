@@ -292,7 +292,8 @@ namespace RealismMod
 
                 float shotCountFactor = Mathf.Clamp(ShotModifier(ShootController.ShotCount), 0.4f, 1.2f);
                 float baseAngle = ShootController.BaseTotalRecoilAngle;
-                float totalRecAngle = StanceController.IsMounting ? Mathf.Min(baseAngle + 10, 90f) : StanceController.IsBracing ? Mathf.Min(baseAngle + 5f, 90f) : baseAngle;
+                float angleBonus = StanceController.IsMounting && WeaponStats.IsUsingBipod ? 20f :  StanceController.IsMounting ? 8f : StanceController.IsBracing ? 5f : baseAngle;
+                float totalRecAngle = Mathf.Min(baseAngle + angleBonus, 90f);
                 totalRecAngle = !isPistol ? totalRecAngle : totalRecAngle - 5;
                 float hipfireModifier = !StanceController.IsAiming ? 1.1f : 1f;
                 float dispersionSpeedFactor = !isPistol ? 1f + (-WeaponStats.TotalDispersionDelta) : 1f;

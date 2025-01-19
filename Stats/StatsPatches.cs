@@ -543,7 +543,8 @@ namespace RealismMod
             if (Utils.PlayerIsReady && __instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 bool isBracingTop = StanceController.BracingDirection == EBracingDirection.Top;
-                float mountingFactor = StanceController.IsMounting && isBracingTop ? 0.8f : StanceController.IsMounting && !isBracingTop ? 0.9f : StanceController.IsBracing && isBracingTop ? 0.95f : StanceController.IsBracing && !isBracingTop ? 0.975f : 1f;
+                bool isMountedTop = StanceController.IsMounting && isBracingTop;
+                float mountingFactor = isMountedTop && WeaponStats.IsUsingBipod ? 0.75f : isMountedTop ? 0.85f : StanceController.IsMounting && !isBracingTop ? 0.9f : StanceController.IsBracing && isBracingTop ? 0.95f : StanceController.IsBracing && !isBracingTop ? 0.975f : 1f;
                 float stockFactor = !WeaponStats.HasShoulderContact ? 2f : 1f;
                 float baseCOI = __instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta);
                 float totalCOI = baseCOI * (1f - WeaponStats.ScopeAccuracyFactor) * mountingFactor * stockFactor * (PluginConfig.IncreaseCOI.Value ? 1.5f : 1f);

@@ -429,13 +429,13 @@ namespace RealismMod
             if (forDisplacement) 
             {
               return
-              StanceController.IsMounting ? 0.15f :
-              StanceController.IsBracing ? 0.3f :
+              StanceController.IsMounting ? 0.2f :
+              StanceController.IsBracing ? 0.35f :
               StanceController.IsLeftShoulder ? 1.15f :
-              StanceController.CurrentStance == EStance.ShortStock ? 0.6f :
-              StanceController.CurrentStance == EStance.HighReady ? 0.8f :
-              StanceController.CurrentStance == EStance.LowReady ? 0.75f :
-              StanceController.CurrentStance == EStance.ActiveAiming ? 0.85f : 
+              StanceController.CurrentStance == EStance.ShortStock ? 0.75f :
+              StanceController.CurrentStance == EStance.HighReady ? 0.91f :
+              StanceController.CurrentStance == EStance.LowReady ? 0.87f :
+              StanceController.CurrentStance == EStance.ActiveAiming ? 0.95f : 
               1f;
             }
 
@@ -454,21 +454,14 @@ namespace RealismMod
             1f;
         }
 
-
         [PatchPrefix]
         private static bool Prefix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
             FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
-            if (firearmController == null)
-            {
-                return false;
-            }
+            if (firearmController == null) return false;
             Player player = (Player)playerField.GetValue(firearmController);
-
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
-
-
                 Weapon weapon = firearmController.Weapon;
                 bool isPistol = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol;
 

@@ -7,6 +7,7 @@ using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static EFT.Player;
 
 namespace RealismMod
 {
@@ -226,16 +227,24 @@ namespace RealismMod
         static Vector2 _lastMountYawPitch;
         public static EBracingDirection BracingDirection = EBracingDirection.None;
         public static bool IsBracing = false;
-        public static bool _isMounting = false;
+        public static bool _isRealismMounting = false;
         public static bool IsMounting
         {
-            get { return _isMounting; }
+            get
+            { 
+                return _isRealismMounting; 
+            }
             set
             {
-                if (value != _isMounting)
+                if (value != _isRealismMounting)
                 {
-                    _isMounting = value;
-                    Utils.GetYourPlayer().ProceduralWeaponAnimation.method_23();
+                    Player player = Utils.GetYourPlayer();
+                    FirearmController fc = player.HandsController as FirearmController;
+                    _isRealismMounting = value;
+                    player.ProceduralWeaponAnimation.method_23();
+                    float accuracy = fc.Item.GetTotalCenterOfImpact(false); //forces accuracy to update
+                    AccessTools.Field(typeof(Player.FirearmController), "float_3").SetValue(fc, accuracy); //update weapon accuracy
+                    player.ProceduralWeaponAnimation.UpdateTacticalReload(); //gives better chamber animations
                 }
             }
         }
@@ -245,9 +254,32 @@ namespace RealismMod
         private static float _tacSprintTime = 0.0f;
         private static bool _canDoTacSprintTimer = false;
 
+        public static Dictionary<string, Vector3> GetWeaponOffsets()
+        {
+            return new Dictionary<string, Vector3>{
+            { "5aafa857e5b5b00018480968", new Vector3(0f, 0f, -0.1f)}, //m1a
+            { "5b0bbe4e5acfc40dc528a72d", new Vector3(0f, 0f, -0.035f)}, //sa58
+            { "6183afd850224f204c1da514", new Vector3(0f, -0.0135f, 0.02f)}, //mk17
+            { "6165ac306ef05c2ce828ef74", new Vector3(0f, -0.0135f, 0.02f)}, //mk17 fde
+            { "6184055050224f204c1da540", new Vector3(0f, -0.0135f, 0.02f)}, //mk16
+            { "618428466ef05c2ce828f218", new Vector3(0f, -0.0135f, 0.02f)}, //mk16 fde
+            { "5ae08f0a5acfc408fb1398a1", new Vector3(0f, 0f, -0.005f)}, //mosin 
+            { "5bfd297f0db834001a669119", new Vector3(0f, 0f, -0.005f)}, //mosin s
+            { "54491c4f4bdc2db1078b4568", new Vector3(0f, 0f, -0.01f)}, //mp133
+            { "56dee2bdd2720bc8328b4567", new Vector3(0f, 0f, -0.01f)}, //mp153
+            { "606dae0ab0e443224b421bb7", new Vector3(0f, 0f, -0.01f)}, //mp155
+            { "6259b864ebedf17603599e88", new Vector3(0f, 0f, -0.02f)}, //M3
+            { "mechM3v1", new Vector3(0f, 0f, -0.02f)}, //M3 mechanic
+            };
+        }
+
         private static float GetRestoreRate()
         {
             float baseRestoreRate = 0f;
+            if (IsMounting && WeaponStats.IsUsingBipod)
+            {
+                baseRestoreRate = 5f;
+            }
             if (CurrentStance == EStance.PatrolStance || IsMounting)
             {
                 baseRestoreRate = 4f;
@@ -281,7 +313,7 @@ namespace RealismMod
             float baseDrainRate = 0f;
             if (player.Physical.HoldingBreath)
             {
-                baseDrainRate = IsMounting ? 0.025f : IsBracing ? 0.05f : 0.3f;
+                baseDrainRate = IsMounting && WeaponStats.IsUsingBipod ? 0.025f : IsMounting ? 0.05f : IsBracing ? 0.1f : 0.5f;
             }
             else if (IsAiming)
             {
@@ -1640,16 +1672,16 @@ namespace RealismMod
             SetRotationClamped(ref _cumulativeMountYaw, ref _cumulativeMountPitch, clamp);
         }
 
-        static void ApplyPivotPoint(ProceduralWeaponAnimation pwa)
+        static void ApplyPivotPoint(ProceduralWeaponAnimation pwa, float pivotPoint, float aimPivot)
         {
-            float aimMultiplier = 1f - ((1f - 0.25f) * _mountAimSmoothed);
+            float aimMultiplier = 1f - ((1f - aimPivot) * _mountAimSmoothed);
 
             Transform weaponRootAnim = pwa.HandsContainer.WeaponRootAnim;
 
             if (weaponRootAnim == null) return;
 
             weaponRootAnim.LocalRotateAround(
-                Vector3.up * -0.75f,
+                Vector3.up * -pivotPoint,
                 new Vector3(
                     _cumulativeMountPitch * aimMultiplier,
                     0,
@@ -1659,18 +1691,18 @@ namespace RealismMod
 
             // Not doing this messes up pivot for all offsets after this
             weaponRootAnim.LocalRotateAround(
-                Vector3.up * 0.75f,
+                Vector3.up * pivotPoint,
                 Vector3.zero
             );
         }
 
-        public static void MountingPivotUpdate(Player player, ProceduralWeaponAnimation pwa, float clamp, float deltaTime)
+        public static void MountingPivotUpdate(Player player, ProceduralWeaponAnimation pwa, float clamp, float deltaTime, float pivotPoint = 0.75f, float aimPivot = 0.25f)
         {
             Vector2 currentYawPitch = new(player.MovementContext.Yaw, player.MovementContext.Pitch);
 
             UpdateMountRotation(currentYawPitch, clamp);
             UpdateAimSmoothed(pwa, deltaTime);
-            ApplyPivotPoint(pwa);
+            ApplyPivotPoint(pwa, pivotPoint, aimPivot);
         }
 
         static readonly System.Diagnostics.Stopwatch aimWatch = new();
@@ -1679,14 +1711,13 @@ namespace RealismMod
             float deltaTime = aimWatch.Elapsed.Milliseconds / 1000f;
             aimWatch.Reset();
             aimWatch.Start();
-
             return deltaTime;
         }
 
 
-        public static void DoMounting(Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc)
+        public static void ToggleMounting(Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc)
         {
-            if (player.IsInPronePose && WeaponStats.HasBipod)
+            if (player.IsInPronePose && WeaponStats.IsUsingBipod)
             {
                 IsMounting = true;
             }
@@ -1694,38 +1725,6 @@ namespace RealismMod
             {
                 IsMounting = false;
             }
-            if (Input.GetKeyDown(PluginConfig.MountKeybind.Value.MainKey) && IsBracing && !StanceController.IsColliding)
-            {
-                IsMounting = !IsMounting;
-                if (IsMounting) StanceController.CancelAllStances();
-
-                DoWiggleEffects(player, pwa, fc.Weapon, IsMounting ? CoverWiggleDirection : CoverWiggleDirection * -1f, true, wiggleFactor: 0.5f);
-                float accuracy = fc.Item.GetTotalCenterOfImpact(false); //forces accuracy to update
-                AccessTools.Field(typeof(Player.FirearmController), "float_3").SetValue(fc, accuracy);
-            }
-            if (Input.GetKeyDown(PluginConfig.MountKeybind.Value.MainKey) && !IsBracing && IsMounting)
-            {
-                IsMounting = false;
-            }
-        }
-
-        public static Dictionary<string, Vector3> GetWeaponOffsets()
-        {
-            return new Dictionary<string, Vector3>{
-            { "5aafa857e5b5b00018480968", new Vector3(0f, 0f, -0.1f)}, //m1a
-            { "5b0bbe4e5acfc40dc528a72d", new Vector3(0f, 0f, -0.035f)}, //sa58
-            { "6183afd850224f204c1da514", new Vector3(0f, -0.0135f, 0.02f)}, //mk17
-            { "6165ac306ef05c2ce828ef74", new Vector3(0f, -0.0135f, 0.02f)}, //mk17 fde
-            { "6184055050224f204c1da540", new Vector3(0f, -0.0135f, 0.02f)}, //mk16
-            { "618428466ef05c2ce828f218", new Vector3(0f, -0.0135f, 0.02f)}, //mk16 fde
-            { "5ae08f0a5acfc408fb1398a1", new Vector3(0f, 0f, -0.005f)}, //mosin 
-            { "5bfd297f0db834001a669119", new Vector3(0f, 0f, -0.005f)}, //mosin s
-            { "54491c4f4bdc2db1078b4568", new Vector3(0f, 0f, -0.01f)}, //mp133
-            { "56dee2bdd2720bc8328b4567", new Vector3(0f, 0f, -0.01f)}, //mp153
-            { "606dae0ab0e443224b421bb7", new Vector3(0f, 0f, -0.01f)}, //mp155
-            { "6259b864ebedf17603599e88", new Vector3(0f, 0f, -0.02f)}, //M3
-            { "mechM3v1", new Vector3(0f, 0f, -0.02f)}, //M3 mechanic
-            };
         }
     }
 }

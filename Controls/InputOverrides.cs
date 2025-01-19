@@ -12,6 +12,7 @@ using InputClass1 = Class1581;
 using InputClass2 = Class1579;
 using StatusStruct = GStruct446<GInterface385>;
 using ItemEventClass = EFT.InventoryLogic;
+using EFT.Animations;
 
 namespace RealismMod
 {
@@ -126,6 +127,25 @@ namespace RealismMod
             //disable EFT scoll input check if using scroll wheel to change stances
             if ((command == ECommand.ScrollNext || command == ECommand.ScrollPrevious) && (Input.GetKey(PluginConfig.StanceWheelComboKeyBind.Value.MainKey) && PluginConfig.UseMouseWheelPlusKey.Value))
             {
+                return false;
+            }
+            if (command == ECommand.WeaponMounting && PluginConfig.OverrideMounting.Value)
+            {
+                Player player = Utils.GetYourPlayer();
+                ProceduralWeaponAnimation pwa = player.ProceduralWeaponAnimation;
+                FirearmController fc = player.HandsController as FirearmController;
+
+                if (StanceController.IsBracing && !StanceController.IsColliding)
+                {
+                    if (WeaponStats.IsUsingBipod && StanceController.BracingDirection != EBracingDirection.Top) return false;
+                    StanceController.IsMounting = !StanceController.IsMounting;
+                    if (StanceController.IsMounting) StanceController.CancelAllStances();
+                    StanceController.DoWiggleEffects(player, pwa, fc.Weapon, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true, wiggleFactor: 0.5f);
+                }
+                if (!StanceController.IsBracing && StanceController.IsMounting)
+                {
+                    StanceController.IsMounting = false;
+                }
                 return false;
             }
             return true;

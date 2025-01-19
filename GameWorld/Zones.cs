@@ -332,9 +332,9 @@ namespace RealismMod
 
     public class LabsSafeZone : TriggerWithId, IZone
     {
-        const float MAIN_VOLUME = 0.6f;
-        const float SHUT_VOLUME = 0.55f;
-        const float OPEN_VOLUME = 0.35f;
+        const float MAIN_VOLUME = 0.45f;
+        const float SHUT_VOLUME = 0.41f;
+        const float OPEN_VOLUME = 0.12f;
         public EZoneType ZoneType { get; } = EZoneType.SafeZone;
         public float ZoneStrengthModifier { get; set; } = 0f;
         public bool BlocksNav { get; set; }

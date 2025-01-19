@@ -19,9 +19,43 @@ using StatusStruct = GStruct446<GInterface385>;
 using WeaponEventClass = EFT.Player.FirearmController.GClass1741;
 using WeaponEventHandlerClass = EFT.Player.FirearmController.GClass1740;
 using WeaponStatSubclass = EFT.Player.FirearmController.GClass1784;
+using EFT.Animations;
 
 namespace RealismMod
 {
+
+    //enable reloading while aiming
+    public class TacticalReloadPatch : ModulePatch
+    {
+        private static FieldInfo playerField;
+        private static FieldInfo fcField;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
+            return typeof(ProceduralWeaponAnimation).GetMethod("get_TacticalReload", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Patch(ProceduralWeaponAnimation __instance, ref bool __result)
+        {
+            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
+            if (firearmController == null) return false;
+            Player player = (Player)playerField.GetValue(firearmController);
+            if (player != null && player.IsYourPlayer) 
+            {
+                if ((StanceController.IsMounting || StanceController.IsBracing) && StanceController.BracingDirection == EBracingDirection.Top) 
+                {
+                    __result = true;
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    //part of manual chambering
     public class PreChamberLoadPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -39,6 +73,7 @@ namespace RealismMod
         }
     }
 
+    //part of manual chambering
     public class StartEquipWeapPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -124,7 +159,7 @@ namespace RealismMod
         }
     }
 
-
+    //part of manual chambering
     public class StartReloadPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -149,6 +184,7 @@ namespace RealismMod
         }
     }
 
+    //part of manual chambering
     public class SetAmmoOnMagPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -173,6 +209,7 @@ namespace RealismMod
         }
     }
 
+    //part of manual chambering
     public class SetAmmoCompatiblePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -197,7 +234,7 @@ namespace RealismMod
         }
     }
 
- 
+    //adds UI showing ammo in chamber when inspecting
     public class ChamberCheckUIPatch : ModulePatch
     {
         private static FieldInfo ammoCountPanelField;
@@ -442,7 +479,7 @@ namespace RealismMod
                 {
                     maxSpeed = 1.5f;
                     chamberSpeed *= PluginConfig.GlobalShotgunRackSpeedFactor.Value;
-                    stanceModifier = StanceController.IsBracing ? 1.1f : StanceController.IsMounting ? 1.2f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.35f : 1f;
+                    stanceModifier = StanceController.IsBracing ? 1.12f : StanceController.IsMounting ? 1.22f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.35f : 1f;
                 }
                 if (__instance.Item.IsGrenadeLauncher || __instance.Item.IsUnderBarrelDeviceActive)
                 {
@@ -451,7 +488,7 @@ namespace RealismMod
                 if (WeaponStats._WeapClass == "sniperRifle")
                 {
                     chamberSpeed *= PluginConfig.GlobalBoltSpeedMulti.Value;
-                    stanceModifier = StanceController.IsBracing ? 1.15f : StanceController.IsMounting ? 1.4f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.15f : 1f;
+                    stanceModifier = StanceController.IsBracing ? 1.12f : StanceController.IsMounting && WeaponStats.IsUsingBipod ? 1.4f : StanceController.IsMounting ? 1.2f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.15f : 1f;
                 }
                
                 float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerValues.ReloadSkillMulti * PlayerValues.ReloadInjuryMulti * stanceModifier

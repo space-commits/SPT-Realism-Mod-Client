@@ -360,7 +360,15 @@ namespace RealismMod
         {
             if (fc != null)
             {
-                WeaponStats.HasBipod = fc.HasBipod && fc.BipodState;
+                //hyperburst
+    /*          fc.Item.MalfState.OverheatFirerateMultInited = true;
+                if (ShootController.ShotCount < PluginConfig.test3.Value && (fc.Item.SelectedFireMode == Weapon.EFireMode.fullauto || fc.Item.SelectedFireMode == Weapon.EFireMode.burst)) 
+                {
+                    fc.Item.MalfState.OverheatFirerateMult = PluginConfig.test1.Value;
+                }
+                else fc.Item.MalfState.OverheatFirerateMult = PluginConfig.test2.Value;*/
+
+                WeaponStats.IsUsingBipod = fc.HasBipod && fc.BipodState;
 
                 if (Plugin.StartRechamberTimer)
                 {
@@ -369,7 +377,7 @@ namespace RealismMod
 
                 if (Plugin.ServerConfig.enable_stances)
                 {
-                    StanceController.DoMounting(player, player.ProceduralWeaponAnimation, fc);
+                    StanceController.ToggleMounting(player, player.ProceduralWeaponAnimation, fc);
                 }
 
                 if (ShootController.IsFiring)
