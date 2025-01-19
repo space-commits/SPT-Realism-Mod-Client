@@ -292,7 +292,7 @@ namespace RealismMod
 
                 float shotCountFactor = Mathf.Clamp(ShotModifier(ShootController.ShotCount), 0.4f, 1.2f);
                 float baseAngle = ShootController.BaseTotalRecoilAngle;
-                float angleBonus = StanceController.IsMounting && WeaponStats.IsUsingBipod ? 20f :  StanceController.IsMounting ? 8f : StanceController.IsBracing ? 5f : baseAngle;
+                float angleBonus = StanceController.IsMounting && WeaponStats.BipodIsDeployed ? 20f :  StanceController.IsMounting ? 8f : StanceController.IsBracing ? 5f : baseAngle;
                 float totalRecAngle = Mathf.Min(baseAngle + angleBonus, 90f);
                 totalRecAngle = !isPistol ? totalRecAngle : totalRecAngle - 5;
                 float hipfireModifier = !StanceController.IsAiming ? 1.1f : 1f;
@@ -406,11 +406,13 @@ namespace RealismMod
 
             deltaRotation *= (fc.AimingSensitivity * 0.9f);
 
-            float lowerClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? -19f : StanceController.BracingDirection == EBracingDirection.Right ? -4f : -15f;
-            float upperClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? 19f : StanceController.BracingDirection == EBracingDirection.Right ? 15f : 1f;
+            float xLimit = WeaponStats.BipodIsDeployed ? 14f : 19f;
+            float lowerClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? -xLimit : StanceController.BracingDirection == EBracingDirection.Right ? -4f : -15f;
+            float upperClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? xLimit : StanceController.BracingDirection == EBracingDirection.Right ? 15f : 1f;
 
-            float lowerClampYLimit = StanceController.BracingDirection == EBracingDirection.Top ? -10f : -8f;
-            float upperClampYLimit = StanceController.BracingDirection == EBracingDirection.Top ? 10f : 15f;
+            float yLimit = WeaponStats.BipodIsDeployed ? 12f : 10f;
+            float lowerClampYLimit = StanceController.BracingDirection == EBracingDirection.Top ? -yLimit : -8f;
+            float upperClampYLimit = StanceController.BracingDirection == EBracingDirection.Top ? yLimit : 15f;
 
             float relativeLowerXLimit = _initialRotation.x + lowerClampXLimit;
             float relativeUpperXLimit = _initialRotation.x + upperClampXLimit;

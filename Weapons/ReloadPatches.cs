@@ -488,7 +488,7 @@ namespace RealismMod
                 if (WeaponStats._WeapClass == "sniperRifle")
                 {
                     chamberSpeed *= PluginConfig.GlobalBoltSpeedMulti.Value;
-                    stanceModifier = StanceController.IsBracing ? 1.12f : StanceController.IsMounting && WeaponStats.IsUsingBipod ? 1.4f : StanceController.IsMounting ? 1.2f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.15f : 1f;
+                    stanceModifier = StanceController.IsBracing ? 1.12f : StanceController.IsMounting && WeaponStats.BipodIsDeployed ? 1.4f : StanceController.IsMounting ? 1.2f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.15f : 1f;
                 }
                
                 float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerValues.ReloadSkillMulti * PlayerValues.ReloadInjuryMulti * stanceModifier

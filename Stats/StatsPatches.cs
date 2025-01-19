@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using WeaponSkills = EFT.SkillManager.GClass1981;
+using EFT.WeaponMounting;
 
 namespace RealismMod
 {
@@ -61,14 +62,17 @@ namespace RealismMod
     }
 
 
-    //this method sets player weapon ergo value. For some reason I've removed the injury penalty? Probably because I already apply injury mulit myself 
+    //this method sets player weapon ergo value. For some reason I've removed the injury penalty? Probably because I already apply injury multi myself 
     public class PlayerErgoPatch : ModulePatch
     {
-        private static FieldInfo playerField;
+        private static FieldInfo _playerField;
+        private static FieldInfo _skillField;
 
         protected override MethodBase GetTargetMethod()
         {
-            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            _skillField = AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1981_0");
+
             return typeof(Player.FirearmController).GetMethod("method_12", BindingFlags.Instance | BindingFlags.Public);
 
         }
@@ -78,17 +82,24 @@ namespace RealismMod
             //to find this method again, look for this._player.MovementContext.PhysicalConditionContainsAny(EPhysicalCondition.LeftArmDamaged | EPhysicalCondition.RightArmDamaged)
             //return Mathf.Max(0f, this.Item.ErgonomicsTotal * (1f + this.gclass1560_0.DeltaErgonomics + this._player.ErgonomicsPenalty));
 
-            Player player = (Player)playerField.GetValue(__instance);
+            Player player = (Player)_playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                WeaponSkills skillsClass = (WeaponSkills)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1981_0").GetValue(__instance);
-                __result = Mathf.Max(0f, __instance.Item.ErgonomicsTotal * (1f + skillsClass.DeltaErgonomics + player.ErgonomicsPenalty));
+                WeaponSkills skillsClass = (WeaponSkills)_skillField.GetValue(__instance);
+                float deltaErgo = skillsClass.DeltaErgonomics;
+                if (!PluginConfig.OverrideMounting.Value && player.MovementContext.IsInMountedState)
+                {
+                    deltaErgo += ((player.MovementContext.PlayerMountingPointData.MountPointData.MountSideDirection != EMountSideDirection.Forward || !__instance.BipodState) ? skillsClass.MountingBonusErgo : skillsClass.BipodBonusErgo);
+                }
+                bool isBracingTop = StanceController.IsBracing && StanceController.BracingDirection == EBracingDirection.Top;
+                if (PluginConfig.OverrideMounting.Value && WeaponStats.BipodIsDeployed && !StanceController.IsMounting && !isBracingTop) 
+                {
+                    deltaErgo -= 0.15f;
+                }
+                __result = Mathf.Max(0f, __instance.Item.ErgonomicsTotal * (1f + deltaErgo + player.ErgonomicsPenalty));
                 return false;
             }
-            else
-            {
-                return true;
-            }
+            return true;
         }
     }
 
@@ -544,7 +555,7 @@ namespace RealismMod
             {
                 bool isBracingTop = StanceController.BracingDirection == EBracingDirection.Top;
                 bool isMountedTop = StanceController.IsMounting && isBracingTop;
-                float mountingFactor = isMountedTop && WeaponStats.IsUsingBipod ? 0.75f : isMountedTop ? 0.85f : StanceController.IsMounting && !isBracingTop ? 0.9f : StanceController.IsBracing && isBracingTop ? 0.95f : StanceController.IsBracing && !isBracingTop ? 0.975f : 1f;
+                float mountingFactor = isMountedTop && WeaponStats.BipodIsDeployed ? 0.75f : isMountedTop ? 0.85f : StanceController.IsMounting && !isBracingTop ? 0.9f : StanceController.IsBracing && isBracingTop ? 0.95f : StanceController.IsBracing && !isBracingTop ? 0.975f : 1f;
                 float stockFactor = !WeaponStats.HasShoulderContact ? 2f : 1f;
                 float baseCOI = __instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta);
                 float totalCOI = baseCOI * (1f - WeaponStats.ScopeAccuracyFactor) * mountingFactor * stockFactor * (PluginConfig.IncreaseCOI.Value ? 1.5f : 1f);

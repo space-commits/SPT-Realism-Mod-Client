@@ -66,8 +66,8 @@ namespace RealismMod
             {
                 _mountClamp = Mathf.Lerp(_mountClamp, 0f, 0.1f);
             }
-            float pivotPoint = WeaponStats.IsUsingBipod ? 1.5f : 0.75f;
-            float aimPivot = WeaponStats.IsUsingBipod ? 0.15f : 0.25f;
+            float pivotPoint = WeaponStats.BipodIsDeployed ? 1.5f : 0.75f;
+            float aimPivot = WeaponStats.BipodIsDeployed ? 0.15f : 0.25f;
             StanceController.MountingPivotUpdate(player, pwa, _mountClamp, StanceController.GetDeltaTime(), pivotPoint, aimPivot);
         }
 
@@ -607,7 +607,7 @@ namespace RealismMod
 
                     string weapClass = __instance.Item.WeapClass;
 
-                    Vector3 downDir = WeaponStats.IsUsingBipod ? new Vector3(_startDownDir.x, _startDownDir.y, _startDownDir.z + -0.21f) : _startDownDir;
+                    Vector3 downDir = WeaponStats.BipodIsDeployed ? new Vector3(_startDownDir.x, _startDownDir.y, _startDownDir.z + -0.21f) : _startDownDir;
 
                     Vector3 startDown = weapTransform.position + weapTransform.TransformDirection(downDir);
                     Vector3 startLeft = weapTransform.position + weapTransform.TransformDirection(_startLeftDir);
@@ -641,12 +641,12 @@ namespace RealismMod
                     float mountOrientationBonus = StanceController.BracingDirection == EBracingDirection.Top ? 0.75f : 1f;
                     float mountingRecoilLimit = StanceController.TreatWeaponAsPistolStance ? 0.25f : 0.75f;
                     float recoilBonus = 
-                        StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun && WeaponStats.IsUsingBipod ? 0.4f :
+                        StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun && WeaponStats.BipodIsDeployed ? 0.4f :
                         StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun ? 0.75f :
-                        StanceController.IsMounting && WeaponStats.IsUsingBipod ? 0.45f :
+                        StanceController.IsMounting && WeaponStats.BipodIsDeployed ? 0.45f :
                         StanceController.IsMounting ? 0.85f :
                         0.95f;
-                    float swayBonus = StanceController.IsMounting && WeaponStats.IsUsingBipod ? 0.05f : StanceController.IsMounting ? 0.35f : 0.65f;
+                    float swayBonus = StanceController.IsMounting && WeaponStats.BipodIsDeployed ? 0.05f : StanceController.IsMounting ? 0.35f : 0.65f;
                     StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, recoilBonus * mountOrientationBonus, 0.04f);
                     StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, swayBonus * mountOrientationBonus, 0.04f);
                 }
@@ -948,7 +948,7 @@ namespace RealismMod
 
             if (player.IsYourPlayer)
             {
-                float tiltTolerance = WeaponStats.IsUsingBipod ? 0.5f : 2.5f;
+                float tiltTolerance = WeaponStats.BipodIsDeployed ? 0.5f : 2.5f;
                 if (!StanceController.IsMounting)
                 {
                     tiltBeforeMount = tilt;

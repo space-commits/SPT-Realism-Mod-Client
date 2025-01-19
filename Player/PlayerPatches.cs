@@ -368,7 +368,7 @@ namespace RealismMod
                 }
                 else fc.Item.MalfState.OverheatFirerateMult = PluginConfig.test2.Value;*/
 
-                WeaponStats.IsUsingBipod = fc.HasBipod && fc.BipodState;
+                WeaponStats.BipodIsDeployed = fc.HasBipod && fc.BipodState;
 
                 if (Plugin.StartRechamberTimer)
                 {

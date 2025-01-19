@@ -276,7 +276,7 @@ namespace RealismMod
         private static float GetRestoreRate()
         {
             float baseRestoreRate = 0f;
-            if (IsMounting && WeaponStats.IsUsingBipod)
+            if (IsMounting && WeaponStats.BipodIsDeployed)
             {
                 baseRestoreRate = 5f;
             }
@@ -313,7 +313,7 @@ namespace RealismMod
             float baseDrainRate = 0f;
             if (player.Physical.HoldingBreath)
             {
-                baseDrainRate = IsMounting && WeaponStats.IsUsingBipod ? 0.025f : IsMounting ? 0.05f : IsBracing ? 0.1f : 0.5f;
+                baseDrainRate = IsMounting && WeaponStats.BipodIsDeployed ? 0.025f : IsMounting ? 0.05f : IsBracing ? 0.1f : 0.5f;
             }
             else if (IsAiming)
             {
@@ -894,7 +894,7 @@ namespace RealismMod
                 }
                 if ((StanceBlender.Value >= 1f && StanceTargetPosition == pistolTargetPosition) && !DidStanceWiggle)
                 {
-                    if (!_SkipPistolWiggle) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-12.5f, 5f, PluginConfig.test10.Value) * movementFactor);
+                    if (!_SkipPistolWiggle) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-12.5f, 5f, 1f) * movementFactor);
                     DidStanceWiggle = true;
                     CancelPistolStance = false;
                     _SkipPistolWiggle = false;
@@ -1717,7 +1717,7 @@ namespace RealismMod
 
         public static void ToggleMounting(Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc)
         {
-            if (player.IsInPronePose && WeaponStats.IsUsingBipod)
+            if (player.IsInPronePose && WeaponStats.BipodIsDeployed)
             {
                 IsMounting = true;
             }

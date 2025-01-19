@@ -149,8 +149,8 @@ namespace RealismMod
 
             //ambient
             float ambientBase = HasHeadSet ? 10f : 5f;
-            Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOutVolume", AmbientOutVolume + ambientBase + PluginConfig.AmbientMulti.Value); //outdoors
-            Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientInVolume", AmbientInVolume + ambientBase + PluginConfig.AmbientMulti.Value);
+            Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOutVolume", AmbientOutVolume + ambientBase + PluginConfig.AmbientMulti.Value - PluginConfig.test1.Value); //outdoors
+            Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientInVolume", AmbientInVolume + ambientBase + PluginConfig.AmbientMulti.Value - PluginConfig.test2.Value); //indoor audio seems bugged if it's too high relative to outdoor
         }
 
         public static void DoVignette()

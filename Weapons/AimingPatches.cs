@@ -202,6 +202,8 @@ namespace RealismMod
 
             if (player.IsYourPlayer)
             {
+
+
                 AimController.AimStateChanged = true;
                 bool gearFactorEnabled = PluginConfig.EnableFSPatch.Value || PluginConfig.EnableNVGPatch.Value;
 
