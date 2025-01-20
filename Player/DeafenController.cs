@@ -120,14 +120,14 @@ namespace RealismMod
         {
             float factor = BotFiringDeafFactor * EnvironmentFactor;
             //volume
-            _mainVolumeReductionTarget += factor;
-            _maxBotVolumeReduction = Mathf.Max(factor * 2f, _maxBotVolumeReduction);
+            _mainVolumeReductionTarget += factor * 0.5f;
+            _maxBotVolumeReduction = Mathf.Max(factor, _maxBotVolumeReduction);
             //muffle
-            _muffleTarget += factor * 2f;
+            _muffleTarget += factor;
             _maxBotShootMuffle = Mathf.Max(factor, _maxBotShootMuffle);
             //vignete
-            _vignetteTarget += factor * 0.18f;
-            _maxBotShootVignette = Mathf.Max(factor * 0.3f, _maxBotShootVignette);
+            _vignetteTarget += factor * 0.09f;
+            _maxBotShootVignette = Mathf.Max(factor * 0.15f, _maxBotShootVignette);
         }
 
         public static void IncreaseDeafeningExplosion()
@@ -149,8 +149,8 @@ namespace RealismMod
 
             //ambient
             float ambientBase = HasHeadSet ? 10f : 5f;
-            Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOutVolume", AmbientOutVolume + ambientBase + PluginConfig.AmbientMulti.Value - PluginConfig.test1.Value); //outdoors
-            Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientInVolume", AmbientInVolume + ambientBase + PluginConfig.AmbientMulti.Value - PluginConfig.test2.Value); //indoor audio seems bugged if it's too high relative to outdoor
+            Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOutVolume", AmbientOutVolume + ambientBase + PluginConfig.OutdoorAmbientMulti.Value - 7f); //outdoors
+            Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientInVolume", AmbientInVolume + ambientBase + PluginConfig.IndoorAmbientMulti.Value - 15f); //indoor audio seems bugged if it's too high relative to outdoor
         }
 
         public static void DoVignette()
