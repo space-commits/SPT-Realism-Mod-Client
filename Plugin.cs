@@ -36,7 +36,8 @@ namespace RealismMod
         public bool reload_changes { get; set; }
         public bool manual_chambering { get; set; }
         public bool food_changes { get; set; }
-        public bool enable_hazard_zones { get; set; }   
+        public bool enable_hazard_zones { get; set; }
+        public bool realistic_zombies { get; set; }
     }
 
     public class RealismEventInfo : IRealismInfo

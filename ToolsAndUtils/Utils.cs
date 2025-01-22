@@ -248,6 +248,11 @@ namespace RealismMod
             return Mathf.Clamp(modifier, minModifier, maxModifier);
         }
 
+        public static bool IsZombie(Player player) 
+        {
+            return player != null && player.UsedSimplifiedSkeleton;
+        }
+
         public static string GenId()
         {
             return MongoID.Generate();

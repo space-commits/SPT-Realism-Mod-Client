@@ -102,41 +102,60 @@ namespace RealismMod
     //for events I need to dynamically change boss spawn chance, but the point at which the event is declared server-side is too late for changing boss spawns
     public class BossSpawnPatch : ModulePatch 
     {
-        //no good way to know what map we're currently on at this poin in the raid loading, it is what it is.
-        private static string[] _forbiddenZones = { "BotZoneFloor1", "BotZoneFloor2", "BotZoneBasement", "BotZone" };
+        //Gas event can't be on labs or factory, so using these zones as proxy for map detection
+        //no good way to know what map we're currently on at this point in the raid loading, it is what it is.
+        private static string[] _forbiddenZones = { "BotZone", "BotZoneFloor1", "BotZoneFloor2", "BotZoneBasement" };
+
 
         protected override MethodBase GetTargetMethod()
         {
             return typeof(BossLocationSpawn).GetMethod("ParseMainTypesTypes");
         }
 
+        private static void HandleZombies(BossLocationSpawn __instance, ref bool disabledZombieSpawn, bool isZombie)
+        {
+            bool disableZombie = !Plugin.ServerConfig.realistic_zombies || (Plugin.ServerConfig.realistic_zombies && !Plugin.ModInfo.DoGasEvent);
+            if (isZombie && disableZombie)
+            {
+                __instance.BossChance = 0f;
+                __instance.ShallSpawn = false;
+                disabledZombieSpawn = true;
+            }
+        }
+        
         [PatchPostfix]
         public static void PatchPostfix(BossLocationSpawn __instance)
         {
             GameWorldController.RunEarlyGameCheck();
+            bool isZombie = __instance.BossType.ToString().ToLower().Contains("infected");
+            bool disabledZombieSpawn = false;
+            HandleZombies(__instance, ref disabledZombieSpawn, isZombie);
 
-            var zones = __instance.BossZone.Split(new char[]{','});
-            if (_forbiddenZones.Intersect(zones).Any()) return;
+            var zones = __instance.BossZone.Split(new char[] { ',' });
+            if (disabledZombieSpawn || _forbiddenZones.Intersect(zones).Any()) return;
 
             bool increaseSectantChance = __instance.BossType == WildSpawnType.sectantPriest && Plugin.ModInfo.DoGasEvent && !Plugin.ModInfo.DoExtraRaiders;
             bool increaseRaiderChance = __instance.BossType == WildSpawnType.pmcBot && Plugin.ModInfo.DoExtraRaiders;
             bool isPmc = __instance.BossType == WildSpawnType.pmcBEAR || __instance.BossType == WildSpawnType.pmcUSEC;
             bool postExpl = !isPmc && Plugin.ModInfo.IsHalloween && (Plugin.ModInfo.HasExploded || GameWorldController.DidExplosionClientSide);
+            bool isPreExpl = Plugin.ModInfo.IsPreExplosion && GameWorldController.IsRightDateForExp;
+            bool isSpecialEvent = postExpl || Plugin.ModInfo.DoGasEvent || isPreExpl;
+            bool isRaider = __instance.BossType == WildSpawnType.pmcBot;
+            bool isSectant = __instance.BossType != WildSpawnType.sectantPriest;
             if (increaseSectantChance) 
             {
                 bool doExtraCultists = Plugin.ModInfo.DoExtraCultists;
                 __instance.BossChance = __instance.BossChance == 0 && !doExtraCultists ? 25f : 100f;
                 __instance.ShallSpawn = ChanceCalcClass.IsTrue100(__instance.BossChance);
             }
-            if (increaseRaiderChance) 
+            else if (increaseRaiderChance) 
             {
                 __instance.BossChance = 100f;
-                __instance.ShallSpawn = true;
             }
-            if ((postExpl ||Plugin.ModInfo.DoGasEvent || (Plugin.ModInfo.IsPreExplosion && GameWorldController.IsRightDateForExp) || Plugin.ModInfo.DoExtraRaiders) && (__instance.BossType != WildSpawnType.sectantPriest && __instance.BossType != WildSpawnType.pmcBot && !isPmc))
+            else if ((isSpecialEvent || Plugin.ModInfo.DoExtraRaiders) && (!isRaider && !isSectant && !isPmc && !isZombie))
             {
-                __instance.BossChance *= 0.05f;
-                __instance.ShallSpawn = ChanceCalcClass.IsTrue100(__instance.BossChance);
+                __instance.BossChance = 0f;
+                __instance.ShallSpawn = false;
             }
 
             if (PluginConfig.ZoneDebug.Value) 
@@ -390,7 +409,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.2f, minDelayBeforePlayback: 60f); //spooky short playback
-                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.48f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
+                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.38f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
                 }
 
                 if (GameWorldController.DoMapRads)

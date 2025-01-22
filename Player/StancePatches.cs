@@ -1127,7 +1127,7 @@ namespace RealismMod
                     StanceController.HasResetMelee = hasResetMelee;
 
                 }
-                else if (player.IsAI)
+                else if (player.IsAI && !player.AIData.UseZombieSimpleAnimator)
                 {
                     Quaternion targetRotation = Quaternion.identity;
                     Quaternion currentRotation = (Quaternion)currentRotationField.GetValue(__instance);

@@ -48,19 +48,19 @@ namespace RealismMod
             penetration *= penReductionFactor;
         }
 
-        public static void ModifyDamageByHitZone(EBodyPartColliderType hitPart, EBodyHitZone hitZone, ref DamageInfo di)
+        public static void ModifyDamageByHitZone(float maxHP, EBodyPartColliderType hitPart, EBodyHitZone hitZone, ref DamageInfo di)
         {
             switch (hitZone) 
             {
                 case EBodyHitZone.Unknown:
                     break;
                 case EBodyHitZone.AZone:
-                    di.Damage *= 2f * PluginConfig.GlobalDamageModifier.Value;
+                    di.Damage *= 2.1f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1.5f;
                     di.LightBleedingDelta *= 2f;
                     return;
                 case EBodyHitZone.CZone:
-                    di.Damage *= 1f * PluginConfig.GlobalDamageModifier.Value;
+                    di.Damage *= PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1f;
                     di.LightBleedingDelta *= 1f;
                     return;
@@ -70,12 +70,12 @@ namespace RealismMod
                     di.LightBleedingDelta *= 0.5f;
                     return;
                 case EBodyHitZone.Heart:
-                    di.Damage = 120f * PluginConfig.GlobalDamageModifier.Value;
+                    di.Damage = maxHP * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 10f;
                     di.LightBleedingDelta *= 10f;
                     return;
                 case EBodyHitZone.Spine:
-                    di.Damage = di.Damage + 80f * PluginConfig.GlobalDamageModifier.Value;
+                    di.Damage = (maxHP * 0.9f) * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1.15f;
                     di.LightBleedingDelta *= 1.5f;
                     return;
@@ -213,7 +213,7 @@ namespace RealismMod
             if (partHit == EBodyPartColliderType.RibcageUp || partHit == EBodyPartColliderType.RibcageLow || partHit == EBodyPartColliderType.SpineDown || partHit == EBodyPartColliderType.SpineTop)
             {
                 Collider col = damageInfo.HitCollider;
-                if (damageInfo.HitCollider == null) //fika can't send objects as part of peckets, need to find matching collider by checking collider type
+                if (damageInfo.HitCollider == null) //fika can't send objects as part of packets, need to find matching collider by checking collider type
                 {
                     List<Collider> collidors = player.GetComponent<PlayerPoolObject>().Colliders;
                     if (collidors == null || collidors.Count <= 0) return hitZone;
@@ -253,22 +253,22 @@ namespace RealismMod
             return hitZone;
         }
 
-        public static void ModifyDamageByZone(Player player, ref DamageInfo damageInfo, EBodyPartColliderType partHit)
+        public static void ModifyDamageByZone(Player player, ref DamageInfo damageInfo, EBodyPartColliderType partHit, float maxHp)
         {
             if (!damageInfo.Blunt || string.IsNullOrEmpty(damageInfo.BlockedBy))
             {
                 EBodyHitZone hitZone = GetBodyHitZone(player, partHit, damageInfo);
-                BallisticsController.ModifyDamageByHitZone(partHit, hitZone, ref damageInfo);
+                BallisticsController.ModifyDamageByHitZone(maxHp, partHit, hitZone, ref damageInfo);
             }
         }
 
 
-        public static bool ShouldDoSpalling(AmmoTemplate ammoTemp, DamageInfo damageInfo, EBodyPart bodyPartType)
+        public static bool ShouldDoSpalling(bool isBuckshot, AmmoTemplate ammoTemp, DamageInfo damageInfo, EBodyPart bodyPartType)
         {
             if (ammoTemp == null || damageInfo.DamageType == EDamageType.Melee || !damageInfo.Blunt || (bodyPartType != EBodyPart.Chest && bodyPartType != EBodyPart.Stomach)) return false;
-            if (ammoTemp.ProjectileCount > 2)
+            if (isBuckshot)
             {
-                int rndNum = UnityEngine.Random.Range(1, 10);
+                int rndNum = UnityEngine.Random.Range(1, 30);
                 if (rndNum > 3)
                 {
                     return false;
@@ -565,8 +565,8 @@ namespace RealismMod
             if (hitPart == EBodyPartColliderType.RibcageUp || hitPart == EBodyPartColliderType.RibcageLow || hitPart == EBodyPartColliderType.SpineDown || hitPart == EBodyPartColliderType.SpineTop)
             {
                 float spineZ = 0.0125f;
-                float heartL = 0.0325f;
-                float heartR = -0.0175f;
+                float heartL = 0.0374f;
+                float heartR = -0.02f;
                 float heartTop = hitOrientation == EHitOrientation.BackHit ? -0.0435f : -0.063f;
                 float heartBottom = hitOrientation == EHitOrientation.BackHit ? -0.028f : -0.05f;
 

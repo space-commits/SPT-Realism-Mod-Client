@@ -215,9 +215,16 @@ namespace RealismMod
             __instance.Player = shot.Player;
             __instance.Weapon = shot.Weapon;
             __instance.FireIndex = shot.FireIndex;
+            __instance.DelayedDamage = shot.DelayedDamage;
+            __instance.DeflectedBy = shot.DeflectedBy;
+            __instance.BlockedBy = shot.BlockedBy;
+            __instance.MasterOrigin = shot.MasterOrigin;
+            __instance.IsForwardHit = shot.IsForwardHit;
+            __instance.SourceId = shot.Ammo.TemplateId;
+
             if (__instance.DamageType == EDamageType.Blunt || __instance.DamageType == EDamageType.Bullet)
             {
-                if (PluginConfig.EnableLogging.Value) 
+                if (PluginConfig.EnableLogging.Value)
                 {
                     Logger.LogWarning("================shot velocity============== " + shot.VelocityMagnitude);
                 }
@@ -227,11 +234,6 @@ namespace RealismMod
             {
                 __instance.ArmorDamage = shot.ArmorDamage;
             }
-            __instance.DeflectedBy = shot.DeflectedBy;
-            __instance.BlockedBy = shot.BlockedBy;
-            __instance.MasterOrigin = shot.MasterOrigin;
-            __instance.IsForwardHit = shot.IsForwardHit;
-            __instance.SourceId = shot.Ammo.TemplateId;
 
             AmmoItemClass bulletClass;
             if ((bulletClass = (shot.Ammo as AmmoItemClass)) != null)
@@ -356,11 +358,12 @@ namespace RealismMod
                 damageInfo.Damage = 0f;
                 return;
             }
+            bool isZombie = Utils.IsZombie(__instance);
 
             if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
             {
                 EBodyPartColliderType partHit = EBodyPartColliderType.None;
-                if (damageInfo.BodyPartColliderType == EBodyPartColliderType.None) //for fika value is populated, otherwise it's unused
+                if (damageInfo.BodyPartColliderType == EBodyPartColliderType.None) //for fika value it's populated, otherwise it's unused
                 {
                     BodyPartCollider bodyPartCollider = (BodyPartCollider)damageInfo.HittedBallisticCollider;
                     partHit = bodyPartCollider.BodyPartColliderType;
@@ -371,35 +374,35 @@ namespace RealismMod
                 }
  
                 //if fika, based on collidor type, get refernce to player assetpoolobject, get collidors, get component
-                if (PluginConfig.EnableBodyHitZones.Value) BallisticsController.ModifyDamageByZone(__instance, ref damageInfo, partHit);
+                if (PluginConfig.EnableBodyHitZones.Value) BallisticsController.ModifyDamageByZone(__instance, ref damageInfo, partHit, __instance.HealthController.GetBodyPartHealth(bodyPartType).Maximum);
   
                 float KE = 1f;
                 AmmoTemplate ammoTemp = null;
                 BallisticsController.GetKineticEnergy(damageInfo, ref ammoTemp, ref KE);
-
-                if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && __instance.IsAI && damageInfo.HittedBallisticCollider != null && !damageInfo.Blunt && PluginConfig.EnableHitSounds.Value)
+                bool isBuckshot = ammoTemp != null && ammoTemp.ProjectileCount > 2;
+                if (!isZombie && ammoTemp != null && !isBuckshot && __instance.IsAI && damageInfo.HittedBallisticCollider != null && !damageInfo.Blunt && PluginConfig.EnableHitSounds.Value)
                 {
                     BallisticsController.PlayBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
 
-                bool doSpalling = BallisticsController.ShouldDoSpalling(ammoTemp, damageInfo, bodyPartType);
+                bool doSpalling = !isZombie && BallisticsController.ShouldDoSpalling(isBuckshot, ammoTemp, damageInfo, bodyPartType);
 
                 bool hasArmArmor = false;
                 bool hasLegProtection = false;
                 int faceProtectionCount = 0;
                 ArmorComponent armor = null;
-                if (doSpalling || (ammoTemp != null && ammoTemp.ProjectileCount <= 2))
+                if (!isZombie && (doSpalling || (ammoTemp != null && !isBuckshot)))
                 {
                     BallisticsController.GetArmorComponents(__instance, damageInfo, bodyPartType, ref armor, ref faceProtectionCount, ref doSpalling, ref hasArmArmor, ref hasLegProtection);
                 }
 
-                if (doSpalling && armor != null && __instance?.ActiveHealthController != null)
+                if (!isZombie && doSpalling && armor != null && __instance?.ActiveHealthController != null)
                 {
                     var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, armor.Item.TemplateId);
                     if (gearStats.CanSpall) BallisticsController.CalculatSpalling(__instance, ref damageInfo, KE, armor, ammoTemp, faceProtectionCount, hasArmArmor, hasLegProtection);
                 }
                  
-                if (__instance?.ActiveHealthController != null)
+                if (!isZombie && __instance?.ActiveHealthController != null)
                 {
                     DisarmAndKnockdownCheck(__instance, damageInfo, bodyPartType, partHit, KE, hasArmArmor);
                 }
@@ -445,7 +448,7 @@ namespace RealismMod
             }
 
             Player player = Utils.GetPlayerByProfileId(bodyPartCollider.playerBridge.iPlayer.ProfileId);
-            if (player == null) return true;
+            if (player == null || (player != null && player.UsedSimplifiedSkeleton)) return true;
 
             List<ArmorComponent> armors = (List<ArmorComponent>)armorCompsField.GetValue(player);
 
@@ -679,13 +682,7 @@ namespace RealismMod
             }
 
             EDamageType damageType = damageInfo.DamageType;
-            bool isHead = BallisticsController.ArmorHasSpecificColliders(__instance, BallisticsController.HeadCollidors);
-            bool isSteelBodyArmor = __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead;
-            bool roundPenetrated = damageInfo.BlockedBy != __instance.Item.Id && damageInfo.DeflectedBy != __instance.Item.Id;
-            float startingDamage = damageInfo.Damage;
-            float speedFactor = 1f;
-            float armorDamageActual = 1f;
-            float momentum = 1f;
+            if (damageType == EDamageType.Sniper || damageType == EDamageType.Landmine) return true;
 
             if (!damageType.IsWeaponInduced() && damageType != EDamageType.GrenadeFragment)
             {
@@ -694,20 +691,21 @@ namespace RealismMod
             }
 
             Player player = (damageInfo.Player != null) ? Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(damageInfo.Player.iPlayer.ProfileId) : null;
-            if (player != null)
-            {
-                __instance.TryShatter(player, damageInfoIsLocal);
-            }
+            if (Utils.IsZombie(player)) return true;
+            if (player != null) __instance.TryShatter(player, damageInfoIsLocal);
+ 
+            bool isHead = BallisticsController.ArmorHasSpecificColliders(__instance, BallisticsController.HeadCollidors);
+            bool isSteelBodyArmor = __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead;
+            bool roundPenetrated = damageInfo.BlockedBy != __instance.Item.Id && damageInfo.DeflectedBy != __instance.Item.Id;
+            float startingDamage = damageInfo.Damage;
+            float speedFactor = 1f;
+            float armorDamageActual = 1f;
+            float momentum = 1f;
 
             if (__instance.Repairable.Durability <= 0f && !isSteelBodyArmor)
             {
                 __result = 0f;
                 return false;
-            }
-
-            if (damageType == EDamageType.Sniper || damageType == EDamageType.Landmine)
-            {
-                return true;
             }
 
             //armor damage value has been replaced with velocity
@@ -922,6 +920,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player __instance)
         {
+            if (Utils.IsZombie(__instance)) return true;
+
             DamageInfo lastDam = (DamageInfo)lastDamField.GetValue(__instance);
             Corpse corpse = (Corpse)corpseField.GetValue(__instance);
 
