@@ -1,5 +1,6 @@
 ﻿using EFT;
 using EFT.Interactive;
+using EFT.InventoryLogic;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -109,6 +110,42 @@ namespace RealismMod
                 GameWorldController.CheckDate();
                 Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
                 GameWorldController.RanEarliestGameCheck = true;
+            }
+        }
+
+        public static void ModifyLootResources(Item item) 
+        {
+            if (Plugin.ServerConfig.bot_loot_changes)
+            {
+                //if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"====item {item.LocalizedName()}===");
+
+                ResourceComponent resourceComponent;
+                if (item.TryGetItemComponent<ResourceComponent>(out resourceComponent))
+                {
+                    if (resourceComponent.MaxResource > 1)
+                    {
+                        resourceComponent.Value = Mathf.Round(resourceComponent.MaxResource * UnityEngine.Random.Range(0.35f, 1f));
+                        if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"item {item.LocalizedName()}, value: {resourceComponent.Value}, max: {resourceComponent.MaxResource}");
+                    }
+                }
+                FoodDrinkComponent foodComponent;
+                if (item.TryGetItemComponent<FoodDrinkComponent>(out foodComponent))
+                {
+                    if (foodComponent.MaxResource > 1)
+                    {
+                        foodComponent.HpPercent = Mathf.Round(foodComponent.MaxResource * UnityEngine.Random.Range(0.35f, 1f));
+                        if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"item {item.LocalizedName()}, value: {foodComponent.HpPercent}, max: {foodComponent.MaxResource}");
+                    }
+                }
+                MedKitComponent medKitComponent;
+                if (item.TryGetItemComponent<MedKitComponent>(out medKitComponent))
+                {
+                    if (medKitComponent.MaxHpResource > 1)
+                    {
+                        medKitComponent.HpResource = Mathf.Round(medKitComponent.MaxHpResource * UnityEngine.Random.Range(0.35f, 1f));
+                        if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"item {item.LocalizedName()}, value: {medKitComponent.HpResource}, max: {medKitComponent.MaxHpResource}");
+                    }
+                }
             }
         }
     

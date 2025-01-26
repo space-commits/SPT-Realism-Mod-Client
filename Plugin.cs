@@ -1,25 +1,18 @@
-﻿using Audio.AmbientSubsystem;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Bootstrap;
 using Comfort.Common;
 using EFT;
-using EFT.Interactive;
-using EFT.InventoryLogic;
-using EFT.UI;
 using Newtonsoft.Json;
 using SPT.Common.Http;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using Systems.Effects;
 using UnityEngine;
 using UnityEngine.Networking;
 using static RealismMod.Attributes;
 using static RealismMod.ZoneSpawner;
+using SPT.Common.Utils;
 
 namespace RealismMod
 {
@@ -40,6 +33,7 @@ namespace RealismMod
         public bool food_changes { get; set; }
         public bool enable_hazard_zones { get; set; }
         public bool realistic_zombies { get; set; }
+        public bool bot_loot_changes { get; set; }
     }
 
     public class RealismEventInfo : IRealismInfo
@@ -124,7 +118,6 @@ namespace RealismMod
         public static RealismConfig ServerConfig;
         public static RealismEventInfo ModInfo;
         public static RealismDir ModDir;
-
 
         private static T UpdateInfoFromServer<T>(string route) where T : class, IRealismInfo
         {
@@ -665,6 +658,8 @@ namespace RealismMod
             new FaceshieldMaskPatch().Enable();
             new PlayPhrasePatch().Enable();
             new OnGameStartPatch().Enable();
+            new StaticLootSpawnPatch().Enable();
+            new RigidLootSpawnPatch().Enable();
             new OnGameEndPatch().Enable();
             new QuestCompletePatch().Enable();
 

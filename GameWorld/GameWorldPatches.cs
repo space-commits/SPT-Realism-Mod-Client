@@ -27,6 +27,35 @@ using Audio.AmbientSubsystem;
 
 namespace RealismMod
 {
+
+    public class RigidLootSpawnPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GameWorld).GetMethod("CreateLootWithRigidbody");
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(Item item)
+        {
+            GameWorldController.ModifyLootResources(item);
+        }
+    }
+
+    public class StaticLootSpawnPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GameWorld).GetMethod("CreateStaticLoot");
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(Item item)
+        {
+            GameWorldController.ModifyLootResources(item);
+        }
+    }
+
     class DayTimeAmbientPatch : ModulePatch
     {
 /*        private static FieldInfo _dayAudioSourceField;
