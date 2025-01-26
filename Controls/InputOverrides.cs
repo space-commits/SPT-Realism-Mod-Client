@@ -13,6 +13,7 @@ using InputClass2 = Class1579;
 using StatusStruct = GStruct446<GInterface385>;
 using ItemEventClass = EFT.InventoryLogic;
 using EFT.Animations;
+using EFT.WeaponMounting;
 
 namespace RealismMod
 {
@@ -115,6 +116,22 @@ namespace RealismMod
             return typeof(InputClass2).GetMethod("TranslateCommand", BindingFlags.Instance | BindingFlags.Public);
         }
 
+        private static void ChangeScopeModeOnMount(ProceduralWeaponAnimation pwa, FirearmController fc) 
+        {
+            int aimIndex = pwa.AimIndex;
+            if (Mathf.Abs(pwa.ScopeAimTransforms[aimIndex].Rotation) >= EFTHardSettings.Instance.SCOPE_ROTATION_THRESHOLD)
+            {
+                for (int i = 0; i < pwa.ScopeAimTransforms.Count; i++)
+                {
+                    if (Mathf.Abs(pwa.ScopeAimTransforms[i].Rotation) < EFTHardSettings.Instance.SCOPE_ROTATION_THRESHOLD)
+                    {
+                        fc.ChangeAimingMode(i);
+                        break;
+                    }
+                }
+            }
+        }
+
         [PatchPrefix]
         private static bool PatchPrefix(InputClass2 __instance, ECommand command)
         {
@@ -129,7 +146,7 @@ namespace RealismMod
             {
                 return false;
             }
-            if (command == ECommand.WeaponMounting && PluginConfig.OverrideMounting.Value)
+            if (command == ECommand.WeaponMounting && PluginConfig.OverrideMounting.Value) //
             {
                 Player player = Utils.GetYourPlayer();
                 ProceduralWeaponAnimation pwa = player.ProceduralWeaponAnimation;
@@ -137,7 +154,7 @@ namespace RealismMod
 
                 if (StanceController.IsBracing && !StanceController.IsColliding)
                 {
-                    if (WeaponStats.BipodIsDeployed && StanceController.BracingDirection != EBracingDirection.Top) return false;
+                    if (WeaponStats.BipodIsDeployed && (StanceController.BracingDirection != EBracingDirection.Top)) return false;
                     StanceController.IsMounting = !StanceController.IsMounting;
                     if (StanceController.IsMounting) StanceController.CancelAllStances();
                     StanceController.DoWiggleEffects(player, pwa, fc.Weapon, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true, wiggleFactor: 0.5f);
@@ -146,6 +163,7 @@ namespace RealismMod
                 {
                     StanceController.IsMounting = false;
                 }
+                if (StanceController.IsMounting && WeaponStats.BipodIsDeployed) ChangeScopeModeOnMount(pwa, fc);
                 return false;
             }
             return true;

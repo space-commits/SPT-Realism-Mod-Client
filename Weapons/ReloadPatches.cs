@@ -45,7 +45,7 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(firearmController);
             if (player != null && player.IsYourPlayer) 
             {
-                if ((StanceController.IsMounting || StanceController.IsBracing) && StanceController.BracingDirection == EBracingDirection.Top) 
+                if (StanceController.IsMounting && StanceController.BracingDirection == EBracingDirection.Top) 
                 {
                     __result = true;
                     return false;

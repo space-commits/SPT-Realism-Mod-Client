@@ -270,7 +270,7 @@ namespace RealismMod
             WeaponStats.TotalDispersion = totalDispersion;
             WeaponStats.TotalDispersionDelta = (totalDispersion - __instance.Template.RecolDispersion) / __instance.Template.RecolDispersion;
             WeaponStats.TotalCamRecoil = totalCamRecoil;
-            WeaponStats.TotalRecoilAngle = Mathf.Max(totalRecoilAngle, 65f);
+            WeaponStats.TotalRecoilAngle = PluginConfig.EnableAngle.Value ? Mathf.Max(totalRecoilAngle, 65f) : 90f;
             WeaponStats.TotalVRecoil = totalVRecoil;
             WeaponStats.TotalHRecoil = totalHRecoil;
             WeaponStats.Balance = totalTorque;
@@ -393,7 +393,7 @@ namespace RealismMod
                     float modErgo = mod.Ergonomics;
                     float modVRecoil = weaponModStats.VerticalRecoil;
                     float modConv = weaponModStats.Convergence;
-                    modVRecoil += modConv > 0f ? modConv * StatCalc.convVRecoilConversion : 0f;
+                    modVRecoil += modConv > 0f ? modConv * StatCalc.ConvVRecoilConversion : 0f;
                     float modHRecoil = weaponModStats.HorizontalRecoil;
                     float modAutoROF = weaponModStats.AutoROF;
                     float modSemiROF = weaponModStats.SemiROF;

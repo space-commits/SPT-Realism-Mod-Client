@@ -46,6 +46,8 @@ namespace RealismMod
         public const float FoldedRecoilAngleFactor = 1.15f;
         public const float FoldedConvergenceFactor = 0.7f;
 
+        public static Weapon.EFireMode FireMode;
+
         public static int StockPosition = 0;
 
         public static bool HasLongMag = false;

@@ -15,6 +15,53 @@ using CollisionLayerClass = GClass3367;
 
 namespace RealismMod
 {
+    public class ChangeScopePatch : ModulePatch
+    {
+        private static FieldInfo _playerField;
+        private static FieldInfo _weaponManagerClassField;
+        protected override MethodBase GetTargetMethod()
+        {
+            _playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            _weaponManagerClassField = AccessTools.Field(typeof(FirearmController), "weaponManagerClass");
+            return typeof(Player.FirearmController).GetMethod("ChangeAimingMode", new Type[] {});
+        }
+
+        [PatchPrefix]
+        private static bool PatchPreFix(FirearmController __instance)
+        {
+            Player player = (Player)_playerField.GetValue(__instance);
+            if (player.IsYourPlayer && PluginConfig.OverrideMounting.Value)
+            {
+                if (WeaponStats.BipodIsDeployed && StanceController.IsMounting)
+                {
+                    WeaponManagerClass weaponManagerClass = (WeaponManagerClass)_weaponManagerClassField.GetValue(__instance);
+                    var scopeIndex = __instance.Item.AimIndex.Value + 1;
+                    if (scopeIndex >= weaponManagerClass.ProceduralWeaponAnimation.ScopeAimTransforms.Count)
+                    {
+                        scopeIndex = 0;
+                    }
+                    while (scopeIndex != __instance.Item.AimIndex.Value && Mathf.Abs(weaponManagerClass.ProceduralWeaponAnimation.ScopeAimTransforms[scopeIndex].Rotation) >= EFTHardSettings.Instance.SCOPE_ROTATION_THRESHOLD)
+                    {
+                        scopeIndex++;
+                        if (scopeIndex >= weaponManagerClass.ProceduralWeaponAnimation.ScopeAimTransforms.Count)
+                        {
+                            scopeIndex = 0;
+                        }
+                    }
+                    if (scopeIndex == __instance.Item.AimIndex.Value || Mathf.Abs(weaponManagerClass.ProceduralWeaponAnimation.ScopeAimTransforms[scopeIndex].Rotation) >= EFTHardSettings.Instance.SCOPE_ROTATION_THRESHOLD)
+                    {
+                        return false;
+                    }
+                    __instance.Item.AimIndex.Value = scopeIndex;
+                    __instance.UpdateSensitivity();
+                    player.RaiseSightChangedEvent(player.ProceduralWeaponAnimation.CurrentAimingMod);
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
     public class MountingPatch : ModulePatch
     {
         private static FieldInfo _playerField;
@@ -1328,17 +1375,20 @@ namespace RealismMod
             pwa.HandsContainer.WeaponRoot.localPosition += _posePosOffest;
 
             //rotation
-            bool doMaskOffset = (GearController.HasGasMask || GearController.FSIsActive) && pwa.IsAiming && WeaponStats.HasShoulderContact && !WeaponStats.IsStocklessPistol && !WeaponStats.IsMachinePistol;
+            bool doCantedOffset = Mathf.Abs(pwa.CurrentScope.Rotation) >= EFTHardSettings.Instance.SCOPE_ROTATION_THRESHOLD && StanceController.IsAiming;
+            bool doMaskOffset = !doCantedOffset && (GearController.HasGasMask || GearController.FSIsActive) && pwa.IsAiming && WeaponStats.HasShoulderContact && !WeaponStats.IsStocklessPistol && !WeaponStats.IsMachinePistol;
             bool doLongMagOffset = WeaponStats.HasLongMag && player.IsInPronePose;
-            float magOffset = doLongMagOffset && !pwa.IsAiming ? -0.35f : doLongMagOffset && pwa.IsAiming ? -0.12f : 0f;
+            float cantedOffsetBase = -0.41f;
+            float magOffset = doCantedOffset ? 0f : doLongMagOffset && !pwa.IsAiming ? -0.35f : doLongMagOffset && pwa.IsAiming ? -0.12f : 0f;
             float ergoOffset = WeaponStats.ErgoFactor * -0.001f;
             float poseRotOffset = (1f - player.MovementContext.PoseLevel) * -0.03f;
             poseRotOffset += player.IsInPronePose ? -0.03f : 0f;
             float maskFactor = doMaskOffset? -0.025f + ergoOffset : 0f;
             float baseRotOffset = pwa.IsAiming || StanceController.IsMounting || StanceController.IsBracing ? 0f : poseRotOffset + ergoOffset;
+            float cantedSightOffset = doCantedOffset ? cantedOffsetBase : 0f;
 
             float rotX = 0f;
-            float rotY = Mathf.Clamp(baseRotOffset + maskFactor + magOffset, -0.5f, 0f);
+            float rotY = Mathf.Clamp(baseRotOffset + maskFactor + magOffset, -0.5f, 0f) + cantedSightOffset;
             float rotZ = 0f;
             Vector3 targetRot = new Vector3(rotX, rotY, rotZ);
 
@@ -1369,7 +1419,7 @@ namespace RealismMod
                 float aimSpeed = (float)_aimSpeedField.GetValue(__instance);
                 float compensatoryScale = (float)_compensatoryField.GetValue(__instance);
                 float displacementStr = (float)_displacementStrField.GetValue(__instance);
-                Quaternion aimingQuat = (Quaternion)_scopeRotationField.GetValue(__instance);
+                Quaternion scopeRotation = (Quaternion)_scopeRotationField.GetValue(__instance);
                 Vector3 weapTempPosition = (Vector3)_weapTempPositionField.GetValue(__instance);
                 Quaternion weapTempRotation = (Quaternion)_weapTempRotationField.GetValue(__instance);
                 bool isAiming = (bool)_isAimingField.GetValue(__instance);
@@ -1403,7 +1453,7 @@ namespace RealismMod
                     (StanceController.CancelLowReady && StanceController.CurrentStance == EStance.LowReady) || 
                     (StanceController.CancelShortStock && StanceController.CurrentStance == EStance.ShortStock); // || (StanceController.CancelPistolStance && StanceController.PistolIsCompressed)
 
-                _currentRotation = Quaternion.Slerp(_currentRotation, __instance.IsAiming && allStancesAreReset ? aimingQuat : doStanceRotation ? _stanceRotation : Quaternion.identity, doStanceRotation ? _stanceRotationSpeed * PluginConfig.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 7f * aimSpeed * dt : 8f * dt); //__instance.IsAiming ? 8f * aimSpeed * dt
+                _currentRotation = Quaternion.Slerp(_currentRotation, __instance.IsAiming && allStancesAreReset ? Quaternion.identity : doStanceRotation ? _stanceRotation : Quaternion.identity, doStanceRotation ? _stanceRotationSpeed * PluginConfig.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 7f * aimSpeed * dt : 8f * dt); //__instance.IsAiming ? 8f * aimSpeed * dt
 
                 if (PluginConfig.EnableAdditionalRec.Value)
                 {

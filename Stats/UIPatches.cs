@@ -123,6 +123,15 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostFix(AmmoTemplate __instance, ref List<ItemAttributeClass> __result)
         {
+         /*   if (Plugin.ServerConfig.realistic_ballistics)
+            {
+                var ammoTemplate = new BaseAmmoTemplate(__instance.BulletMassGram, __instance.BulletDiameterMilimeters, __instance.InitialSpeed, __instance.ArmorDamage, __instance.ProjectileCount, __instance.FragmentationChance, __instance.RicochetChance);
+                Logger.LogWarning("adding to dict " + __instance._id);
+                if (!Stats.BaseAmmoTemplateStats.ContainsKey(__instance._id))
+                {
+                    Stats.BaseAmmoTemplateStats.Add(__instance._id, ammoTemplate);
+                }
+            }*/
 
             if (!__result.Any((ItemAttributeClass i) => (ENewItemAttributeId)i.Id == ENewItemAttributeId.BallisticCoefficient) && !__result.Any((ItemAttributeClass i) => (ENewItemAttributeId)i.Id == ENewItemAttributeId.ProjectileCount))
             {
@@ -880,7 +889,7 @@ namespace RealismMod
                 float modSemiROF = weaponModStats.SemiROF;
                 float modCamRecoil = weaponModStats.CameraRecoil;
                 float modConv = weaponModStats.Convergence;
-                modVRecoil += modConv > 0f ? modConv * StatCalc.convVRecoilConversion : 0f;
+                modVRecoil += modConv > 0f ? modConv * StatCalc.ConvVRecoilConversion : 0f;
                 float modDispersion = weaponModStats.Dispersion;
                 float modAngle = weaponModStats.RecoilAngle;
                 float modAccuracy = mod.Accuracy;

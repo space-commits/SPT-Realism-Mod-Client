@@ -214,6 +214,7 @@ namespace RealismMod
         private static bool _hasReset = false;
         private static float _timer = 0.0f;
         private static float _resetTime = 0.5f;
+        private static float _dispersionTimer = 0f;
 
         private static Queue<float> _distanceHistory = new Queue<float>();
         private static int _historySize = 10;
@@ -228,7 +229,7 @@ namespace RealismMod
         }
 
 
-        public static float ShotModifier(int shotCount)
+        private static float ShotModifier(int shotCount)
         {
             return 0.4f + (shotCount * 0.2f);
         }
@@ -270,21 +271,14 @@ namespace RealismMod
             _distanceHistory.Enqueue(distance);
         }
 
-        private static void DoRecoil(MovementContext movementContext, Vector2 deltaRotation) 
+        private static void DoRecoil(MovementContext movementContext, Vector2 deltaRotation, float deltaTime) 
         {
             bool fireButtonIsBeingHeld = Input.GetMouseButton(0);
             bool canResetVert = PluginConfig.ResetVertical.Value;
             bool canResetHorz = PluginConfig.ResetHorizontal.Value;
             bool isPistol = WeaponStats.IsPistol;
 
-            float fpsFactor = 1f;
-            if (PluginConfig.UseFpsRecoilFactor.Value)
-            {
-                fpsFactor = Plugin.FPS >= 1f ? FpsFactor / Plugin.FPS : 1f;
-                fpsFactor = Mathf.Pow(fpsFactor, FpsSmoothingFactor);
-                fpsFactor = Mathf.Clamp(fpsFactor, 0.5f, 2f);
-            }
-
+ 
             if (ShootController.ShotCount > ShootController.PrevShotCount && fireButtonIsBeingHeld)
             {
                 _hasReset = false;
@@ -302,14 +296,17 @@ namespace RealismMod
                 float angleDispFactor = 90f / totalRecAngle;
 
                 float dispersion = Mathf.Max(ShootController.FactoredTotalDispersion * PluginConfig.RecoilDispersionFactor.Value * shotCountFactor * angleDispFactor * hipfireModifier, 0f);
-                float dispersionSpeed = Math.Max(Time.time * PluginConfig.RecoilDispersionSpeed.Value * dispersionSpeedFactor, 0.1f);
+                float dispersionSpeed = PluginConfig.RecoilDispersionSpeed.Value * dispersionSpeedFactor;
                 float recoilClimbMulti = isPistol ? PluginConfig.PistolRecClimbFactor.Value : PluginConfig.RecoilClimbFactor.Value;
 
                 float xRotation = 0f;
                 float yRotation = 0f;
 
-                xRotation = (Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle) * fpsFactor;
-                yRotation = (Mathf.Min(-ShootController.FactoredTotalVRecoil * recoilClimbMulti * shotCountFactor, 0f)) * fpsFactor;
+                _dispersionTimer += Time.deltaTime * dispersionSpeed;
+                xRotation = (Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(_dispersionTimer, 1f)) + angle);
+                yRotation = -ShootController.FactoredTotalVRecoil * recoilClimbMulti * shotCountFactor * deltaTime;
+                xRotation = Mathf.Clamp(xRotation, -PluginConfig.test1.Value, PluginConfig.test2.Value);
+                yRotation = Mathf.Clamp(yRotation, -PluginConfig.test3.Value, PluginConfig.test4.Value);
 
                 _targetRotation = movementContext.Rotation;
                 _targetRotation.x += xRotation;
@@ -330,8 +327,8 @@ namespace RealismMod
             else if ((canResetHorz || canResetVert) && !_hasReset && (!ShootController.IsFiring || !fireButtonIsBeingHeld))
             {
                 float resetSpeedFactor = WeaponStats.IsStocklessPistol || (WeaponStats.HasShoulderContact && !WeaponStats.IsPistol) ? 0.5f : 1f;
-                float resetSpeed = ShootController.BaseTotalConvergence * WeaponStats.ConvergenceDelta * PluginConfig.ResetSpeed.Value * resetSpeedFactor * fpsFactor;
-                float resetSens = PluginConfig.ResetSensitivity.Value * fpsFactor;
+                float resetSpeed = ShootController.BaseTotalConvergence * WeaponStats.ConvergenceDelta * PluginConfig.ResetSpeed.Value * resetSpeedFactor * deltaTime;
+                float resetSens = PluginConfig.ResetSensitivity.Value * deltaTime;
 
                 bool xIsBelowThreshold = Utils.IsLessThanOrEqualTo(Mathf.Abs(deltaRotation.x), Mathf.Clamp(resetSens / 2.5f, 0f, 0.1f));
                 bool yIsBelowThreshold = Utils.IsLessThanOrEqualTo(Mathf.Abs(deltaRotation.y), resetSens);
@@ -370,17 +367,17 @@ namespace RealismMod
             if (ShootController.IsFiring)
             {
                 //should be clamping instead of just setting it to not climb at all
-                if (Utils.IsLessThanOrEqualTo(_targetRotation.y, _recordedRotation.y - (PluginConfig.RecoilClimbLimit.Value * fpsFactor)))
+                if (Utils.IsLessThanOrEqualTo(Mathf.Abs(movementContext.Rotation.y - _targetRotation.y), PluginConfig.test6.Value))
                 {
-                    _targetRotation.y = Mathf.Max(_targetRotation.y, _recordedRotation.y - (PluginConfig.RecoilClimbLimit.Value * fpsFactor));
+                    _targetRotation.y = movementContext.Rotation.y;
                 }
 
                 float differenceX = Mathf.Abs(movementContext.Rotation.x - _targetRotation.x);
-                _targetRotation.x = Utils.IsLessThanOrEqualTo(differenceX, 2f) ? _targetRotation.x : movementContext.Rotation.x;
+                _targetRotation.x = Utils.IsLessThanOrEqualTo(differenceX, PluginConfig.test5.Value) ? _targetRotation.x : movementContext.Rotation.x;
 
-                /*
-                                    float differenceY = Mathf.Abs(movementContext.Rotation.y - targetRotation.y);
-                                    targetRotation.y = differenceY <= 2f ? targetRotation.y : movementContext.Rotation.y;*/
+
+    /*            float differenceY = Mathf.Abs(movementContext.Rotation.y - targetRotation.y);
+                targetRotation.y = differenceY <= 2f ? targetRotation.y : movementContext.Rotation.y;*/
 
                 _currentRotation = movementContext.Rotation;
                 float proposedDistance = Vector2.Distance(_currentRotation, _targetRotation);
@@ -392,11 +389,15 @@ namespace RealismMod
                     AdjustTargetVector(averageDistance, proposedDistance);
                 }
 
-                movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, _targetRotation, PluginConfig.RecoilSmoothness.Value);
+                movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, _targetRotation, PluginConfig.RecoilSmoothness.Value * deltaTime);
             }
             else
             {
                 _distanceHistory.Clear();
+                if (_dispersionTimer > 1000f) 
+                {
+                    _dispersionTimer = 0f; 
+                }
             }
         }
 
@@ -444,7 +445,7 @@ namespace RealismMod
                     _initialRotation = movementContext.Rotation;
                 }
 
-                DoRecoil(movementContext, deltaRotation);
+                //DoRecoil(movementContext, deltaRotation, Time.deltaTime);
 
                 if (StanceController.IsMounting)
                 {
@@ -483,7 +484,7 @@ namespace RealismMod
                     __instance.ShotsGroupsSettings = shotsGroupSettingsList;
                 }
 
-                float angle = Mathf.LerpAngle(!PluginConfig.EnableAngle.Value ? 90f : WeaponStats.TotalRecoilAngle * PluginConfig.RecoilAngleMulti.Value, (float)__instance.HandRotationRecoil.MaxRecoilRotationAngle, recoilSuspensionY);
+                float angle = Mathf.LerpAngle(WeaponStats.TotalRecoilAngle * PluginConfig.RecoilAngleMulti.Value, (float)__instance.HandRotationRecoil.MaxRecoilRotationAngle, recoilSuspensionY);
                 float dispersion = WeaponStats.TotalDispersion / (1f + recoilSuspensionY);
                 __instance.BasicPlayerRecoilDegreeRange = new Vector2(angle - dispersion, angle + dispersion);
                 __instance.BasicRecoilRadian = __instance.BasicPlayerRecoilDegreeRange * 0.017453292f;
@@ -561,7 +562,7 @@ namespace RealismMod
 
                 ShootController.BaseTotalVRecoil = (float)Math.Round(__instance.BasicPlayerRecoilRotationStrength.y, 3);
                 ShootController.BaseTotalHRecoil = (float)Math.Round(__instance.BasicPlayerRecoilPositionStrength.y, 3);
-                ShootController.BaseTotalConvergence = WeaponStats.TotalModdedConv * PluginConfig.ConvergenceMulti.Value;
+                ShootController.BaseTotalConvergence = WeaponStats.TotalModdedConv * (WeaponStats.IsPistol ? PluginConfig.PistolConvergenceMulti.Value : PluginConfig.ConvergenceMulti.Value);
 
                 ShootController.BaseTotalRecoilDamping = (float)Math.Round(WeaponStats.TotalRecoilDamping * PluginConfig.RecoilDampingMulti.Value, 3);
                 ShootController.BaseTotalHandDamping = (float)Math.Round(WeaponStats.TotalRecoilHandDamping * PluginConfig.HandsDampingMulti.Value, 3);
@@ -789,7 +790,8 @@ namespace RealismMod
 
                 //update or reset firing state
                 ShootController.ShotCount++;
-                ShootController.ShotTimer = 0f;
+                ShootController.FiringTimer = 0f;
+                ShootController.ShotCountTimer = 0f;
                 ShootController.DeafenShotTimer = 0f;
                 ShootController.WiggleShotTimer = 0f;
                 ShootController.MovementSpeedShotTimer = 0f;

@@ -4,6 +4,7 @@ using BepInEx.Bootstrap;
 using Comfort.Common;
 using EFT;
 using EFT.Interactive;
+using EFT.InventoryLogic;
 using EFT.UI;
 using Newtonsoft.Json;
 using SPT.Common.Http;
@@ -14,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Systems.Effects;
 using UnityEngine;
 using UnityEngine.Networking;
 using static RealismMod.Attributes;
@@ -629,8 +631,6 @@ namespace RealismMod
                     LoadAudioClips();
                 }
 
-                ShootController.ShootUpdate();
-
                 if (ServerConfig.headset_changes)
                 {
                     HeadsetGainController.AdjustHeadsetVolume();
@@ -641,7 +641,7 @@ namespace RealismMod
                 }
                 if (ServerConfig.enable_stances) 
                 {
-                    StanceController.StanceState();
+                    StanceController.StanceUpdate();
                 }
             }
             else 
@@ -799,6 +799,7 @@ namespace RealismMod
 
         private void LoadStancePatches()
         {
+            new ChangeScopePatch().Enable();
             new TacticalReloadPatch().Enable();
             new WeaponOverlapViewPatch().Enable();
             new CollisionPatch().Enable();
@@ -866,7 +867,6 @@ namespace RealismMod
         private void LoadBallisticsPatches()
         {
             /*new SetSkinPatch().Enable();*/
-            /*new CollidersPatch().Enable();*/
             new PenetrationUIPatch().Enable();
             new InitiateShotPatch().Enable();
             new VelocityPatch().Enable();

@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using Prism.Utils;
 using UnityEngine;
 
 namespace RealismMod
@@ -233,6 +234,25 @@ namespace RealismMod
 
         public static void DoDeafening()
         {
+          /*  PrismEffects.useNoise = true;
+            PrismEffects.noiseIntensity = PluginConfig.test1.Value; //0-25
+            PrismEffects.noiseScale = PluginConfig.test2.Value; //doesnt do anything
+            PrismEffects.noiseType = (NoiseType)(int)PluginConfig.test5.Value;*/
+
+
+
+/*          PrismEffects.useSharpen = true;
+            PrismEffects.sharpenAmount = PluginConfig.test5.Value;*/
+
+  /*        PrismEffects.useLensDirt = true;
+            PrismEffects.dirtIntensity = PluginConfig.test6.Value;*/ //not sure what to use it for
+
+
+            /*            PrismEffects.useChromaticBlur = true;
+                        PrismEffects.useChromaticAberration = true;
+                        PrismEffects.chromaticBlurWidth = PluginConfig.test3.Value; //how blurry, by itself it's not chromatic just blur which could be good for things like adrenaline and such?, 0 - 20, could also be used to simulate gas in eyes
+                        PrismEffects.chromaticIntensity = PluginConfig.test4.Value; //how much of an effect, 0-1*/
+
             float baseMainVolume = 0f;
             if (IsBotFiring || GrenadeExploded || ShootController.IsFiringDeafen)
             {

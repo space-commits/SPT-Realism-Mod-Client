@@ -1099,7 +1099,7 @@ namespace RealismMod
             }
         }
 
-        private void CheckIfGearBlocksMouth(ref bool blocksMouth, Item item) 
+        private void GearBlocksMouth(ref bool blocksMouth, Item item) 
         {
             if (item != null)
             {
@@ -1108,31 +1108,48 @@ namespace RealismMod
             }
         }
 
-        public bool MouthIsBlocked(Item head, Item face, InventoryEquipment equipment)
+        private bool ToggleableItemBlocksMouth(Player player) 
+        {
+            FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
+            NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
+            var gearStats = fsComponent == null ? null : Stats.GetDataObj<Gear>(Stats.GearStats, fsComponent.Item.TemplateId);
+            bool fsIsON = gearStats != null && (fsComponent.Togglable == null || fsComponent.Togglable.On) && gearStats.BlocksMouth;
+            bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
+            return fsIsON || nvgIsOn;
+        }
+
+        private bool CheckIfParentGearBlocksMouth(Item head, Item face) 
         {
             bool faceGearBlocksMouth = false;
             bool headGearBlocksMouth = false;
+            GearBlocksMouth(ref headGearBlocksMouth, head);
+            GearBlocksMouth(ref faceGearBlocksMouth, face);
+            return faceGearBlocksMouth || headGearBlocksMouth;
 
+        }
+
+        private bool CheckIfNestedGearBlocksMouth(InventoryEquipment equipment) 
+        {
             CompoundItem headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as CompoundItem;
             IEnumerable<Item> nestedItems = headwear != null ? headwear.GetAllItemsFromCollection().OfType<Item>() : null;
-
             if (nestedItems != null)
             {
                 foreach (Item item in nestedItems)
                 {
-                    var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
+                    var nestedGearStats = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
                     FaceShieldComponent fs = item.GetItemComponent<FaceShieldComponent>();
-                    if (gearStats.BlocksMouth && fs == null)
+                    if (nestedGearStats != null && fs == null && nestedGearStats.BlocksMouth)
                     {
                         return true;
                     }
                 }
             }
+            return false;
+        }
 
-            CheckIfGearBlocksMouth(ref headGearBlocksMouth, head);
-            CheckIfGearBlocksMouth(ref faceGearBlocksMouth, face);
-
-            return faceGearBlocksMouth || headGearBlocksMouth || IsCoughingInGas;
+        public bool MouthIsBlocked(Player player, Item head, Item face, InventoryEquipment equipment)
+        {
+            return IsCoughingInGas || CheckIfParentGearBlocksMouth(head, face) || ToggleableItemBlocksMouth(player) || CheckIfNestedGearBlocksMouth(equipment);
         }
 
         public bool BodyPartHasBleed(Player player, EBodyPart part)
@@ -1186,16 +1203,10 @@ namespace RealismMod
             Item face = equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
             Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
 
-            FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
-            NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
-            var gearStats = fsComponent == null ? null : Stats.GetDataObj<Gear>(Stats.GearStats, fsComponent.Item.TemplateId);
-            bool fsIsON = gearStats != null && (fsComponent.Togglable == null || fsComponent.Togglable.On) && gearStats.BlocksMouth;
-            bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-
-            bool mouthBlocked = MouthIsBlocked(head, face, equipment);
+            bool mouthBlocked = MouthIsBlocked(player, head, face, equipment);
 
             //will have to make mask exception for moustache, balaclava etc.
-            if (fsIsON || nvgIsOn || mouthBlocked)
+            if (mouthBlocked)
             {
                 if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Food), EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
@@ -1527,20 +1538,16 @@ namespace RealismMod
                 Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
                 Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
 
-                bool mouthBlocked = Plugin.RealHealthController.MouthIsBlocked(head, face, equipment);
+                bool mouthBlocked = Plugin.RealHealthController.MouthIsBlocked(player, head, face, equipment);
                 bool hasBodyGear = vest != null || tacrig != null; //|| bag != null
                 bool hasHeadGear = head != null || ears != null || face != null;
 
                 EHealBlockType blockType = EHealBlockType.Unknown;
 
-                FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
-                NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
-                bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
-                bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
                 bool isPills = medStats.ConsumableType == EConsumableType.Pills || medStats.ConsumableType == EConsumableType.PainPills;
                 bool isDrug = medStats.ConsumableType == EConsumableType.PainDrug || medStats.ConsumableType == EConsumableType.Drug;
 
-                if (PluginConfig.GearBlocksHeal.Value && isPills && (mouthBlocked || fsIsON || nvgIsOn))
+                if (PluginConfig.GearBlocksHeal.Value && isPills && mouthBlocked)
                 {
                     if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Pills), EFT.Communications.ENotificationDurationType.Long);
                     shouldAllowHeal = false;
@@ -1740,7 +1747,7 @@ namespace RealismMod
             Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
             Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
 
-            bool mouthBlocked = MouthIsBlocked(head, face, equipment);
+            bool mouthBlocked = MouthIsBlocked(player, head, face, equipment);
 
             bool hasHeadGear = head != null || ears != null || face != null;
             bool hasBodyGear = vest != null || tacrig != null; // bag != null
@@ -1751,11 +1758,6 @@ namespace RealismMod
 
             GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
 
-            FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
-            NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
-            bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
-            bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-
             float medHPRes = med.MedKitComponent.HpResource;
 
             if (medStats.ConsumableType == EConsumableType.Vaseline)
@@ -1765,7 +1767,7 @@ namespace RealismMod
 
             if (medStats.ConsumableType == EConsumableType.Pills)
             {
-                if (PluginConfig.GearBlocksEat.Value && (mouthBlocked || fsIsON || nvgIsOn))
+                if (PluginConfig.GearBlocksEat.Value && mouthBlocked)
                 {
                     if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Pills), EFT.Communications.ENotificationDurationType.Long);
                     canUse = false;

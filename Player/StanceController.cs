@@ -558,7 +558,7 @@ namespace RealismMod
             }
         }
 
-        public static void StanceState()
+        public static void StanceUpdate()
         {
             if (Utils.WeaponIsReady && Utils.GetYourPlayer().MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {

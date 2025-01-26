@@ -34,6 +34,28 @@ namespace RealismMod
         Surgical
     }
 
+ /*   public struct BaseAmmoTemplate
+    {
+        public float BulletMass { get; } = 0f;
+        public float BulletDiameter { get; } = 0f;
+        public float InitialVelocity { get; } = 0f;
+        public float ArmorDamage { get; } = 0f;
+        public int ProjectileCount { get; } = 0;
+        public float FragmentationChance { get; } = 0f;
+        public float RicochetChance { get; } = 0f;
+
+        public BaseAmmoTemplate(float bulletMass, float bulletDiameter, float initialVelocity, float armorDamage, int projectileCount, float fragmentationChance, float ricochetChance)
+        {
+            BulletMass = bulletMass;
+            BulletDiameter = bulletDiameter;
+            InitialVelocity = initialVelocity;
+            ArmorDamage = armorDamage;
+            ProjectileCount = projectileCount;
+            FragmentationChance = fragmentationChance;
+            RicochetChance = ricochetChance;
+        }
+    }*/
+
     public class RealismItem
     {
         public MongoID ItemID { get; set; }
@@ -131,7 +153,8 @@ namespace RealismMod
         public static Dictionary<string, Gear> GearStats = new Dictionary<string, Gear>();
         public static Dictionary<string, WeaponMod> WeaponModStats = new Dictionary<string, WeaponMod>();
         public static Dictionary<string, Consumable> ConsumableStats = new Dictionary<string, Consumable>();
-        public static Dictionary<string, Ammo> AmmoStats = new Dictionary<string, Ammo>();
+        //public static Dictionary<string, BaseAmmoTemplate> BaseAmmoTemplateStats = new Dictionary<string, BaseAmmoTemplate>();
+        public static Dictionary<string, Ammo> RealismAmmoStats = new Dictionary<string, Ammo>();
         public static Dictionary<string, RealismItem> IncompatileItems = new Dictionary<string, RealismItem>();
 
         public static T GetDataObj<T>(Dictionary<string, T> stats, string itemId) where T : RealismItem, new()
@@ -222,7 +245,7 @@ namespace RealismMod
                 }
                 else if (template is Ammo ammo)
                 {
-                    AddItemToDict<Ammo>(AmmoStats, ammo);
+                    AddItemToDict<Ammo>(RealismAmmoStats, ammo);
                 }
                 else
                 {

@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using EFTSlot = GClass3113;
-using ArmorSlot = EFT.InventoryLogic.Slot;
+using ArmorSlot = GClass2862;
 using Diz.Skinning;
 using EFT.UI;
 using static EFT.Player;
@@ -48,7 +48,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player.FirearmController __instance, Weapon weapon, AmmoItemClass ammo, int chamberIndex, bool multiShot = false)
         {
-
             Player player = (Player)_playerfield.GetValue(__instance);
             if (player == null || !player.IsYourPlayer) return true;
 
@@ -377,10 +376,10 @@ namespace RealismMod
                 if (PluginConfig.EnableBodyHitZones.Value) BallisticsController.ModifyDamageByZone(__instance, ref damageInfo, partHit, __instance.HealthController.GetBodyPartHealth(bodyPartType).Maximum);
   
                 float KE = 1f;
-                AmmoTemplate ammoTemp = null;
-                BallisticsController.GetKineticEnergy(damageInfo, ref ammoTemp, ref KE);
-                bool isBuckshot = ammoTemp != null && ammoTemp.ProjectileCount > 2;
-                if (!isZombie && ammoTemp != null && !isBuckshot && __instance.IsAI && damageInfo.HittedBallisticCollider != null && !damageInfo.Blunt && PluginConfig.EnableHitSounds.Value)
+                AmmoTemplate ammoTemp = Utils.GetItemTemplate<AmmoTemplate>(damageInfo.SourceId);
+                BallisticsController.GetKineticEnergy(damageInfo, ammoTemp, ref KE);
+                bool isBuckshot = ammoTemp.ProjectileCount > 1;
+                if (!isZombie && !isBuckshot && __instance.IsAI && damageInfo.HittedBallisticCollider != null && !damageInfo.Blunt && PluginConfig.EnableHitSounds.Value)
                 {
                     BallisticsController.PlayBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
@@ -391,7 +390,7 @@ namespace RealismMod
                 bool hasLegProtection = false;
                 int faceProtectionCount = 0;
                 ArmorComponent armor = null;
-                if (!isZombie && (doSpalling || (ammoTemp != null && !isBuckshot)))
+                if (doSpalling)
                 {
                     BallisticsController.GetArmorComponents(__instance, damageInfo, bodyPartType, ref armor, ref faceProtectionCount, ref doSpalling, ref hasArmArmor, ref hasLegProtection);
                 }
@@ -432,7 +431,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(BallisticCollider parentBallisticCollider, bool isForwardHit, EftBulletClass shot)
         {
-
             if (!isForwardHit)
             {
                 return false;
@@ -681,6 +679,9 @@ namespace RealismMod
                 Logger.LogWarning("========================== ");
             }
 
+            Player playerWhoShot = (damageInfo.Player != null) ? Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(damageInfo.Player.iPlayer.ProfileId) : null;
+            if (Utils.IsZombie(playerWhoShot)) return true;
+
             EDamageType damageType = damageInfo.DamageType;
             if (damageType == EDamageType.Sniper || damageType == EDamageType.Landmine) return true;
 
@@ -690,9 +691,7 @@ namespace RealismMod
                 return false;
             }
 
-            Player player = (damageInfo.Player != null) ? Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(damageInfo.Player.iPlayer.ProfileId) : null;
-            if (Utils.IsZombie(player)) return true;
-            if (player != null) __instance.TryShatter(player, damageInfoIsLocal);
+            if (playerWhoShot != null) __instance.TryShatter(playerWhoShot, damageInfoIsLocal);
  
             bool isHead = BallisticsController.ArmorHasSpecificColliders(__instance, BallisticsController.HeadCollidors);
             bool isSteelBodyArmor = __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead;
@@ -710,7 +709,7 @@ namespace RealismMod
 
             //armor damage value has been replaced with velocity
             //ammotemplate is used to get stats needed for calcs and get original armor damage value.
-            AmmoTemplate ammoTemp = null;
+            AmmoTemplate ammoTemp = Utils.GetItemTemplate<AmmoTemplate>(damageInfo.SourceId);
             if (damageType == EDamageType.Melee)
             {
                 Weapon weap = damageInfo.Weapon as Weapon;
@@ -721,8 +720,6 @@ namespace RealismMod
             }
             else
             {
-                ammoTemp = (AmmoTemplate)Singleton<ItemFactoryClass>.Instance.ItemTemplates[damageInfo.SourceId];
-
                 armorDamageActual = ammoTemp.ArmorDamage; // * speedFactor don't think facotring by speedFacotr is a good idea anymore, momentum being based on velocity is enough
                 if (damageInfo.ArmorDamage <= 1) //if damageinfo's armor damage is not equal to the velocity of the round, must be Fika
                 {
@@ -734,12 +731,11 @@ namespace RealismMod
                     momentum = ammoTemp.BulletMassGram * damageInfo.ArmorDamage;
                 }
             }
-
           
-            if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && PluginConfig.EnableHitSounds.Value && damageInfo.HittedBallisticCollider != null)
+            if (ammoTemp.ProjectileCount < 2 && PluginConfig.EnableHitSounds.Value && damageInfo.HittedBallisticCollider != null)
             {
-                bool isPlayer = __instance.Item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId;
-                if (!isPlayer) 
+                bool hitPlayerIsMain = __instance.Item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId;
+                if (!hitPlayerIsMain)
                 {
                     if (damageInfo.DeflectedBy == __instance.Item.Id)
                     {
@@ -861,7 +857,6 @@ namespace RealismMod
                 Logger.LogWarning("Damage " + damageInfo.Damage);
                 Logger.LogWarning("========================== ");
             }
-            ammoTemp = null;
             return false;
         }
 
@@ -928,12 +923,9 @@ namespace RealismMod
             float force;
             if (lastDam.DamageType == EDamageType.Bullet)
             {
-                AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactoryClass>.Instance.ItemTemplates[lastDam.SourceId];
-                AmmoItemClass ammo = new AmmoItemClass(Utils.GenId(), ammoTemp);
-                float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
+                AmmoTemplate ammoTemp = Utils.GetItemTemplate<AmmoTemplate>(lastDam.SourceId);
+                float KE = ((0.5f * ammoTemp.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
                 force = (-Mathf.Max(1f, KE / 1000f)) * PluginConfig.RagdollForceModifier.Value;
-                ammo = null;
-                ammoTemp = null;
             }
             else if (lastDam.DamageType == EDamageType.Explosion)
             {

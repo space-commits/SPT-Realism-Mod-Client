@@ -72,9 +72,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(Player.FirearmController __instance, ref Weapon.EMalfunctionState __result, AmmoItemClass ammoToFire)
         {
-         
             Player player = (Player)playerField.GetValue(__instance);
-
             bool do9x18Explodey = false;
             bool isPMMAmmo = ammoToFire.Template._id == "57371aab2459775a77142f22";
             float weaponMaxDurability = __instance.Weapon.Repairable.MaxDurability;

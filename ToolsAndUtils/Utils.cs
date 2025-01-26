@@ -248,6 +248,18 @@ namespace RealismMod
             return Mathf.Clamp(modifier, minModifier, maxModifier);
         }
 
+        public static T GetItemTemplate<T>(MongoID id) where T : ItemTemplate 
+        {
+            T template;
+            if (Singleton<ItemFactoryClass>.Instance.ItemTemplates.ContainsKey(id))
+            {
+                template = (Singleton<ItemFactoryClass>.Instance.ItemTemplates[id] as T);
+                return template;
+            }
+            return null;
+        }
+        
+
         public static bool IsZombie(Player player) 
         {
             return player != null && player.UsedSimplifiedSkeleton;
