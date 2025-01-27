@@ -81,9 +81,10 @@ namespace RealismMod
         public static ConfigEntry<float> GlobalBoltSpeedMulti { get; set; }
         public static ConfigEntry<float> RechamberPistolSpeedMulti { get; set; }
 
-        //deafen patches
+        //audio
         public static ConfigEntry<float> DeafenResetDelay { get; set; }
         public static ConfigEntry<int> HeadsetGain { get; set; }
+        public static ConfigEntry<bool> EnableAmbientChanges { get; set; }
         public static ConfigEntry<float> OutdoorAmbientMulti { get; set; }
         public static ConfigEntry<float> IndoorAmbientMulti { get; set; }
         public static ConfigEntry<int> HeadsetNoiseReduction { get; set; }
@@ -456,7 +457,8 @@ namespace RealismMod
             HeadsetNoiseReduction = config.Bind<int>(deafSettings, "Headset Impulse Noise Reduction", 0, new ConfigDescription("To What Level Of Amplification The Headset Reduces To When There's Gunfire Or Explosions. It Is Hard-Coded To Not Exceed Current Headset Gain Value", new AcceptableValueRange<int>(-10, 15), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = false, Browsable = Plugin.ServerConfig.headset_changes }));
             HeadsetGain = config.Bind<int>(deafSettings, "Headset Gain", 0, new ConfigDescription("WARNING: BE CAREFUL INCREASING THIS TOO HIGH! IT MAY DAMAGE YOUR HEARING! Adjusts The Gain Of Equipped Headsets In Real Time, Acts Just Like The Volume Control On IRL Ear Defenders.", new AcceptableValueRange<int>(-5, 15), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 90, Browsable = Plugin.ServerConfig.headset_changes }));
             GunshotVolume = config.Bind<float>(deafSettings, "Gunshot Volume", 0.6f, new ConfigDescription("Multiplier For Gunshot Volume, Player and NPC. Higher = Louder.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = false, Browsable = Plugin.ServerConfig.headset_changes }));
-            OutdoorAmbientMulti = config.Bind<float>(deafSettings, "Outdoor Ambient Audio Offset", 0f, new ConfigDescription("Adjusts The Ambient Volume With And Without Headsets. Higher = Louder.", new AcceptableValueRange<float>(-60f, 50f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, Browsable = Plugin.ServerConfig.headset_changes }));
+            EnableAmbientChanges = config.Bind<bool>(deafSettings, "Enable Ambient Audio Changes", false, new ConfigDescription("Enable The Use Of The Ambient Audio Multis. Can Cause Audio Glitches When Transitioning From Indoors To Outdoors ", null, new ConfigurationManagerAttributes { Order = 73, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
+            OutdoorAmbientMulti = config.Bind<float>(deafSettings, "Outdoor Ambient Audio Offset", 0f, new ConfigDescription("Adjusts The Ambient Volume With And Without Headsets. Higher = Louder.", new AcceptableValueRange<float>(-60f, 50f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 72, Browsable = Plugin.ServerConfig.headset_changes }));
             IndoorAmbientMulti = config.Bind<float>(deafSettings, "Indoor Ambient Audio Offset", -20f, new ConfigDescription("Adjusts The Ambient Volume With And Without Headsets. Higher = Louder.", new AcceptableValueRange<float>(-60f, 50f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, Browsable = Plugin.ServerConfig.headset_changes }));
             SharedMovementVolume = config.Bind<float>(deafSettings, "Shared Movement Volume Multi", 1f, new ConfigDescription("Multiplier For Player + NPC Sprint Volume. Has To Be Shared Due To BSG Jank.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = false, Browsable = Plugin.ServerConfig.headset_changes }));
             NPCMovementVolume = config.Bind<float>(deafSettings, "NPC Movement Volume Multi", 1f, new ConfigDescription("Multiplier For NPC Movement Volume. Includes Walking And Equipment Rattle.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = false, Browsable = Plugin.ServerConfig.headset_changes }));

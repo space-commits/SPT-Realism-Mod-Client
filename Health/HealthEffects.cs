@@ -431,6 +431,7 @@ namespace RealismMod
         public RealismHealthController RealHealthController { get; set; }
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
+        public int? PositveEffectDuration { get; set; }
         public int TimeExisted { get; set; }
         public Player _Player { get; }
         public int Delay { get; set; }
@@ -444,6 +445,7 @@ namespace RealismMod
         {
             TimeExisted = 0;
             Duration = dur;
+            PositveEffectDuration = (int)posEffectDur;
             _Player = player;
             Delay = delay;
             EffectType = EHealthEffectType.Adrenaline;
@@ -460,17 +462,24 @@ namespace RealismMod
             {
                 if (!_addedAdrenalineEffect)
                 {
-                    RealHealthController.HasAdrenalineEffect = true;
+                    RealHealthController.HasNegativeAdrenalineEffect = true;
+                    RealHealthController.HasPositiveAdrenalineEffect = true;
                     RealHealthController.AddBaseEFTEffectIfNoneExisting(_Player, "PainKiller", EBodyPart.Head, 0f, PositiveEffectDuration, 3f, 1f);
-                    RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 0f, NegativeEffectDuration, 3f, EffectStrength);
+                    //RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 0f, NegativeEffectDuration, 3f, EffectStrength);
                     RealHealthController.AddBasesEFTEffect(_Player, "Tremor", EBodyPart.Head, PositiveEffectDuration, NegativeEffectDuration, 3f, EffectStrength);
                     _addedAdrenalineEffect = true;
                 }
 
+                PositveEffectDuration--;
+                if (PositveEffectDuration <= 0)
+                {
+                    RealHealthController.HasPositiveAdrenalineEffect = false;
+                    PositveEffectDuration = 0;
+                }
                 Duration--;
                 if (Duration <= 0) 
                 {
-                    RealHealthController.HasAdrenalineEffect = false;
+                    RealHealthController.HasNegativeAdrenalineEffect = false;
                     Duration = 0;
                 }
                    

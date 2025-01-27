@@ -130,7 +130,8 @@ namespace RealismMod
 
         public PlayerZoneBridge PlayerHazardBridge { get; private set; }
 
-        public bool HasAdrenalineEffect { get; set; } = false;
+        public bool HasPositiveAdrenalineEffect { get; set; } = false;
+        public bool HasNegativeAdrenalineEffect { get; set; } = false;
 
         public bool IsCoughingInGas { get; private set; } = false;
 
@@ -203,7 +204,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerValues.StressResistanceFactor, 1.5f) : 1f;
+                return HasPositiveAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerValues.StressResistanceFactor, 1.5f) : 1f;
             }
         }
 
@@ -211,7 +212,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerValues.StressResistanceFactor, 1.25f) : 1f;
+                return HasPositiveAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerValues.StressResistanceFactor, 1.25f) : 1f;
             }
         }
 
@@ -219,7 +220,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerValues.StressResistanceFactor, 1.25f) : 1f;
+                return HasPositiveAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerValues.StressResistanceFactor, 1.25f) : 1f;
             }
         }
 
@@ -227,7 +228,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 0.9f + (PlayerValues.StressResistanceFactor * 1.5f) : 1f;
+                return HasPositiveAdrenalineEffect ? 0.9f + (PlayerValues.StressResistanceFactor * 1.5f) : 1f;
             }
         }
 
@@ -535,7 +536,7 @@ namespace RealismMod
             if (PluginConfig.EnableAdrenaline.Value && !AdrenalineCooldownActive)
             {
                 AdrenalineCooldownActive = true;
-                AdrenalineEffect adrenalineEffect = new AdrenalineEffect(player, (int)painkillerDuration, 0, negativeEffectDuration, painkillerDuration, negativeEffectStrength, this);
+                AdrenalineEffect adrenalineEffect = new AdrenalineEffect(player, (int)negativeEffectDuration + (int)painkillerDuration, 0, negativeEffectDuration, painkillerDuration, negativeEffectStrength, this);
                 Plugin.RealHealthController.AddCustomEffect(adrenalineEffect, true);
             }
         }
@@ -786,6 +787,14 @@ namespace RealismMod
             }
         }
 
+        private void AddStimOverdose(EStimType stimType, string debuff, string message) 
+        {
+            _activeStimOverdoses.Add(stimType);
+            _doStimOverdoseTimer = true;
+            _overdoseEffectToAdd = debuff;
+            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(message, EFT.Communications.ENotificationDurationType.Long);
+        }
+
         private void EvaluateStimDuplicates(Player player, IEnumerable<IGrouping<EStimType, StimEffectShell>> stimGroups)
         {
             foreach (var group in stimGroups) // use this to count duplicates per category
@@ -795,65 +804,43 @@ namespace RealismMod
                     case EStimType.Adrenal:
                         if (!_activeStimOverdoses.Contains(EStimType.Adrenal)) //if no active adrenal overdose
                         {
-
-                            _activeStimOverdoses.Add(EStimType.Adrenal);
-                            _doStimOverdoseTimer = true;
-                            _overdoseEffectToAdd = "adrenal_debuff";
-                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Adrenal Stims", EFT.Communications.ENotificationDurationType.Long);
+                            AddStimOverdose(EStimType.Adrenal, "6783ad365524129829f0099d", "Overdosed On Adrenal Stims");
                         }
                         break;
                     case EStimType.Regenerative:
                         if (!_activeStimOverdoses.Contains(EStimType.Regenerative))
                         {
-                            _activeStimOverdoses.Add(EStimType.Regenerative);
-                            _doStimOverdoseTimer = true;
-                            _overdoseEffectToAdd = "regen_debuff";
-                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Regenerative Stims", EFT.Communications.ENotificationDurationType.Long);
+                            AddStimOverdose(EStimType.Regenerative, "6783ad5260cc8e9597065ec5", "Overdosed On Regenerative Stims");
                         }
                         break;
                     case EStimType.Damage:
                         if (!_activeStimOverdoses.Contains(EStimType.Damage))
                         {
-                            _activeStimOverdoses.Add(EStimType.Damage);
-                            _doStimOverdoseTimer = true;
-                            _overdoseEffectToAdd = "damage_debuff";
-                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Combat Stims", EFT.Communications.ENotificationDurationType.Long);
+                            AddStimOverdose(EStimType.Damage, "6783adc3899d65035b52e21b", "Overdosed On Combat Stims");
                         }
                         break;
                     case EStimType.Clotting:
                         if (!_activeStimOverdoses.Contains(EStimType.Clotting))
                         {
-                            _activeStimOverdoses.Add(EStimType.Clotting);
-                            AddStimDebuffs(player, "clotting_debuff");
-                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Coagulating Stims", EFT.Communications.ENotificationDurationType.Long);
+                            AddStimOverdose(EStimType.Clotting, "6783ad5fce6705d14a117b15", "Overdosed On Coagulating Stims");
                         }
-
                         break;
                     case EStimType.Weight:
                         if (!_activeStimOverdoses.Contains(EStimType.Weight))
                         {
-                            _activeStimOverdoses.Add(EStimType.Weight);
-                            _doStimOverdoseTimer = true;
-                            _overdoseEffectToAdd = "weight_debuff";
-                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Weight-Reducing Stims", EFT.Communications.ENotificationDurationType.Long);
+                            AddStimOverdose(EStimType.Weight, "6783ad886700d7d90daf548d", "Overdosed On Weight-Reducing Stims");
                         }
                         break;
                     case EStimType.Performance:
                         if (!_activeStimOverdoses.Contains(EStimType.Performance))
                         {
-                            _activeStimOverdoses.Add(EStimType.Performance);
-                            _doStimOverdoseTimer = true;
-                            _overdoseEffectToAdd = "performance_debuff";
-                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Performance-Enhancing Stims", EFT.Communications.ENotificationDurationType.Long);
+                            AddStimOverdose(EStimType.Performance, "6783ad9f56a70af01706bf5f", "Overdosed On Performance-Enhancing Stims");
                         }
                         break;
                     case EStimType.Generic:
                         if (!_activeStimOverdoses.Contains(EStimType.Generic))
                         {
-                            _activeStimOverdoses.Add(EStimType.Generic);
-                            _doStimOverdoseTimer = true;
-                            _overdoseEffectToAdd = "generic_debuff";
-                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Stims", EFT.Communications.ENotificationDurationType.Long);
+                            AddStimOverdose(EStimType.Generic, "6783adb2a43ec97b902c4080", "Overdosed On Stims");
                         }
                         break;
                 }

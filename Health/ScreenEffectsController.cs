@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using static HBAO_Core;
 
 namespace RealismMod.Health
 {
@@ -9,25 +10,34 @@ namespace RealismMod.Health
     {
         public static PrismEffects PrismEffects { get; set; }
         private static float _radiationEffectStrength = 0;
-
+        private static float _blurEffectStrength = 0;
+        private static float _chromaEffectStrength = 0;
         public static void EffectsUpdate() 
         {
             if (PrismEffects != null) 
             {
                 if (PluginConfig.ShowRadEffects.Value) DoRadiationEffects();
+                DoAdrenalineAndOverdose();
             }
+        }
 
-            /*          PrismEffects.useSharpen = true;
-                        PrismEffects.sharpenAmount = PluginConfig.test5.Value;*/
+        public static void DoAdrenalineAndOverdose()
+        {
+            PrismEffects.useChromaticAberration = true;
+            PrismEffects.useChromaticBlur = true;
+            PrismEffects.chromaticDistanceOne = -0.1f; // -0.1f
+            PrismEffects.chromaticDistanceTwo = 0.7f; //0.9f
 
-            /*        PrismEffects.useLensDirt = true;
-                      PrismEffects.dirtIntensity = PluginConfig.test6.Value;*/ //not sure what to use it for
+            bool hasAdrenaline = Plugin.RealHealthController.HasNegativeAdrenalineEffect;
+            bool hasOverdoed = Plugin.RealHealthController.HasOverdosed;
+            float blur = hasAdrenaline || (PluginConfig.EnableLogging.Value && PluginConfig.test9.Value > 100f) ? Mathf.Lerp(0.85f, 9f, Mathf.PingPong(Time.time * 0.5f, 1f)) : 0f;
+            float chroma = hasOverdoed || (PluginConfig.EnableLogging.Value && PluginConfig.test10.Value > 100f) ? Mathf.Lerp(0.05f, 0.2f, Mathf.PingPong(Time.time * 0.2f, 1f)) : 0f;
 
+            _blurEffectStrength = Mathf.Lerp(_blurEffectStrength, blur, 0.025f);
+            _chromaEffectStrength = Mathf.Lerp(_chromaEffectStrength, chroma, 0.01f);
 
-            /*            PrismEffects.useChromaticBlur = true;
-                        PrismEffects.useChromaticAberration = true;
-                        PrismEffects.chromaticBlurWidth = PluginConfig.test3.Value; //how blurry, by itself it's not chromatic just blur which could be good for things like adrenaline and such?, 0 - 20, could also be used to simulate gas in eyes
-                        PrismEffects.chromaticIntensity = PluginConfig.test4.Value; //how much of an effect, 0-1*/
+            PrismEffects.chromaticBlurWidth = _blurEffectStrength;
+            PrismEffects.SetChromaticIntensity(_chromaEffectStrength);
         }
 
         public static void DoRadiationEffects() 

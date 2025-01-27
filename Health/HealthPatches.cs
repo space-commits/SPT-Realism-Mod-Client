@@ -871,7 +871,7 @@ namespace RealismMod
                     float painkillerDuration = (float)Math.Round(20f * (1f + (stressResist / 2)), 2);
                     float negativeEffectDuration = (float)Math.Round(25f * (1f - (stressResist / 2)), 2);
                     float negativeEffectStrength = (float)Math.Round(0.95f * (1f - (stressResist / 2)), 2);
-                    Plugin.RealHealthController.TryAddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
+                    Plugin.RealHealthController.TryAddAdrenaline(player, negativeEffectDuration, negativeEffectDuration, negativeEffectStrength);
 
                 }
             }

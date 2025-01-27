@@ -149,9 +149,12 @@ namespace RealismMod
             Singleton<BetterAudio>.Instance.Master.SetFloat("Tinnitus1", _gunShotMuffle); //higher = more muffled (reverby with headset) gunshots and all weapon sounds
 
             //ambient
-            float ambientBase = HasHeadSet ? 10f : 5f;
-            Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOutVolume", AmbientOutVolume + ambientBase + PluginConfig.OutdoorAmbientMulti.Value - 7f); //outdoors
-            Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientInVolume", AmbientInVolume + ambientBase + PluginConfig.IndoorAmbientMulti.Value - 15f); //indoor audio seems bugged if it's too high relative to outdoor
+            if (PluginConfig.EnableAmbientChanges.Value) 
+            {
+                float ambientBase = HasHeadSet ? 10f : 5f;
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOutVolume", AmbientOutVolume + ambientBase + PluginConfig.OutdoorAmbientMulti.Value - 7f); //outdoors
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientInVolume", AmbientInVolume + ambientBase + PluginConfig.IndoorAmbientMulti.Value - 15f); //indoor audio seems bugged if it's too high relative to outdoor
+            }
         }
 
         public static void DoVignette()

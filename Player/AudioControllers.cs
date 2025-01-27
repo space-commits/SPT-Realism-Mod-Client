@@ -251,7 +251,7 @@ namespace RealismMod
             {
                 return "Dying";
             }
-            if (HazardTracker.TotalToxicity >= 50f || PlayerValues.BaseStaminaPerc <= 0.55 || HazardTracker.TotalRadiation >= 70f || Plugin.RealHealthController.HasAdrenalineEffect)
+            if (HazardTracker.TotalToxicity >= 50f || PlayerValues.BaseStaminaPerc <= 0.55 || HazardTracker.TotalRadiation >= 70f || Plugin.RealHealthController.HasPositiveAdrenalineEffect)
             {
                 return "BadlyInjured";
             }
