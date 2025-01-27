@@ -3,6 +3,7 @@ using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using RealismMod.Health;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
@@ -202,11 +203,11 @@ namespace RealismMod
         {
             if (__instance.gameObject.name == "FPS Camera")
             {
-                if (DeafenController.PrismEffects == __instance)
+                if (ScreenEffectsController.PrismEffects == __instance)
                 {
                     return;
                 }
-                DeafenController.PrismEffects = __instance;
+                ScreenEffectsController.PrismEffects = __instance;
             }
         }
     }
@@ -222,9 +223,9 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostFix(PrismEffects __instance)
         {
-            if (__instance.gameObject.name == "FPS Camera" && DeafenController.PrismEffects == __instance)
+            if (__instance.gameObject.name == "FPS Camera" && ScreenEffectsController.PrismEffects == __instance)
             {
-                DeafenController.PrismEffects = null;
+                ScreenEffectsController.PrismEffects = null;
             }
         }
     }

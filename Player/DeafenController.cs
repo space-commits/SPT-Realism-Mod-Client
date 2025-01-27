@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using Prism.Utils;
+using RealismMod.Health;
 using UnityEngine;
 
 namespace RealismMod
@@ -55,7 +56,6 @@ namespace RealismMod
         public const float MaxDeafen = 30;
         public const float MaxVignette = 2.4f;
 
-        public static PrismEffects PrismEffects { get; set; }
         public static float EarProtectionFactor { get; set; } = 1f;
         public static float AmmoDeafFactor { get; set; } = 1f;
         public static float GunDeafFactor { get; set; } = 1f;
@@ -156,7 +156,7 @@ namespace RealismMod
 
         public static void DoVignette()
         {
-            PrismEffects.SetVignetteStrength(_vignetteAmount);
+            ScreenEffectsController.PrismEffects.SetVignetteStrength(_vignetteAmount);
         }
 
         public static void DoTimers()
@@ -198,7 +198,7 @@ namespace RealismMod
 
             if (Utils.AreFloatsEqual(_vignetteAmount, 0f, 0.1f)) 
             {
-                if(PrismEffects.useVignette) PrismEffects.useVignette = false;
+                if(ScreenEffectsController.PrismEffects.useVignette) ScreenEffectsController.PrismEffects.useVignette = false;
                 _maxShootVignette = 0f;
                 _maxBotShootVignette = 0f;
                 _maxExplosionVignette = 0f;
@@ -227,32 +227,13 @@ namespace RealismMod
             float maxVignette = Mathf.Min(MaxVignette, _maxShootVignette + _maxBotShootVignette + _maxExplosionVignette);
             _vignetteAmount = Mathf.Lerp(_vignetteAmount, Mathf.Min(_vignetteTarget, maxVignette), 0.1f);
 
-            PrismEffects.useVignette = true;
-            PrismEffects.vignetteStart = 1.5f;
-            PrismEffects.vignetteEnd = 0.1f;
+            ScreenEffectsController.PrismEffects.useVignette = true;
+            ScreenEffectsController.PrismEffects.vignetteStart = 1.5f;
+            ScreenEffectsController.PrismEffects.vignetteEnd = 0.1f;
         }
 
         public static void DoDeafening()
         {
-          /*  PrismEffects.useNoise = true;
-            PrismEffects.noiseIntensity = PluginConfig.test1.Value; //0-25
-            PrismEffects.noiseScale = PluginConfig.test2.Value; //doesnt do anything
-            PrismEffects.noiseType = (NoiseType)(int)PluginConfig.test5.Value;*/
-
-
-
-/*          PrismEffects.useSharpen = true;
-            PrismEffects.sharpenAmount = PluginConfig.test5.Value;*/
-
-  /*        PrismEffects.useLensDirt = true;
-            PrismEffects.dirtIntensity = PluginConfig.test6.Value;*/ //not sure what to use it for
-
-
-            /*            PrismEffects.useChromaticBlur = true;
-                        PrismEffects.useChromaticAberration = true;
-                        PrismEffects.chromaticBlurWidth = PluginConfig.test3.Value; //how blurry, by itself it's not chromatic just blur which could be good for things like adrenaline and such?, 0 - 20, could also be used to simulate gas in eyes
-                        PrismEffects.chromaticIntensity = PluginConfig.test4.Value; //how much of an effect, 0-1*/
-
             float baseMainVolume = 0f;
             if (IsBotFiring || GrenadeExploded || ShootController.IsFiringDeafen)
             {

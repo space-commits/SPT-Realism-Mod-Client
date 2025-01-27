@@ -13,6 +13,7 @@ using UnityEngine.Networking;
 using static RealismMod.Attributes;
 using static RealismMod.ZoneSpawner;
 using SPT.Common.Utils;
+using RealismMod.Health;
 
 namespace RealismMod
 {
@@ -624,13 +625,10 @@ namespace RealismMod
                     LoadAudioClips();
                 }
 
-                if (ServerConfig.headset_changes)
+                if (ServerConfig.headset_changes && ScreenEffectsController.PrismEffects != null)
                 {
                     HeadsetGainController.AdjustHeadsetVolume();
-                    if (DeafenController.PrismEffects != null)
-                    {
-                        DeafenController.DoDeafening();
-                    }
+                    DeafenController.DoDeafening();
                 }
                 if (ServerConfig.enable_stances) 
                 {

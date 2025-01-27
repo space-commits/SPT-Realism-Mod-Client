@@ -23,6 +23,7 @@ using ContusionInterface = GInterface314;
 using PainKillerInterface = GInterface320;
 using TunnelVisionInterface = GInterface325;
 using TremorInterface = GInterface323;
+using RealismMod.Health;
 
 namespace RealismMod
 {
@@ -423,6 +424,7 @@ namespace RealismMod
                     CurrentPassiveRegenBlockDuration = BlockPassiveRegenBaseDuration;
                 }
             }
+           ScreenEffectsController.EffectsUpdate();
         }
 
         //To prevent null ref exceptions while using Fika, Realism's custom effects must be added to a dicitionary of existing EFT effects
