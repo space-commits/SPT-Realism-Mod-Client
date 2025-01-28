@@ -29,6 +29,7 @@ namespace RealismMod
             Plugin.CanLoadChamber = true;
             int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
             MagazineItemClass mag = fc.Weapon.GetCurrentMagazine();
+            if (mag == null) return;
             fc.FirearmsAnimator.SetAmmoInChamber(0);
             fc.FirearmsAnimator.SetAmmoOnMag(currentMagazineCount);
             fc.FirearmsAnimator.SetAmmoCompatible(true);
@@ -146,7 +147,7 @@ namespace RealismMod
             {
                 return false;
             }
-            if (command == ECommand.WeaponMounting && PluginConfig.OverrideMounting.Value) //
+            if (command == ECommand.WeaponMounting && PluginConfig.OverrideMounting.Value)
             {
                 Player player = Utils.GetYourPlayer();
                 ProceduralWeaponAnimation pwa = player.ProceduralWeaponAnimation;

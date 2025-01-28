@@ -30,8 +30,8 @@ namespace RealismMod.Health
 
             bool hasAdrenaline = Plugin.RealHealthController.HasNegativeAdrenalineEffect;
             bool hasOverdoed = Plugin.RealHealthController.HasOverdosed;
-            float blur = hasAdrenaline || (PluginConfig.EnableLogging.Value && PluginConfig.test9.Value > 100f) ? Mathf.Lerp(0.85f, 9f, Mathf.PingPong(Time.time * 0.5f, 1f)) : 0f;
-            float chroma = hasOverdoed || (PluginConfig.EnableLogging.Value && PluginConfig.test10.Value > 100f) ? Mathf.Lerp(0.05f, 0.2f, Mathf.PingPong(Time.time * 0.2f, 1f)) : 0f;
+            float blur = hasAdrenaline ? Mathf.Lerp(0.85f, 9f, Mathf.PingPong(Time.time * 0.5f, 1f)) : 0f;
+            float chroma = hasOverdoed ? Mathf.Lerp(0.05f, 0.2f, Mathf.PingPong(Time.time * 0.2f, 1f)) : 0f;
 
             _blurEffectStrength = Mathf.Lerp(_blurEffectStrength, blur, 0.025f);
             _chromaEffectStrength = Mathf.Lerp(_chromaEffectStrength, chroma, 0.01f);
