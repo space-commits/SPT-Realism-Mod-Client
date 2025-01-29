@@ -16,13 +16,15 @@ namespace RealismMod.Health
         {
             if (PrismEffects != null) 
             {
-                if (PluginConfig.ShowRadEffects.Value) DoRadiationEffects();
+                DoRadiationEffects();
                 DoAdrenalineAndOverdose();
             }
         }
 
         public static void DoAdrenalineAndOverdose()
         {
+            //if no adrenaline, should lerp and increase the chroma distance, if adrenaline reduce it back to default value
+
             PrismEffects.useChromaticAberration = true;
             PrismEffects.useChromaticBlur = true;
             PrismEffects.chromaticDistanceOne = -0.1f; // -0.1f
@@ -30,7 +32,7 @@ namespace RealismMod.Health
 
             bool hasAdrenaline = Plugin.RealHealthController.HasNegativeAdrenalineEffect;
             bool hasOverdoed = Plugin.RealHealthController.HasOverdosed;
-            float blur = hasAdrenaline ? Mathf.Lerp(0.85f, 9f, Mathf.PingPong(Time.time * 0.5f, 1f)) : 0f;
+            float blur = hasAdrenaline ? Mathf.Lerp(0.8f, 7f, Mathf.PingPong(Time.time * 0.5f, 1f)) : 0f;
             float chroma = hasOverdoed ? Mathf.Lerp(0.05f, 0.2f, Mathf.PingPong(Time.time * 0.2f, 1f)) : 0f;
 
             _blurEffectStrength = Mathf.Lerp(_blurEffectStrength, blur, 0.025f);
@@ -42,11 +44,12 @@ namespace RealismMod.Health
 
         public static void DoRadiationEffects() 
         {
-            float effectStrength = (HazardTracker.TotalRadiationRate * 80f) + (HazardTracker.TotalRadiation * 0.25f);
+            float effectStrength = (HazardTracker.TotalRadiationRate * 40f) + (HazardTracker.TotalRadiation * 0.15f);
+            effectStrength = effectStrength <= 2f ? 0f : effectStrength;
             _radiationEffectStrength = Mathf.Lerp(_radiationEffectStrength, effectStrength, 0.01f);
-            if (_radiationEffectStrength > 0.1f)
+            if (PluginConfig.ShowRadEffects.Value)
             {
-                PrismEffects.noiseIntensity = _radiationEffectStrength; 
+                PrismEffects.noiseIntensity = Mathf.Max(_radiationEffectStrength, 0f); 
                 PrismEffects.useNoise = true;
             }
             else

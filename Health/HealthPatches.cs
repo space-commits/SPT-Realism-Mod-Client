@@ -734,25 +734,6 @@ namespace RealismMod
         }
     }
 
-    public class FlyingBulletPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FlyingBulletSoundPlayer).GetMethod("method_3", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void Postfix(FlyingBulletSoundPlayer __instance)
-        {
-            Player player = Utils.GetYourPlayer();
-            float stressResist = player.Skills.StressPain.Value;
-            float painkillerDuration = (float)Math.Round(12f * (1f + stressResist), 2);
-            float negativeEffectDuration = (float)Math.Round(15f * (1f - stressResist), 2);
-            float negativeEffectStrength = (float)Math.Round(0.75f * (1f - stressResist), 2);
-            Plugin.RealHealthController.TryAddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
-        }
-    }
-
     public class HCApplyDamagePatch : ModulePatch
     {
         private static FieldInfo _playerField;

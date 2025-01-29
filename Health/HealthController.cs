@@ -24,6 +24,7 @@ using PainKillerInterface = GInterface320;
 using TunnelVisionInterface = GInterface325;
 using TremorInterface = GInterface323;
 using RealismMod.Health;
+using static EFT.Player;
 
 namespace RealismMod
 {
@@ -1040,7 +1041,6 @@ namespace RealismMod
 
             if (player.MovementContext.StationaryWeapon == null && !player.HandsController.IsPlacingBeacon() && !player.HandsController.IsInInteractionStrictCheck() && player.CurrentStateName != EPlayerState.BreachDoor && !player.IsSprintEnabled)
             {
-                InventoryController inventoryController = (InventoryController)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
                 InventoryEquipment equipment = player.Equipment;
 
                 List<Item> gear = new List<Item>();
@@ -1080,9 +1080,9 @@ namespace RealismMod
 
                 foreach (Item item in gear)
                 {
-                    if (inventoryController.CanThrow(item))
+                    if (player.InventoryController.CanThrow(item))
                     {
-                        inventoryController.TryThrowItem(item, null, false);
+                        player.InventoryController.TryThrowItem(item, null, false);
                     }
                 }
             }

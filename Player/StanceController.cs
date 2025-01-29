@@ -57,6 +57,14 @@ namespace RealismMod
          new Keyframe(1, 1f)
         );
 
+        public static bool ShouldBlockAllStances 
+        {
+            get 
+            {
+                return (IsMounting && WeaponStats.BipodIsDeployed) || !MeleeIsToggleable;
+            }
+        }
+
         public static bool TreatWeaponAsPistolStance
         {
             get
@@ -240,8 +248,13 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     FirearmController fc = player.HandsController as FirearmController;
+                    if (fc == null) 
+                    {
+                        value = false;
+                        return;
+                    }
                     _isRealismMounting = value;
-                    player.ProceduralWeaponAnimation.method_23();
+                    if (player.ProceduralWeaponAnimation != null) player.ProceduralWeaponAnimation.method_23();
                     float accuracy = fc.Item.GetTotalCenterOfImpact(false); //forces accuracy to update
                     AccessTools.Field(typeof(Player.FirearmController), "float_3").SetValue(fc, accuracy); //update weapon accuracy
                     player.ProceduralWeaponAnimation.UpdateTacticalReload(); //gives better chamber animations
@@ -573,7 +586,7 @@ namespace RealismMod
                 }
 
                 //patrol
-                if (MeleeIsToggleable && Input.GetKeyDown(PluginConfig.PatrolKeybind.Value.MainKey) && PluginConfig.PatrolKeybind.Value.Modifiers.All(Input.GetKey))
+                if (!ShouldBlockAllStances && Input.GetKeyDown(PluginConfig.PatrolKeybind.Value.MainKey) && PluginConfig.PatrolKeybind.Value.Modifiers.All(Input.GetKey))
                 {
                     Utils.GetYourPlayer().method_55(0.5f);
                     ToggleStance(EStance.PatrolStance);
@@ -585,7 +598,7 @@ namespace RealismMod
                 if (!PlayerValues.IsSprinting && !IsInInventory && !TreatWeaponAsPistolStance)
                 {
                     //cycle stances
-                    if (MeleeIsToggleable && Input.GetKeyUp(PluginConfig.CycleStancesKeybind.Value.MainKey))
+                    if (!ShouldBlockAllStances && Input.GetKeyUp(PluginConfig.CycleStancesKeybind.Value.MainKey))
                     {
                         if (Time.time <= _doubleClickTime)
                         {
@@ -623,7 +636,7 @@ namespace RealismMod
                     //active aim
                     if (!PluginConfig.ToggleActiveAim.Value)
                     {
-                        if ((!IsAiming && MeleeIsToggleable && Input.GetKey(PluginConfig.ActiveAimKeybind.Value.MainKey) && PluginConfig.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKey(KeyCode.Mouse1) && !PlayerValues.IsAllowedADS))
+                        if ((!IsAiming && !ShouldBlockAllStances && Input.GetKey(PluginConfig.ActiveAimKeybind.Value.MainKey) && PluginConfig.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKey(KeyCode.Mouse1) && !PlayerValues.IsAllowedADS))
                         {
                             if (!HaveSetActiveAim)
                             {
@@ -646,7 +659,7 @@ namespace RealismMod
                     }
                     else
                     {
-                        if ((!IsAiming && MeleeIsToggleable && Input.GetKeyDown(PluginConfig.ActiveAimKeybind.Value.MainKey) && PluginConfig.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerValues.IsAllowedADS))
+                        if ((!IsAiming && !ShouldBlockAllStances && Input.GetKeyDown(PluginConfig.ActiveAimKeybind.Value.MainKey) && PluginConfig.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerValues.IsAllowedADS))
                         {
                             StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                             ToggleStance(EStance.ActiveAiming);
@@ -659,7 +672,7 @@ namespace RealismMod
                         }
                     }
 
-                    if (MeleeIsToggleable && PluginConfig.UseMouseWheelStance.Value && !IsAiming)
+                    if (!ShouldBlockAllStances && PluginConfig.UseMouseWheelStance.Value && !IsAiming)
                     {
                         if ((Input.GetKey(PluginConfig.StanceWheelComboKeyBind.Value.MainKey) && PluginConfig.UseMouseWheelPlusKey.Value) || (!PluginConfig.UseMouseWheelPlusKey.Value && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.R) && !Input.GetKey(KeyCode.C)))
                         {
@@ -674,6 +687,7 @@ namespace RealismMod
                     //Melee
                     if (!IsAiming && MeleeIsToggleable && Input.GetKeyDown(PluginConfig.MeleeKeybind.Value.MainKey) && PluginConfig.MeleeKeybind.Value.Modifiers.All(Input.GetKey))
                     {
+                        IsMounting = false;
                         IsLeftShoulder = false;
                         CurrentStance = EStance.Melee;
                         StoredStance = EStance.None;
@@ -685,7 +699,7 @@ namespace RealismMod
                     }
 
                     //short-stock
-                    if (MeleeIsToggleable && Input.GetKeyDown(PluginConfig.ShortStockKeybind.Value.MainKey) && PluginConfig.ShortStockKeybind.Value.Modifiers.All(Input.GetKey))
+                    if (!ShouldBlockAllStances && Input.GetKeyDown(PluginConfig.ShortStockKeybind.Value.MainKey) && PluginConfig.ShortStockKeybind.Value.Modifiers.All(Input.GetKey))
                     {
                         StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                         ToggleStance(EStance.ShortStock, false, true);
@@ -694,13 +708,13 @@ namespace RealismMod
                     }
 
                     //high ready
-                    if (MeleeIsToggleable && Input.GetKeyDown(PluginConfig.HighReadyKeybind.Value.MainKey) && PluginConfig.HighReadyKeybind.Value.Modifiers.All(Input.GetKey))
+                    if (!ShouldBlockAllStances && !IsInForcedLowReady && Input.GetKeyDown(PluginConfig.HighReadyKeybind.Value.MainKey) && PluginConfig.HighReadyKeybind.Value.Modifiers.All(Input.GetKey))
                     {
                         ToggleHighReady();
                     }
 
                     //low ready
-                    if (MeleeIsToggleable && !IsInForcedLowReady && Input.GetKeyDown(PluginConfig.LowReadyKeybind.Value.MainKey) && PluginConfig.LowReadyKeybind.Value.Modifiers.All(Input.GetKey))
+                    if (!ShouldBlockAllStances && !IsInForcedLowReady && Input.GetKeyDown(PluginConfig.LowReadyKeybind.Value.MainKey) && PluginConfig.LowReadyKeybind.Value.Modifiers.All(Input.GetKey))
                     {
                         ToggleLowReady();
                     }
@@ -1717,10 +1731,10 @@ namespace RealismMod
 
         public static void ToggleMounting(Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc)
         {
-            if (player.IsInPronePose && WeaponStats.BipodIsDeployed)
+           /* if (player.IsInPronePose && WeaponStats.BipodIsDeployed)
             {
                 IsMounting = true;
-            }
+            }*/
             if (IsMounting && PlayerValues.IsMoving)
             {
                 IsMounting = false;

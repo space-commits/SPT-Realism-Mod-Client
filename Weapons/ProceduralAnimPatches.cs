@@ -12,100 +12,19 @@ using StaminaLevelClass = GClass816<float>;
 
 namespace RealismMod
 {
-    //with BSG's recoil rework, player camera is much more closely attached to the weapon. This is a problem for the stances, making them behave strangely
-    //this patch attempts to rectify that
-    /*    public class CalculateCameraPatch : ModulePatch
+    class AimPunchPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
         {
-            private static FieldInfo playerField;
-            private static FieldInfo fcField;
+            return typeof(ForceEffector).GetMethod("Initialize", BindingFlags.Instance | BindingFlags.Public);
+        }
 
-            protected override MethodBase GetTargetMethod()
-            {
-                playerField = AccessTools.Field(typeof(FirearmController), "_player");
-                fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
-                return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateWeaponVariables", BindingFlags.Instance | BindingFlags.Public);
-            }
-
-            [PatchPostfix]
-            private static void PatchPostfix(
-                EFT.Animations.ProceduralWeaponAnimation __instance, ref Vector3 ____vCameraTarget,
-                ref Player.ValueBlenderDelay ____tacticalReload, ref float ____aimLeftStanceAdditionalOffset,
-                ref GInterface139 ____firearmAnimationData, ref float ____blindfireStrength, ref Quaternion ____rotation90deg,
-                ref bool ____crankRecoil, ref Vector3 ____localAimShift, ref float ____leftStanceCurrentCurveValue,
-                ref float ____compensatoryScale, ref Vector3 ____cameraByFOVOffset, ref float ____animatorPoseBlend,
-                ref Vector3 ___vector)
-            {
-                FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
-                if (firearmController == null) return;
-                Player player = (Player)playerField.GetValue(firearmController);
-                if (player != null && player.IsYourPlayer)
-                {
-                    if (!__instance.HandsContainer.WeaponRootAnim)
-                    {
-                        return;
-                    }
-                    Vector3 a = (__instance.BlindfireBlender.Value > 0f) ? (__instance.BlindFireCamera * Mathf.Abs(__instance.BlindfireBlender.Value / 2f)) : (__instance.SideFireCamera * Mathf.Abs(__instance.BlindfireBlender.Value / 2f));
-                    __instance.HandsContainer.CameraRotation.Zero = new Vector3(0f, 0f, __instance.SmoothedTilt * __instance.PossibleTilt) + a * ____blindfireStrength;
-                    Vector3 vector = Vector3.zero;
-                    foreach (ValueTuple<AnimatorPose, float, bool> valueTuple in __instance.ActiveBlends)
-                    {
-                        float d = valueTuple.Item1.Blend.Evaluate(valueTuple.Item2);
-                        vector += valueTuple.Item1.CameraPosition * d;
-                        __instance.HandsContainer.CameraRotation.Zero += valueTuple.Item1.CameraRotation * d;
-                    }
-                    if (__instance.IsAiming && Mathf.Approximately(__instance.BlindfireBlender.Value, 0f) && __instance.ScopeAimTransforms.Count > 0)
-                    {
-                        if (____tacticalReload.Value > Mathf.Epsilon)
-                        {
-                            ____vCameraTarget = ____rotation90deg * GClass746.GetPositionRelativeToParent(__instance.HandsContainer.Weapon, __instance.CurrentScope.Bone) + __instance.HandsContainer.WeaponRoot.localPosition + ____rotation90deg * __instance.HandsContainer.WeaponRootAnim.localPosition;
-                        }
-                        else
-                        {
-                            ____vCameraTarget = __instance.HandsContainer.WeaponRoot.parent.InverseTransformPoint(__instance.CurrentScope.Bone.position);
-                        }
-                        if (__instance._currentAimingPlane != null)
-                        {
-                            Transform aimPointParent = __instance.AimPointParent;
-                            Matrix4x4 matrix4x = Matrix4x4.TRS(aimPointParent.position, aimPointParent.rotation, __instance.Vector3_0);
-                            float num = Mathf.Min(__instance._currentAimingPlane.Depth, __instance._farPlane.Depth - __instance.HandsContainer.Weapon.localPosition.y);
-                            ____localAimShift.y = (____crankRecoil ? (-num + __instance.PositionZeroSum.y * 2f) : (-num));
-                            Vector3 point = matrix4x.MultiplyPoint3x4(____localAimShift);
-                            Transform parent = __instance.HandsContainer.WeaponRoot.parent;
-                            if (____firearmAnimationData != null && ____leftStanceCurrentCurveValue > 0f)
-                            {
-                                parent = __instance.HandsContainer.CameraTransform.parent;
-                            }
-                            matrix4x = Matrix4x4.TRS(parent.position, parent.rotation, __instance.Vector3_0).inverse;
-                            if (__instance.method_18())
-                            {
-                                Vector3 direction = __instance.CurrentScope.Bone.forward * -1f;
-                                if (__instance.CurrentScope.Bone.name == "aim_camera")
-                                {
-                                    direction = __instance.CurrentScope.Bone.up * -1f;
-                                }
-                                Vector3 vector2 = __instance.HandsContainer.WeaponRoot.parent.InverseTransformDirection(direction);
-                                float d2 = matrix4x.MultiplyPoint3x4(point).z + __instance._fovCompensatoryDistance - __instance.TurnAway.Position.y + __instance._cameraShiftToLineOfSight.x - ____vCameraTarget.z;
-                                Vector3 vCameraTarget = ____vCameraTarget + vector2.normalized * d2;
-                                ____vCameraTarget = vCameraTarget;
-                            }
-                            else
-                            {
-                                ____vCameraTarget.z = matrix4x.MultiplyPoint3x4(point).z + __instance._fovCompensatoryDistance - __instance.TurnAway.Position.y + __instance._cameraShiftToLineOfSight.x;
-                            }
-                        }
-                        ____vCameraTarget.y = ____vCameraTarget.y + __instance._cameraShiftToLineOfSight.y;
-                        if (__instance.Boolean_0)
-                        {
-                            ____vCameraTarget.z = ____vCameraTarget.z + ____aimLeftStanceAdditionalOffset * (1f - ____compensatoryScale);
-                        }
-                        ____vCameraTarget += ___vector;
-                        return;
-                    }
-                    ____vCameraTarget = __instance.HandsContainer.CameraOffset + ____cameraByFOVOffset + __instance.TurnAway.CameraShift;
-                    ____vCameraTarget = ((____animatorPoseBlend > 0f) ? (____vCameraTarget + vector) : ____vCameraTarget);
-                }
-            }
-        }*/
+        [PatchPostfix]
+        private static void Postfix(ForceEffector __instance)
+        {
+            __instance.WiggleMagnitude = Singleton<BackendConfigSettingsClass>.Instance.AimPunchMagnitude * PluginConfig.AimPunchMulti.Value;
+        }
+    }
 
     //stop player camera following weapon muzzle
     public class CamRecoilPatch : ModulePatch
@@ -810,4 +729,99 @@ namespace RealismMod
             }
         }
     }
+
+    //with BSG's recoil rework, player camera is much more closely attached to the weapon. This is a problem for the stances, making them behave strangely
+    //this patch attempts to rectify that
+    /*    public class CalculateCameraPatch : ModulePatch
+        {
+            private static FieldInfo playerField;
+            private static FieldInfo fcField;
+
+            protected override MethodBase GetTargetMethod()
+            {
+                playerField = AccessTools.Field(typeof(FirearmController), "_player");
+                fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
+                return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateWeaponVariables", BindingFlags.Instance | BindingFlags.Public);
+            }
+
+            [PatchPostfix]
+            private static void PatchPostfix(
+                EFT.Animations.ProceduralWeaponAnimation __instance, ref Vector3 ____vCameraTarget,
+                ref Player.ValueBlenderDelay ____tacticalReload, ref float ____aimLeftStanceAdditionalOffset,
+                ref GInterface139 ____firearmAnimationData, ref float ____blindfireStrength, ref Quaternion ____rotation90deg,
+                ref bool ____crankRecoil, ref Vector3 ____localAimShift, ref float ____leftStanceCurrentCurveValue,
+                ref float ____compensatoryScale, ref Vector3 ____cameraByFOVOffset, ref float ____animatorPoseBlend,
+                ref Vector3 ___vector)
+            {
+                FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
+                if (firearmController == null) return;
+                Player player = (Player)playerField.GetValue(firearmController);
+                if (player != null && player.IsYourPlayer)
+                {
+                    if (!__instance.HandsContainer.WeaponRootAnim)
+                    {
+                        return;
+                    }
+                    Vector3 a = (__instance.BlindfireBlender.Value > 0f) ? (__instance.BlindFireCamera * Mathf.Abs(__instance.BlindfireBlender.Value / 2f)) : (__instance.SideFireCamera * Mathf.Abs(__instance.BlindfireBlender.Value / 2f));
+                    __instance.HandsContainer.CameraRotation.Zero = new Vector3(0f, 0f, __instance.SmoothedTilt * __instance.PossibleTilt) + a * ____blindfireStrength;
+                    Vector3 vector = Vector3.zero;
+                    foreach (ValueTuple<AnimatorPose, float, bool> valueTuple in __instance.ActiveBlends)
+                    {
+                        float d = valueTuple.Item1.Blend.Evaluate(valueTuple.Item2);
+                        vector += valueTuple.Item1.CameraPosition * d;
+                        __instance.HandsContainer.CameraRotation.Zero += valueTuple.Item1.CameraRotation * d;
+                    }
+                    if (__instance.IsAiming && Mathf.Approximately(__instance.BlindfireBlender.Value, 0f) && __instance.ScopeAimTransforms.Count > 0)
+                    {
+                        if (____tacticalReload.Value > Mathf.Epsilon)
+                        {
+                            ____vCameraTarget = ____rotation90deg * GClass746.GetPositionRelativeToParent(__instance.HandsContainer.Weapon, __instance.CurrentScope.Bone) + __instance.HandsContainer.WeaponRoot.localPosition + ____rotation90deg * __instance.HandsContainer.WeaponRootAnim.localPosition;
+                        }
+                        else
+                        {
+                            ____vCameraTarget = __instance.HandsContainer.WeaponRoot.parent.InverseTransformPoint(__instance.CurrentScope.Bone.position);
+                        }
+                        if (__instance._currentAimingPlane != null)
+                        {
+                            Transform aimPointParent = __instance.AimPointParent;
+                            Matrix4x4 matrix4x = Matrix4x4.TRS(aimPointParent.position, aimPointParent.rotation, __instance.Vector3_0);
+                            float num = Mathf.Min(__instance._currentAimingPlane.Depth, __instance._farPlane.Depth - __instance.HandsContainer.Weapon.localPosition.y);
+                            ____localAimShift.y = (____crankRecoil ? (-num + __instance.PositionZeroSum.y * 2f) : (-num));
+                            Vector3 point = matrix4x.MultiplyPoint3x4(____localAimShift);
+                            Transform parent = __instance.HandsContainer.WeaponRoot.parent;
+                            if (____firearmAnimationData != null && ____leftStanceCurrentCurveValue > 0f)
+                            {
+                                parent = __instance.HandsContainer.CameraTransform.parent;
+                            }
+                            matrix4x = Matrix4x4.TRS(parent.position, parent.rotation, __instance.Vector3_0).inverse;
+                            if (__instance.method_18())
+                            {
+                                Vector3 direction = __instance.CurrentScope.Bone.forward * -1f;
+                                if (__instance.CurrentScope.Bone.name == "aim_camera")
+                                {
+                                    direction = __instance.CurrentScope.Bone.up * -1f;
+                                }
+                                Vector3 vector2 = __instance.HandsContainer.WeaponRoot.parent.InverseTransformDirection(direction);
+                                float d2 = matrix4x.MultiplyPoint3x4(point).z + __instance._fovCompensatoryDistance - __instance.TurnAway.Position.y + __instance._cameraShiftToLineOfSight.x - ____vCameraTarget.z;
+                                Vector3 vCameraTarget = ____vCameraTarget + vector2.normalized * d2;
+                                ____vCameraTarget = vCameraTarget;
+                            }
+                            else
+                            {
+                                ____vCameraTarget.z = matrix4x.MultiplyPoint3x4(point).z + __instance._fovCompensatoryDistance - __instance.TurnAway.Position.y + __instance._cameraShiftToLineOfSight.x;
+                            }
+                        }
+                        ____vCameraTarget.y = ____vCameraTarget.y + __instance._cameraShiftToLineOfSight.y;
+                        if (__instance.Boolean_0)
+                        {
+                            ____vCameraTarget.z = ____vCameraTarget.z + ____aimLeftStanceAdditionalOffset * (1f - ____compensatoryScale);
+                        }
+                        ____vCameraTarget += ___vector;
+                        return;
+                    }
+                    ____vCameraTarget = __instance.HandsContainer.CameraOffset + ____cameraByFOVOffset + __instance.TurnAway.CameraShift;
+                    ____vCameraTarget = ((____animatorPoseBlend > 0f) ? (____vCameraTarget + vector) : ____vCameraTarget);
+                }
+            }
+        }*/
 }

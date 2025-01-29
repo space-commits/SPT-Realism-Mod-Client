@@ -13,6 +13,7 @@ using DamageTypeClass = GClass2788;
 using MalfGlobals = BackendConfigSettingsClass.GClass1521;
 using OverheatGlobals = BackendConfigSettingsClass.GClass1522;
 using EFT.HealthSystem;
+using static EFT.Player;
 
 namespace RealismMod
 {
@@ -60,10 +61,9 @@ namespace RealismMod
                 player.ActiveHealthController.ApplyDamage(EBodyPart.Head, UnityEngine.Random.Range(5, 21), DamageTypeClass.Existence);
                 player.ActiveHealthController.ApplyDamage(EBodyPart.RightArm, UnityEngine.Random.Range(20, 61), DamageTypeClass.Existence);
 
-                InventoryController inventoryController = (InventoryController)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
-                if (fc.Item != null && inventoryController.CanThrow(fc.Item))
+                if (fc.Item != null && player.InventoryController.CanThrow(fc.Item))
                 {
-                    inventoryController.TryThrowItem(fc.Item, null, false);
+                    player.InventoryController.TryThrowItem(fc.Item, null, false);
                 }
 
             }

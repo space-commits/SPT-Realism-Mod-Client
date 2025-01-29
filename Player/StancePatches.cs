@@ -62,7 +62,7 @@ namespace RealismMod
         }
     }
 
-    public class MountingPatch : ModulePatch
+    public class MountingAndCollisionPatch : ModulePatch
     {
         private static FieldInfo _playerField;
         private static FieldInfo _fcField;
@@ -171,8 +171,8 @@ namespace RealismMod
             _previousOverlapValue = _smoothedOverlapValue;
 
             _blendField.SetValue(pwa.TurnAway, 4.5f * _collidingModifier);
-            _smoothInField.SetValue(pwa.TurnAway, 7f * _collidingModifier);
-            _smoothOutField.SetValue(pwa.TurnAway, 4f * _collidingModifier);
+            _smoothInField.SetValue(pwa.TurnAway, 14f * _collidingModifier);
+            _smoothOutField.SetValue(pwa.TurnAway, 8f * _collidingModifier);
         }
 
         private static float GetStanceSpeedModi(bool isPistol, bool getInverse = false) 
@@ -242,7 +242,7 @@ namespace RealismMod
             }
             else if (StanceController.CurrentStance == EStance.ActiveAiming || StanceController.StoredStance == EStance.ActiveAiming)
             {
-                _finalPos = new Vector3(0.35f, 0.05f, 0.2f);
+                _finalPos = new Vector3(0.35f, 0.0f, 0.2f);
                 _finalRot = new Vector3(0f, 0f, -0.9f);
             }
             else if (StanceController.CurrentStance == EStance.PatrolStance)
@@ -252,9 +252,9 @@ namespace RealismMod
             }
             else 
             {
-              /*_finalPos = new Vector3(0.15f, -0.5f, 0.25f);
-                _finalRot = new Vector3(-0.95f, -0.01f, -0.01f);*/
-                _finalPos = new Vector3(0.3f, 0.05f, 0.2f);
+                /*_finalPos = new Vector3(0.15f, -0.5f, 0.25f);
+                  _finalRot = new Vector3(-0.95f, -0.01f, -0.01f);*/
+                _finalPos = new Vector3(0.3f, 0.01f, 0.2f);
                 _finalRot = new Vector3(0f, 0f, -0.9f);
             }
            
@@ -268,23 +268,24 @@ namespace RealismMod
 
             Vector3 rayStart = pwa.HandsContainer.WeaponRoot.position;
             Vector3 forward = -pwa.HandsContainer.WeaponRoot.transform.up;
-            float length = WeaponStats.NewWeaponLength;
+            bool treatAsPistol = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol;
+            float weaponLn = WeaponStats.NewWeaponLength;
+            float weaponLengthFactor = weaponLn * (treatAsPistol ? 1.05f : 1.25f); //stance should be a factor here too
 
             _isColliding = false;
             RaycastHit raycastHit;
-            if (EFTPhysicsClass.Raycast(new Ray(rayStart, forward), out raycastHit, length, LayerMaskClass.HighPolyWithTerrainMask))
+            if (!StanceController.IsMounting && EFTPhysicsClass.Raycast(new Ray(rayStart, forward), out raycastHit, weaponLengthFactor, LayerMaskClass.HighPolyWithTerrainMask))
             {
                 _lastDistance = raycastHit.distance;
                 _isColliding = true;
             }
 
-            bool treatAsPistol = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol;
             bool isStocklessRifle = !WeaponStats.IsPistol && !WeaponStats.HasShoulderContact;
             float stanceBonus = (isStocklessRifle ? 1.15f : 1f) * GetStanceSpeedModi(treatAsPistol);
             float stanceInverseBonus = (isStocklessRifle ? 0.85f : 1f) * GetStanceSpeedModi(treatAsPistol, true);
             float collisionTimerSpeed = 0.015f * WeaponStats.ErgoFactor * stanceInverseBonus;
             float adsTimerSpeed = 0.03f * WeaponStats.ErgoFactor;
-            float finalStateTimerSpeed = PluginConfig.test9.Value * WeaponStats.ErgoFactor;
+            float finalStateTimerSpeed = 0.5f;
 
             if (_isColliding)
             {
@@ -325,23 +326,24 @@ namespace RealismMod
             //length = 1.4, threshold = 0.65
             //try using relative distance instead ? distance / length of raycast
 
-            AssignFinalTransforms(treatAsPistol, length);
+            AssignFinalTransforms(treatAsPistol, weaponLn);
             float speed = 0.15f * WeaponStats.TotalErgo * stanceBonus;
-            float baseThrehold = treatAsPistol ? 0.55f : 0.6f;
-            float threshold = baseThrehold * Mathf.Pow(length, 1.15f);
+            float baseThrehold = treatAsPistol ? 0.55f : 0.5f;
+            float threshold = baseThrehold * Mathf.Pow(weaponLn, 1.15f);
             bool doIntiialState = _lastDistance >= threshold || _delayFinalState;
-   
-            float distanceFactor = Mathf.InverseLerp(length, 0, _lastDistance);
+      
+            float distanceFactor = Mathf.InverseLerp(weaponLn, 0, _lastDistance);
             float smoothedInverseDistance = Mathf.Pow(distanceFactor, 0.45f);
-            
-            float intitalPosZ = treatAsPistol ? -0.145f : treatAsPistol && pwa.IsAiming ? -0.16f : -0.13f;
-            Vector3 initialPos = _initialPos;
+
+            float offsetFactor = (weaponLn * -0.65f) * (1 - (_lastDistance / (weaponLengthFactor)));
+
+            float intitalPosZ = offsetFactor; // treatAsPistol ? -0.145f : treatAsPistol && pwa.IsAiming ? -0.16f : -0.13f;
+            Vector3 initialPos = new Vector3(0f, -0.1f, 0f) * smoothedInverseDistance; 
             initialPos.z = intitalPosZ;
-            initialPos *= smoothedInverseDistance;
-            Vector3 lastPos = _finalPos; // * smoothedInverseDistance
+            Vector3 lastPos = _finalPos * smoothedInverseDistance; //
 
             Vector3 initialRot = _initialRot * smoothedInverseDistance;
-            Vector3 lastRot = _finalRot; //* smoothedInverseDistance
+            Vector3 lastRot = _finalRot * smoothedInverseDistance; //
             Vector3 targetRot = !StanceController.IsColliding ? Vector3.zero : doIntiialState ? initialRot :lastRot;
 
             bool isInFinalState;
@@ -389,7 +391,7 @@ namespace RealismMod
             if (_wasInFinalState && !isInFinalState)
             {
                 _finalStateEndTimer += Time.deltaTime;
-                if (_finalStateEndTimer >= PluginConfig.test10.Value)
+                if (_finalStateEndTimer >= finalStateTimerSpeed)
                 {
                     _wasInFinalState = false;
                 }
@@ -398,8 +400,6 @@ namespace RealismMod
             {
                 _finalStateEndTimer = 0f;
             }
-
-
         }
 
 
@@ -412,9 +412,8 @@ namespace RealismMod
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
 
-                //ModifyBSGCollisions(__instance, firearmController);
-
-                //CollisionOverride(__instance, firearmController);
+                if (PluginConfig.ModifyBSGCollision.Value) ModifyBSGCollisions(__instance, firearmController);
+                else if (PluginConfig.OverrideCollision.Value) CollisionOverride(__instance, firearmController);
 
                 DoMounting(player, __instance);
             }

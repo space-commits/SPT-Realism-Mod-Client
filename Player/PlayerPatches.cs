@@ -15,23 +15,57 @@ using static EFT.Player;
 using WeaponSkills = EFT.SkillManager.GClass1981;
 using WeaponStateClass = GClass1668;
 using EFT.AssetsManager;
+using System;
 
 namespace RealismMod
 {
+    public class FlyingBulletPatch : ModulePatch
+    {
+        private static FieldInfo _playerField;
+        protected override MethodBase GetTargetMethod()
+        {
+            _playerField = AccessTools.Field(typeof(FlyingBulletSoundPlayer), "player_0");
+            return typeof(FlyingBulletSoundPlayer).GetMethod("method_3", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void Postfix(FlyingBulletSoundPlayer __instance)
+        {
+            Player player = (Player)_playerField.GetValue(__instance);
+            if (player.IsYourPlayer)
+            {
+                if (Plugin.ServerConfig.med_changes) 
+                {
+                    float stressResist = player.Skills.StressPain.Value;
+                    float painkillerDuration = (float)Math.Round(12f * (1f + stressResist), 2);
+                    float negativeEffectDuration = (float)Math.Round(15f * (1f - stressResist), 2);
+                    float negativeEffectStrength = (float)Math.Round(0.75f * (1f - stressResist), 2);
+                    Plugin.RealHealthController.TryAddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
+                }
+
+                if (Plugin.ServerConfig.headset_changes) 
+                {
+                    DeafenController.IsBotFiring = true;
+                    DeafenController.BotTimer = 0f;
+                }
+            }
+        }
+    }
+
     public class SyncWithCharacterSkillsPatch : ModulePatch
     {
-        private static FieldInfo playerField;
+        private static FieldInfo _playerField;
 
         protected override MethodBase GetTargetMethod()
         {
-            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
             return typeof(EFT.Player.FirearmController).GetMethod("SyncWithCharacterSkills", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(EFT.Player.FirearmController __instance)
         {
-            Player player = (Player)playerField.GetValue(__instance);
+            Player player = (Player)_playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
                 WeaponSkills weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
@@ -429,6 +463,8 @@ namespace RealismMod
         [PatchPostfix] 
         private static void PatchPostfix(Player __instance)
         {
+            GameWorldController.TimeInRaid += Time.deltaTime;
+
             if (Plugin.ServerConfig.headset_changes)
             {
                 SurfaceSet currentSet = (SurfaceSet)surfaceField.GetValue(__instance);

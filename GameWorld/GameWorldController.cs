@@ -26,6 +26,7 @@ namespace RealismMod
         public static float CurrentGasEventStrengthBot { get; private set; } = 0;
         public static List<LampController> Lights { get; set; } = new List<LampController>();
         public static bool IsRightDateForExp { get; private set; }
+        public static float TimeInRaid { get; set; }
 
         public static bool DoMapGasEvent
         {

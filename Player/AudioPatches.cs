@@ -411,7 +411,6 @@ namespace RealismMod
                 DeafenController.GrenadeExploded = true;
                 DeafenController.GrenadeTimer = 0f;
                 DeafenController.ExplosionDeafFactor = grenadeItem.Contusion.z * ((-distanceFromPlayer / 100f) + 1f);
-                Logger.LogWarning($"grenadeItem.Contusion.z {grenadeItem.Contusion.z}, distance from player {distanceFromPlayer}");
                 DeafenController.IncreaseDeafeningExplosion();
             }
         }

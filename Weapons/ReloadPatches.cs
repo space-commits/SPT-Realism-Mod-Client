@@ -45,7 +45,7 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(firearmController);
             if (player != null && player.IsYourPlayer) 
             {
-                if (StanceController.IsMounting && StanceController.BracingDirection == EBracingDirection.Top) 
+                if (StanceController.IsMounting && WeaponStats.BipodIsDeployed && StanceController.BracingDirection == EBracingDirection.Top) 
                 {
                     __result = true;
                     return false;
@@ -427,13 +427,10 @@ namespace RealismMod
                         PlayerValues.RemainingArmStamReloadFactor * Plugin.RealHealthController.AdrenalineReloadBonus,
                         0.55f, 1.8f);
 
-                    __instance.FirearmsAnimator.SetAnimationSpeed(totalCheckChamberSpeed);
+                    if (__instance?.FirearmsAnimator != null) __instance.FirearmsAnimator.SetAnimationSpeed(totalCheckChamberSpeed);
 
-                    if (player?.Skills != null) 
-                    {
-                        player.ExecuteSkill(new Action(() => player.Skills.WeaponFixAction.Complete(1f)));
-                    }
-
+                    if (player?.Skills?.WeaponFixAction != null) player.ExecuteSkill(new Action(() => player.Skills.WeaponFixAction.Complete(1f)));
+   
                     if (PluginConfig.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("===CheckChamber===");

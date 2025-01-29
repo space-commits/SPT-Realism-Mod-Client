@@ -438,7 +438,7 @@ namespace RealismMod
             if (clip == null) return;
             AudioClip audioClip = Plugin.DeviceAudioClips[clip];
             _currentGasClipLength = audioClip.length;
-            float volume = (_muteGasAnalyser ? 0f : GAS_DEVICE_VOLUME * PluginConfig.DeviceVolume.Value) * volumeModi;
+            float volume = (_muteGasAnalyser ? 0f : (GAS_DEVICE_VOLUME + (PluginConfig.HeadsetGain.Value * 0.01f)) * PluginConfig.DeviceVolume.Value) * volumeModi;
 
             _gasAnalyserSource.volume = volume;
             _gasAnalyserSource.clip = audioClip;
@@ -453,7 +453,7 @@ namespace RealismMod
             string clip = clips[rndNumber];
             AudioClip audioClip = Plugin.DeviceAudioClips[clip];
             _currentGeigerClipLength = audioClip.length;
-            float volume = _muteGeiger ? 0f : GEIGER_VOLUME * PluginConfig.DeviceVolume.Value;
+            float volume = _muteGeiger ? 0f : (GEIGER_VOLUME + (PluginConfig.HeadsetGain.Value * 0.01f)) * PluginConfig.DeviceVolume.Value;
 
             _geigerAudioSource.volume = volume;
             _geigerAudioSource.clip = audioClip;

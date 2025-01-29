@@ -35,6 +35,7 @@ namespace RealismMod
         public bool enable_hazard_zones { get; set; }
         public bool realistic_zombies { get; set; }
         public bool bot_loot_changes { get; set; }
+        public bool spawn_waves { get; set; }
     }
 
     public class RealismEventInfo : IRealismInfo
@@ -643,6 +644,11 @@ namespace RealismMod
 
         private void LoadGeneralPatches()
         {
+            if (ServerConfig.spawn_waves) new SpawnUpdatePatch().Enable();
+  
+            //deafening + adrenaline trigger
+            new FlyingBulletPatch().Enable();
+
             //misc
             new ChamberCheckUIPatch().Enable();
 
@@ -787,6 +793,7 @@ namespace RealismMod
                 new CheckChamberPatch().Enable();
                 new RechamberPatch().Enable();
                 new SetAnimatorAndProceduralValuesPatch().Enable();
+                new AimPunchPatch().Enable();
             }
         }
 
@@ -808,7 +815,7 @@ namespace RealismMod
             new SetTiltPatch().Enable();
             new BattleUIScreenPatch().Enable();
             new ChangePosePatch().Enable();
-            new MountingPatch().Enable();
+            new MountingAndCollisionPatch().Enable();
             new ShouldMoveWeapCloserPatch().Enable();
         }
 
@@ -824,7 +831,6 @@ namespace RealismMod
             new HealthEffectsConstructorPatch().Enable();
             new HCApplyDamagePatch().Enable();
             new RestoreBodyPartPatch().Enable();
-            new FlyingBulletPatch().Enable();
             new ToggleHeadDevicePatch().Enable();
             new HealCostDisplayShortPatch().Enable();
             new HealCostDisplayFullPatch().Enable();

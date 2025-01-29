@@ -83,7 +83,7 @@ namespace RealismMod
             //needed to toggle my own left shoulder swap
             if (Plugin.ServerConfig.enable_stances && command == ECommand.LeftStanceToggle)
             {
-                if (!StanceController.IsInForcedLowReady) StanceController.ToggleLeftShoulder();
+                if (!StanceController.IsInForcedLowReady && !StanceController.ShouldBlockAllStances) StanceController.ToggleLeftShoulder();
                 return false;
             }
             //do wiggle effects on hold breath
@@ -94,6 +94,10 @@ namespace RealismMod
                 FirearmController fc = player.HandsController as FirearmController;
                 if(WeaponStats.TotalWeaponWeight <= 8f) StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.25f, 0.25f, 0.5f), wiggleFactor: 0.5f);
                 return true;
+            }
+            if (command == ECommand.ToggleBipods) 
+            {
+                StanceController.IsMounting = false;
             }
             //cancel stances
             bool shouldBlockFiring = Plugin.ServerConfig.enable_stances && PluginConfig.BlockFiring.Value;

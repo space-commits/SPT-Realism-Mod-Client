@@ -263,7 +263,10 @@ namespace RealismMod
 
     public class ApplyDamageInfoPatch : ModulePatch
     {
-        private static FieldInfo inventoryControllerField;
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.Public);
+        }
 
         private static void TryDoDisarm(Player player, float kineticEnergy, bool hitArmArmor, bool forearm)
         {
@@ -284,13 +287,12 @@ namespace RealismMod
 
                 if (rndNumber <= totalChance)
                 {
-                    var inventoryController = (PlayerOwnerInventoryController)inventoryControllerField.GetValue(player);
                     if (player.HandsController as Player.FirearmController != null)
                     {
                         Player.FirearmController fc = player.HandsController as Player.FirearmController;
-                        if (fc.Item != null && inventoryController.CanThrow(fc.Item))
+                        if (fc.Item != null && player.InventoryController.CanThrow(fc.Item))
                         {
-                            inventoryController.TryThrowItem(fc.Item, null, false);
+                            player.InventoryController.TryThrowItem(fc.Item, null, false);
                         }
                     }
                 }
@@ -343,12 +345,6 @@ namespace RealismMod
             }
         }
 
-        protected override MethodBase GetTargetMethod()
-        {
-            inventoryControllerField = AccessTools.Field(typeof(Player), "_inventoryController");
-            return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.Public);
-        }
-
         [PatchPrefix]
         private static void Prefix(Player __instance, ref DamageInfo damageInfo, EBodyPart bodyPartType)
         {
@@ -357,6 +353,7 @@ namespace RealismMod
                 damageInfo.Damage = 0f;
                 return;
             }
+
             bool isZombie = Utils.IsZombie(__instance);
 
             if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
@@ -376,9 +373,9 @@ namespace RealismMod
                 if (PluginConfig.EnableBodyHitZones.Value) BallisticsController.ModifyDamageByZone(__instance, ref damageInfo, partHit, __instance.HealthController.GetBodyPartHealth(bodyPartType).Maximum);
   
                 float KE = 1f;
-                AmmoTemplate ammoTemp = Utils.GetItemTemplate<AmmoTemplate>(damageInfo.SourceId);
+                AmmoTemplate ammoTemp = damageInfo.SourceId == null || damageInfo.DamageType == EDamageType.Melee ? null : Utils.GetItemTemplate<AmmoTemplate>(damageInfo.SourceId);
                 BallisticsController.GetKineticEnergy(damageInfo, ammoTemp, ref KE);
-                bool isBuckshot = ammoTemp.ProjectileCount > 1;
+                bool isBuckshot = ammoTemp != null && ammoTemp.ProjectileCount > 1;
                 if (!isZombie && !isBuckshot && __instance.IsAI && damageInfo.HittedBallisticCollider != null && !damageInfo.Blunt && PluginConfig.EnableHitSounds.Value)
                 {
                     BallisticsController.PlayBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
@@ -709,7 +706,7 @@ namespace RealismMod
 
             //armor damage value has been replaced with velocity
             //ammotemplate is used to get stats needed for calcs and get original armor damage value.
-            AmmoTemplate ammoTemp = Utils.GetItemTemplate<AmmoTemplate>(damageInfo.SourceId);
+            AmmoTemplate ammoTemp = damageType == EDamageType.Melee ? null : Utils.GetItemTemplate<AmmoTemplate>(damageInfo.SourceId);
             if (damageType == EDamageType.Melee)
             {
                 Weapon weap = damageInfo.Weapon as Weapon;
@@ -732,7 +729,7 @@ namespace RealismMod
                 }
             }
           
-            if (ammoTemp.ProjectileCount < 2 && PluginConfig.EnableHitSounds.Value && damageInfo.HittedBallisticCollider != null)
+            if (ammoTemp != null && ammoTemp.ProjectileCount < 2 && PluginConfig.EnableHitSounds.Value && damageInfo.HittedBallisticCollider != null)
             {
                 bool hitPlayerIsMain = __instance.Item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId;
                 if (!hitPlayerIsMain)

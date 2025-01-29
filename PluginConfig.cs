@@ -21,6 +21,7 @@ namespace RealismMod
         public static ConfigEntry<float> MalfMulti { get; set; }
 
         //recoil
+        public static ConfigEntry<float> AimPunchMulti { get; set; }
         public static ConfigEntry<float> ShotResetDelay { get; set; }
         public static ConfigEntry<float> SwayIntensity { get; set; }
         public static ConfigEntry<float> ProceduralIntensity { get; set; }
@@ -146,6 +147,8 @@ namespace RealismMod
         public static ConfigEntry<KeyboardShortcut> PatrolKeybind { get; set; }
         public static ConfigEntry<KeyboardShortcut> MeleeKeybind { get; set; }
         public static ConfigEntry<KeyboardShortcut> StanceWheelComboKeyBind { get; set; }
+        public static ConfigEntry<bool> ModifyBSGCollision { get; set; }
+        public static ConfigEntry<bool> OverrideCollision { get; set; }
         public static ConfigEntry<bool> OverrideMounting { get; set; }
         public static ConfigEntry<bool> UseMouseWheelStance { get; set; }
         public static ConfigEntry<bool> UseMouseWheelPlusKey { get; set; }
@@ -445,6 +448,7 @@ namespace RealismMod
             ShowSemiROF = config.Bind<bool>(statSettings, "Show Semi Auto ROF Stat", Plugin.ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 1, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
 
             EnableMuzzleEffects = config.Bind<bool>(waponSettings, "Enable Muzzle Effects.", Plugin.ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Enanbes Changes To Muzzle Flash, Smoke, Etc. And Makes Their Intensity Dependent On Caliber, Weapon Condition, Attachments Etc.", null, new ConfigurationManagerAttributes { Order = 40, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
+            AimPunchMulti = config.Bind<float>(waponSettings, "Aim Punch Intensity.", 0.8f, new ConfigDescription("Amount Of Aim Punch.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 35, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             SwayIntensity = config.Bind<float>(waponSettings, "Sway Intensity.", 1f, new ConfigDescription("Changes The Intensity Of Aim Sway.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 30, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             ProceduralIntensity = config.Bind<float>(waponSettings, "Procedural Intensity.", 1f, new ConfigDescription("Changes The Intensity Of Procedural Animations, Including Sway, Weapon Movement, And Weapon Inertia.", new AcceptableValueRange<float>(0f, 3f), new ConfigurationManagerAttributes { Order = 20, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             DuraMalfReductionThreshold = config.Bind<float>(waponSettings, "Malfunction Reduction Durability Threshold.", 90f, new ConfigDescription("Malfunction Chance Is Significantly Reduced Until This Durability Threshold Is Exceeded.", new AcceptableValueRange<float>(1f, 100f), new ConfigurationManagerAttributes { Order = 10, Browsable = Plugin.ServerConfig.malf_changes }));
@@ -483,6 +487,8 @@ namespace RealismMod
             QuickReloadSpeedMulti = config.Bind<float>(speed, "Quick Reload Multi", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             InternalMagReloadMulti = config.Bind<float>(speed, "Internal Magazine Reload", 1.15f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
 
+            ModifyBSGCollision = config.Bind<bool>(weapAimAndPos, "Modify BSG Collision", Plugin.ServerConfig.enable_stances, new ConfigDescription("Slows Down Weapon Collision, Makes It Less Janky.", null, new ConfigurationManagerAttributes { Order = 420, Browsable = Plugin.ServerConfig.enable_stances }));
+            OverrideCollision = config.Bind<bool>(weapAimAndPos, "Override Collision (WIP)", false, new ConfigDescription("Overrides BSG Collision Handling With Custom Solution.", null, new ConfigurationManagerAttributes { Order = 410, Browsable = Plugin.ServerConfig.enable_stances }));
             OverrideMounting = config.Bind<bool>(weapAimAndPos, "Use Realism Mounting System", true, new ConfigDescription("Overrides BSG's Mounting System WIth Realism's (That Was Implemented First). Recoil, Stance and Sway Mechanics Are All Built Around Realism's Mounting And Won't Function Correctly With BSG's.", null, new ConfigurationManagerAttributes { Order = 300, Browsable = Plugin.ServerConfig.enable_stances }));
             EnableExtraProcEffects = config.Bind<bool>(weapAimAndPos, "Enable Extra Weapon Position/Rotation Effects", true, new ConfigDescription("Weapon Has A Slight Cant To It based On Ergo. ADS With Gasmask/Faceshield Is Canted. Weapon Cant Increases When Crouching, And Moves Closer To You. Other Sublte Effects.", null, new ConfigurationManagerAttributes { Order = 280, Browsable = Plugin.ServerConfig.enable_stances }));
             RememberStanceItem = config.Bind<bool>(weapAimAndPos, "Remember Stance After Using Item", true, new ConfigDescription("Remember Stance After Actions (Using Items)", null, new ConfigurationManagerAttributes { Order = 260, Browsable = Plugin.ServerConfig.enable_stances }));

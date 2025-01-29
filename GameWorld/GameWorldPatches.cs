@@ -24,9 +24,87 @@ using static UnityEngine.UI.Selectable;
 using System.Threading.Tasks;
 using static RootMotion.FinalIK.GenericPoser;
 using Audio.AmbientSubsystem;
+using static BotsPresets;
 
 namespace RealismMod
 {
+    /*  public class BotPatch1 : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(Struct67).GetMethod("MoveNext");
+          }
+
+          [PatchPrefix]
+          public static void PatchPrefix()
+          {
+              Logger.LogWarning("struct 67");
+          }
+      }
+
+      public class BotPatch2 : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(Struct70).GetMethod("MoveNext");
+          }
+
+          [PatchPrefix]
+          public static void PatchPrefix()
+          {
+              Logger.LogWarning("struct 70");
+          }
+      }
+
+      public class BotPatch3 : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(Struct69).GetMethod("MoveNext");
+          }
+
+          [PatchPrefix]
+          public static void PatchPrefix()
+          {
+              Logger.LogWarning("struct 69");
+          }
+      }
+
+      public class BotPatch4 : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(Struct68).GetMethod("MoveNext");
+          }
+
+          [PatchPrefix]
+          public static bool PatchPrefix()
+          {
+              Logger.LogWarning("struct 68");
+              if (PluginConfig.test1.Value > 10f) return false;
+              return true;
+          }
+      }*/
+
+    //attempt to prevent stutter when game needlessly generates new bot waves
+    public class SpawnUpdatePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(NonWavesSpawnScenario).GetMethod("Update");
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(NonWavesSpawnScenario __instance)
+        {
+            if (GameWorldController.TimeInRaid >= 180f)
+            {
+                return false;
+            }
+            return true;
+
+        }
+    }
 
     public class RigidLootSpawnPatch : ModulePatch
     {
@@ -486,6 +564,7 @@ namespace RealismMod
 
             GameWorldController.GameStarted = false;
             GameWorldController.RanEarliestGameCheck = false;
+            GameWorldController.TimeInRaid = 0f;
         }
     }
 }
