@@ -97,7 +97,7 @@ namespace RealismMod
         [PatchPrefix]
         public static bool PatchPrefix(NonWavesSpawnScenario __instance)
         {
-            if (GameWorldController.TimeInRaid >= 180f)
+            if (GameWorldController.TimeInRaid >= 200f)
             {
                 return false;
             }

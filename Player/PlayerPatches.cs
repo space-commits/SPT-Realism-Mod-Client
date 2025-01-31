@@ -425,7 +425,7 @@ namespace RealismMod
                     }
                 }
 
-                ReloadController.ReloadStateCheck(player, fc, Logger);
+                ReloadController.ReloadStateCheck(player, fc);
                 AimController.ADSCheck(player, fc);
 
                 if (PluginConfig.EnableStanceStamChanges.Value && Plugin.ServerConfig.enable_stances)
@@ -463,8 +463,6 @@ namespace RealismMod
         [PatchPostfix] 
         private static void PatchPostfix(Player __instance)
         {
-            GameWorldController.TimeInRaid += Time.deltaTime;
-
             if (Plugin.ServerConfig.headset_changes)
             {
                 SurfaceSet currentSet = (SurfaceSet)surfaceField.GetValue(__instance);
@@ -476,6 +474,8 @@ namespace RealismMod
 
             if (Utils.PlayerIsReady && __instance.IsYourPlayer)
             {
+                GameWorldController.TimeInRaid += Time.deltaTime;
+
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 PlayerValues.IsSprinting = __instance.IsSprintEnabled;
                 PlayerValues.EnviroType = __instance.Environment;

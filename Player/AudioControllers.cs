@@ -1,13 +1,9 @@
 ﻿using Comfort.Common;
 using EFT;
-using EFT.UI.Ragfair;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static EFT.Interactive.BetterPropagationGroups;
-using static Val;
 
 
 namespace RealismMod

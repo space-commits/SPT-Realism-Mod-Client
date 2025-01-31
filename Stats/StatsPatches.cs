@@ -248,7 +248,7 @@ namespace RealismMod
                 ReloadController.MagReloadSpeedModifier(__instance, (MagazineItemClass)magazine, false, false);
             }
 
-            if (PluginConfig.EnableLogging.Value == true)
+            if (PluginConfig.EnableGeneralLogging.Value == true)
             {
                 Logger.LogWarning("Shoulder = " + WeaponStats.HasShoulderContact);
                 Logger.LogWarning("Total Ergo = " + totalErgo);
@@ -620,7 +620,7 @@ namespace RealismMod
             {
                 __result = WeaponStats.ErgoFactor * (1f - (PlayerValues.StrengthSkillAimBuff * 1.5f)) * (1f + (1f - PlayerValues.GearErgoPenalty));
 
-                if (PluginConfig.EnableLogging.Value == true)
+                if (PluginConfig.EnablePWALogging.Value == true)
                 {
                     Logger.LogWarning("===ErgonomicWeight===");
                     Logger.LogWarning("total ergo weight = " + __result);

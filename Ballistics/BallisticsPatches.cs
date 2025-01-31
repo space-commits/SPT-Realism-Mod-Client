@@ -223,7 +223,7 @@ namespace RealismMod
 
             if (__instance.DamageType == EDamageType.Blunt || __instance.DamageType == EDamageType.Bullet)
             {
-                if (PluginConfig.EnableLogging.Value)
+                if (PluginConfig.EnableGeneralLogging.Value)
                 {
                     Logger.LogWarning("================shot velocity============== " + shot.VelocityMagnitude);
                 }

@@ -574,7 +574,7 @@ namespace RealismMod
                 }
                 WeaponStats.WeapID = template._id;
 
-                if (PluginConfig.EnableLogging.Value)
+                if (PluginConfig.EnableRecoilLogging.Value)
                 {
                     Logger.LogWarning("============RecalcWeapParams========");
                     Logger.LogWarning("vert recoil " + __instance.BasicPlayerRecoilRotationStrength);
@@ -753,7 +753,7 @@ namespace RealismMod
                     shotRecoilProcessValues[i].Process(__instance.RecoilDirection);
                 }
 
-                if (PluginConfig.EnableLogging.Value) 
+                if (PluginConfig.EnableRecoilLogging.Value) 
                 {
                     Logger.LogWarning("==========shoot==========");
                     Logger.LogWarning("camFactor " + (incomingForce * PlayerValues.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti));

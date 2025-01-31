@@ -560,7 +560,7 @@ namespace RealismMod
                 Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(startMeleeDir);
                 Vector3 meleeDir = meleeStart - linecastDirection * (ln - (WeaponStats.HasBayonet ? 0.1f : 0.25f));
 
-                if (PluginConfig.EnableLogging.Value) 
+                if (PluginConfig.EnablePWALogging.Value) 
                 {
                     DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
                 }
@@ -1456,7 +1456,7 @@ namespace RealismMod
 
                 if (PluginConfig.EnableAdditionalRec.Value)
                 {
-                    ShootController.DoVisualRecoil(ref _targetRecoil, ref _currentRecoil, ref weapTempRotation, Logger);
+                    ShootController.DoVisualRecoil(ref _targetRecoil, ref _currentRecoil, ref weapTempRotation);
                 }
 
                 __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weapTempPosition, weapTempRotation * _currentRotation);

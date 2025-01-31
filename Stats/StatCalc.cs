@@ -66,6 +66,12 @@ namespace RealismMod
             PlayerValues.TotalModifiedWeightMinusWeapon = playerWeight - weaponWeight;
             PlayerValues.TotalMousePenalty = (-playerWeight / 10f);
             PlayerValues.TotalModifiedWeight = playerWeight;
+
+            if (PluginConfig.EnableGeneralLogging.Value) 
+            {
+                Utils.Logger.LogWarning($"Total Mouse Penality {PlayerValues.TotalMousePenalty}, Total Modified Weight Minus Weap {PlayerValues.TotalModifiedWeightMinusWeapon}, Total Modified Weight {PlayerValues.TotalModifiedWeight},");
+            }
+
             if (PluginConfig.EnableMouseSensPenalty.Value)
             {
                 player.RemoveMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor);
@@ -137,7 +143,7 @@ namespace RealismMod
 
             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(pwa, aimSpeed);
 
-            if (PluginConfig.EnableLogging.Value == true)
+            if (PluginConfig.EnablePWALogging.Value == true)
             {
                 Utils.Logger.LogWarning("========UpdateWeaponVariables=======");
                 Utils.Logger.LogWarning("total ergo = " + WeaponStats.TotalErgo);

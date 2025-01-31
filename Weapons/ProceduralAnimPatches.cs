@@ -295,7 +295,7 @@ namespace RealismMod
 
                     DoADSWiggle(__instance, player, firearmController, totalErgoFactor);
 
-                    if (PluginConfig.EnableLogging.Value == true)
+                    if (PluginConfig.EnablePWALogging.Value == true)
                     {
                         Logger.LogWarning("=====method_23========");
                         Logger.LogWarning("ADSInjuryMulti = " + PlayerValues.ADSInjuryMulti);
@@ -426,7 +426,7 @@ namespace RealismMod
                 weaponWalkMotionFactor = Mathf.Pow(weaponWalkMotionFactor, 0.87f);
                 WeaponStats.WalkMotionIntensity = weaponWalkMotionFactor * walkMotionStockFactor * playerWeightFactor * (1f + (1f - PlayerValues.GearErgoPenalty));
 
-                if (PluginConfig.EnableLogging.Value == true)
+                if (PluginConfig.EnablePWALogging.Value == true)
                 {
                     Logger.LogWarning("=====UpdateSwayFactors====");
                     Logger.LogWarning("ergoWeight = " + ergoWeight);

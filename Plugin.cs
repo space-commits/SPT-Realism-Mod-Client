@@ -3,6 +3,7 @@ using BepInEx.Bootstrap;
 using Comfort.Common;
 using EFT;
 using Newtonsoft.Json;
+using RealismMod.Health;
 using SPT.Common.Http;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,6 @@ using UnityEngine;
 using UnityEngine.Networking;
 using static RealismMod.Attributes;
 using static RealismMod.ZoneSpawner;
-using SPT.Common.Utils;
-using RealismMod.Health;
 
 namespace RealismMod
 {
@@ -569,7 +568,7 @@ namespace RealismMod
                 }
                 catch 
                 {
-                    if (PluginConfig.EnableLogging.Value) Logger.LogWarning("Realism Mod: Error Getting Profile ID, Retrying");
+                    if (PluginConfig.EnableGeneralLogging.Value) Logger.LogWarning("Realism Mod: Error Getting Profile ID, Retrying");
                 }
             }
         }

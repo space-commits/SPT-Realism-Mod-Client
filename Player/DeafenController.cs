@@ -262,7 +262,7 @@ namespace RealismMod
             DoVignette();
             DoTimers();
 
-            if (PluginConfig.EnableLogging.Value) DoLogging();
+            if (PluginConfig.EnableGeneralLogging.Value) DoLogging();
 
 
             //do not use

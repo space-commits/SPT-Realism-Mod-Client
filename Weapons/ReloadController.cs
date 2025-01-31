@@ -49,9 +49,10 @@ namespace RealismMod.Weapons
             float magSpeed = weaponModStats.ReloadSpeed;
             float reloadSpeedModiLessMag = WeaponStats.TotalReloadSpeedLessMag;
             float stockModifier = weapon.WeapClass != "pistol" && !WeaponStats.HasShoulderContact ? 0.8f : 1f;
+            float playerWeightFactor = 1f - (PlayerValues.TotalModifiedWeightMinusWeapon * 0.001f);
 
             float magSpeedMulti = (magSpeed / 100f) + 1f;
-            float totalReloadSpeed = magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag * stockModifier;
+            float totalReloadSpeed = magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag * stockModifier * playerWeightFactor;
 
             if (reloadFromNoMag)
             {
@@ -80,7 +81,7 @@ namespace RealismMod.Weapons
             WeaponStats.CurrentMagReloadSpeed *= PluginConfig.GlobalReloadSpeedMulti.Value;
         }
 
-        public static void ReloadStateCheck(Player player, EFT.Player.FirearmController fc, ManualLogSource logger)
+        public static void ReloadStateCheck(Player player, EFT.Player.FirearmController fc)
         {
             PlayerValues.IsInReloadOpertation = fc.IsInReloadOperation();
 
@@ -107,9 +108,9 @@ namespace RealismMod.Weapons
                     float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PluginConfig.InternalMagReloadMulti.Value * PlayerValues.ReloadSkillMulti * PlayerValues.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * PlayerValues.RemainingArmStamReloadFactor, MinimumReloadSpeed, MaxInternalReloadSpeed);
                     player.HandsAnimator.SetAnimationSpeed(IntenralMagReloadSpeed);
 
-                    if (PluginConfig.EnableLogging.Value == true)
+                    if (PluginConfig.EnableReloadLogging.Value == true)
                     {
-                        logger.LogWarning("IsAttemptingToReloadInternalMag = " + IntenralMagReloadSpeed);
+                        Utils.Logger.LogWarning("IsAttemptingToReloadInternalMag = " + IntenralMagReloadSpeed);
                     }
                 }
             }

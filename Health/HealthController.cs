@@ -745,7 +745,7 @@ namespace RealismMod
             placeHolderItem.CurrentAddress = player.InventoryController.FindQuestGridToPickUp(placeHolderItem); //item needs an address to be valid, this is a hacky workaround
             player.ActiveHealthController.DoMedEffect(placeHolderItem, EBodyPart.Head, null);
 
-            if (PluginConfig.EnableLogging.Value)
+            if (PluginConfig.EnableGeneralLogging.Value)
             {
                 Utils.Logger.LogWarning("is null " + (placeHolderItem == null));
                 Utils.Logger.LogWarning("" + placeHolderItem.HealthEffectsComponent.StimulatorBuffs);
@@ -958,7 +958,7 @@ namespace RealismMod
                 }
                 else
                 {
-                    if (PluginConfig.EnableLogging.Value)
+                    if (PluginConfig.EnableGeneralLogging.Value)
                     {
                         Utils.Logger.LogWarning("Removing Effect Due to Duration");
                     }

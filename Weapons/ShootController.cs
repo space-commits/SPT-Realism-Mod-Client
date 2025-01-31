@@ -203,7 +203,7 @@ namespace RealismMod
             _convergenceMulti = Mathf.Lerp(_convergenceMulti, target, 0.9f);
         }
 
-        public static void DoVisualRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation, ManualLogSource logger)
+        public static void DoVisualRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation)
         {
             float cantedRecoilSpeed = Mathf.Clamp(BaseTotalConvergence * 0.95f, 9f, 16f);
 

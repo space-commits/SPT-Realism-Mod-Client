@@ -302,7 +302,10 @@ namespace RealismMod
         public static ConfigEntry<bool> DevMode { get; set; }
         public static ConfigEntry<bool> ZoneDebug { get; set; }
         public static ConfigEntry<String> TargetZone { get; set; }
-        public static ConfigEntry<bool> EnableLogging { get; set; }
+        public static ConfigEntry<bool> EnableGeneralLogging { get; set; }
+        public static ConfigEntry<bool> EnableReloadLogging { get; set; }
+        public static ConfigEntry<bool> EnablePWALogging { get; set; }
+        public static ConfigEntry<bool> EnableRecoilLogging { get; set; }
         public static ConfigEntry<bool> EnableBallisticsLogging { get; set; }
         public static ConfigEntry<float> test1 { get; set; }
         public static ConfigEntry<float> test2 { get; set; }
@@ -360,7 +363,10 @@ namespace RealismMod
             ZoneDebug = config.Bind<bool>(testing, "Enable Zone Debug", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 30, IsAdvanced = true, Browsable = true }));
             DevMode = config.Bind<bool>(testing, "Enable Dev Mode", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 29, IsAdvanced = true, Browsable = true }));
             EnableBallisticsLogging = config.Bind<bool>(testing, "Enable Ballistics Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 20, IsAdvanced = true, Browsable = true }));
-            EnableLogging = config.Bind<bool>(testing, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true, Browsable = true }));
+            EnableGeneralLogging = config.Bind<bool>(testing, "Enable General Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true, Browsable = true }));
+            EnableReloadLogging = config.Bind<bool>(testing, "Enable Reload Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true, Browsable = true }));
+            EnablePWALogging = config.Bind<bool>(testing, "Enable PWA Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true, Browsable = true }));
+            EnableRecoilLogging = config.Bind<bool>(testing, "Enable Recoil Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true, Browsable = true }));
 
             RecoilIntensity = config.Bind<float>(recoilSettings, "Recoil Intensity", 1.3f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil. Does Not Affect Recoil Climb Much, Mostly Spread And Visual.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             VertMulti = config.Bind<float>(recoilSettings, "Vertical Recoil Multi.", 1.05f, new ConfigDescription("Up/Down. Will Also Increase Recoil Climb.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 40, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
