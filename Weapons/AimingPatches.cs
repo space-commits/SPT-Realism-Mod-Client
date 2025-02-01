@@ -27,7 +27,7 @@ namespace RealismMod
                 bool fsIsON = fsComponent != null && (fsComponent?.Togglable == null || fsComponent.Togglable.On);
                 bool nvgIsOn = nvgComponent != null && (nvgComponent?.Togglable == null || nvgComponent.Togglable.On);
                 bool thermalIsOn = thermComponent != null && (thermComponent?.Togglable == null || thermComponent.Togglable.On);
-                bool gearBlocksADS = !WeaponStats.WeaponCanFSADS && !PlayerState.GearAllowsADS;
+                bool gearBlocksADS = !WeaponStats.WeaponCanFSADS && !PlayerValues.GearAllowsADS;
                 bool fsBlocksADS = PluginConfig.EnableFSPatch.Value && ((fsIsON && gearBlocksADS) || (gearBlocksADS && (fsComponent == null || fsComponent?.Togglable == null)));
                 bool toobBlocksADS = PluginConfig.EnableNVGPatch.Value && ((nvgIsOn && player.ProceduralWeaponAnimation.CurrentScope.IsOptic) || thermalIsOn);
                 GearController.FSIsActive = fsIsON;
@@ -51,13 +51,13 @@ namespace RealismMod
                             {
                                 fc.ToggleAim();
                             }
-                            PlayerState.IsAllowedADS = false;
+                            PlayerValues.IsAllowedADS = false;
                             hasSetCanAds = true;
                         }
                     }
                     else
                     {
-                        PlayerState.IsAllowedADS = true;
+                        PlayerValues.IsAllowedADS = true;
                         hasSetCanAds = false;
                     }
                     //no idea wtf this is
@@ -116,12 +116,12 @@ namespace RealismMod
                     StanceController.PistolIsColliding = true;
                 }
 
-                if (PlayerState.BlockFSWhileConsooming) 
+                if (PlayerValues.BlockFSWhileConsooming) 
                 {
                     consoomTimer += Time.deltaTime;
                     if (consoomTimer >= 1f)
                     {
-                        PlayerState.BlockFSWhileConsooming = false;
+                        PlayerValues.BlockFSWhileConsooming = false;
                         consoomTimer = 0f;
                     }
                 }
@@ -130,12 +130,12 @@ namespace RealismMod
     }
 
     //to prevent players toggling on device while drinking/eating to bypass restriction
-    //look for ecommand.togglegoggles
+    //CompoundItem compoundItem = this.InventoryController.Inventory.Equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as CompoundItem;
     public class ToggleHeadDevicePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("method_17", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player).GetMethod("method_15", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -146,9 +146,9 @@ namespace RealismMod
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 if (fc != null)
                 {
-                    return fc.FirearmsAnimator.IsIdling() && !PlayerState.BlockFSWhileConsooming;
+                    return fc.FirearmsAnimator.IsIdling() && !PlayerValues.BlockFSWhileConsooming;
                 };
-                return !PlayerState.BlockFSWhileConsooming;
+                return !PlayerValues.BlockFSWhileConsooming;
             }
             return true;
         }
@@ -173,7 +173,7 @@ namespace RealismMod
                 if (isAiming)
                 {
                     //slow is hard set to 0.33 when called, 0.4-0.43 feels best.
-                    float baseSpeed = PlayerState.AIM_MOVE_SPEED_BASE * WeaponStats.AimMoveSpeedWeapModifier * PlayerState.AimMoveSpeedInjuryMulti;
+                    float baseSpeed = PlayerValues.AIM_MOVE_SPEED_BASE * WeaponStats.AimMoveSpeedWeapModifier * PlayerValues.AimMoveSpeedInjuryMulti;
                     float totalSpeed = StanceController.CurrentStance == EStance.ActiveAiming ? baseSpeed * 1.45f : baseSpeed;
                     totalSpeed = WeaponStats._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
                     __instance.AddStateSpeedLimit(Mathf.Clamp(totalSpeed, 0.3f, 0.9f), Player.ESpeedLimit.Aiming);
@@ -202,18 +202,20 @@ namespace RealismMod
 
             if (player.IsYourPlayer)
             {
+
+
                 AimController.AimStateChanged = true;
                 bool gearFactorEnabled = PluginConfig.EnableFSPatch.Value || PluginConfig.EnableNVGPatch.Value;
 
                 StanceController.CanResetAimDrain = true;
 
-                if (PlayerState.SprintBlockADS && !PlayerState.TriedToADSFromSprint)
+                if (PlayerValues.SprintBlockADS && !PlayerValues.TriedToADSFromSprint)
                 {
-                    PlayerState.TriedToADSFromSprint = true;
+                    PlayerValues.TriedToADSFromSprint = true;
                     return false;
                 }
-                PlayerState.TriedToADSFromSprint = false;
-                return gearFactorEnabled ? PlayerState.IsAllowedADS : true;
+                PlayerValues.TriedToADSFromSprint = false;
+                return gearFactorEnabled ? PlayerValues.IsAllowedADS : true;
             }
             return true;
         }

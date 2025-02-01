@@ -1,12 +1,11 @@
-﻿using EFT;
-using System;
-using System.Linq;
-using System.Reflection;
+﻿using Comfort.Common;
+using EFT;
+using EFT.UI;
 using UnityEngine;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2429;
-using ExistanceClass = GClass2470;
-using InterfaceOne = GInterface252;
-using InterfaceTwo = GInterface267;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2746;
+using ExistanceClass = GClass2788;
+using InterfaceOne = GInterface296;
+using InterfaceTwo = GInterface311;
 
 namespace RealismMod
 {
@@ -414,8 +413,14 @@ namespace RealismMod
                     RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 1f, 20f, 5f, 1f);
                     RealHealthController.AddToExistingBaseEFTEffect(_Player, "Contusion", EBodyPart.Head, 1f, 20f, 5f, 0.5f);
                     RealHealthController.AddBasesEFTEffect(_Player, "Tremor", EBodyPart.Head, 1f, 20f, 5f, 1f);
-
+                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.6f);
                     addedEffect = true;
+                }
+
+                TimeExisted++;
+                if (TimeExisted % 30 == 0) 
+                {
+                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.6f);
                 }
             }
         }
@@ -426,6 +431,7 @@ namespace RealismMod
         public RealismHealthController RealHealthController { get; set; }
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
+        public int? PositveEffectDuration { get; set; }
         public int TimeExisted { get; set; }
         public Player _Player { get; }
         public int Delay { get; set; }
@@ -439,6 +445,7 @@ namespace RealismMod
         {
             TimeExisted = 0;
             Duration = dur;
+            PositveEffectDuration = (int)posEffectDur;
             _Player = player;
             Delay = delay;
             EffectType = EHealthEffectType.Adrenaline;
@@ -455,17 +462,24 @@ namespace RealismMod
             {
                 if (!_addedAdrenalineEffect)
                 {
-                    RealHealthController.HasAdrenalineEffect = true;
+                    RealHealthController.HasNegativeAdrenalineEffect = true;
+                    RealHealthController.HasPositiveAdrenalineEffect = true;
                     RealHealthController.AddBaseEFTEffectIfNoneExisting(_Player, "PainKiller", EBodyPart.Head, 0f, PositiveEffectDuration, 3f, 1f);
-                    RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 0f, NegativeEffectDuration, 3f, EffectStrength);
+                    //RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 0f, NegativeEffectDuration, 3f, EffectStrength);
                     RealHealthController.AddBasesEFTEffect(_Player, "Tremor", EBodyPart.Head, PositiveEffectDuration, NegativeEffectDuration, 3f, EffectStrength);
                     _addedAdrenalineEffect = true;
                 }
 
+                PositveEffectDuration--;
+                if (PositveEffectDuration <= 0)
+                {
+                    RealHealthController.HasPositiveAdrenalineEffect = false;
+                    PositveEffectDuration = 0;
+                }
                 Duration--;
                 if (Duration <= 0) 
                 {
-                    RealHealthController.HasAdrenalineEffect = false;
+                    RealHealthController.HasNegativeAdrenalineEffect = false;
                     Duration = 0;
                 }
                    
@@ -499,7 +513,7 @@ namespace RealismMod
             float treatmentFactor = 1f - (Mathf.Pow(Mathf.Abs(HazardTracker.DetoxicationRate), 0.3f));
             float drainRate = 0f;
 
-            float coughingThreshold = RealismHealthController.MIN_COUGH_DAMAGE_THRESHOLD * (1f + PlayerState.ImmuneSkillStrong);
+            float coughingThreshold = RealismHealthController.MIN_COUGH_DAMAGE_THRESHOLD * (1f + PlayerValues.ImmuneSkillStrong);
             if (Plugin.RealHealthController.IsCoughingInGas && HazardTracker.TotalToxicityRate > coughingThreshold) drainRate += -8f + (-HazardTracker.TotalToxicityRate);
             switch (HazardTracker.TotalToxicity)
             {
@@ -744,7 +758,7 @@ namespace RealismMod
         }
     }
 
-    public class StimShellEffect : ICustomHealthEffect
+    public class StimEffectShell : ICustomHealthEffect
     {
         public RealismHealthController RealHealthController { get; set; }
         public EBodyPart BodyPart { get; set; }
@@ -756,7 +770,7 @@ namespace RealismMod
         public EStimType StimType { get; }
         private bool _hasRemovedTrnqt = false;
 
-        public StimShellEffect(Player player, int? dur, int delay, EStimType stimType, RealismHealthController realismHealthController)
+        public StimEffectShell(Player player, int? dur, int delay, EStimType stimType, RealismHealthController realismHealthController)
         {
             TimeExisted = 0;
             Duration = dur;

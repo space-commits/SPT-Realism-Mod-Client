@@ -1,9 +1,9 @@
 ﻿using EFT;
 using EFT.InventoryLogic;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static WheelDrive;
 using ArmorTemplate = GClass2550; //to find again, search for HasHinge field
 
 namespace RealismMod
@@ -18,6 +18,8 @@ namespace RealismMod
         public static bool HasRespirator { get; private set; } = false;
         public static bool FSIsActive { get; set; } = false;
         public static bool NVGIsActive { get; set; } = false;
+        public static bool HasGasAnalyser { get; set; } = false;
+        public static bool HasGeiger { get; set; } = false;
 
         public static EquipmentSlot[] MainInventorySlots =
         {
@@ -106,11 +108,11 @@ namespace RealismMod
 
                 if (item.TemplateId == "590a3efd86f77437d351a25b")
                 {
-                    DeviceController.HasGasAnalyser = true;
+                    HasGasAnalyser = true;
                 }
                 if (item.TemplateId == "5672cb724bdc2dc2088b456b")
                 {
-                    DeviceController.HasGeiger = true;
+                    HasGeiger = true;
                 }
             }
         }
@@ -120,8 +122,8 @@ namespace RealismMod
             IEnumerable<Item> vestItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.TacticalVest}) ?? Enumerable.Empty<Item>();
             IEnumerable<Item> armbandItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.ArmBand }) ?? Enumerable.Empty<Item>();
             IEnumerable<Item> pocketItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.Pockets }) ?? Enumerable.Empty<Item>();
-            DeviceController.HasGasAnalyser = false;
-            DeviceController.HasGeiger = false;
+            HasGasAnalyser = false;
+            HasGeiger = false;
             DeviceCheckerHelper(vestItems);
             DeviceCheckerHelper(armbandItems);
             DeviceCheckerHelper(pocketItems);
@@ -131,17 +133,18 @@ namespace RealismMod
         {
             float modifiedWeight = 0f;
             float trueWeight = 0f;
-            foreach (EquipmentSlot equipmentSlot in EquipmentClass.AllSlotNames)
+            foreach (EquipmentSlot equipmentSlot in InventoryEquipment.AllSlotNames)
             {
                 Slot slot = invClass.Equipment.GetSlot(equipmentSlot);
                 IEnumerable<Item> items = slot.Items;
                 foreach (Item item in items)
                 {
-                    float itemTotalWeight = item.GetSingleItemTotalWeight();
+                    float itemTotalWeight = Utils.GetSingleItemTotalWeight(item);
                     trueWeight += itemTotalWeight;
                     if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest || equipmentSlot == EquipmentSlot.ArmorVest || equipmentSlot == EquipmentSlot.Headwear || equipmentSlot == EquipmentSlot.ArmBand)
                     {
-                        modifiedWeight += itemTotalWeight * GearStats.ComfortModifier(item);
+                        var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
+                        modifiedWeight += itemTotalWeight * gearStats.Comfort;
                     }
                     else
                     {
@@ -150,7 +153,7 @@ namespace RealismMod
                 }
             }
 
-            if (PluginConfig.EnableLogging.Value)
+            if (PluginConfig.EnableGeneralLogging.Value)
             {
                 Utils.Logger.LogWarning("==================");
                 Utils.Logger.LogWarning("Total Modified Weight " + modifiedWeight);
@@ -223,9 +226,10 @@ namespace RealismMod
         {
             Item faceCoverItem = GetSlotItem(player, EquipmentSlot.FaceCover);
             if (faceCoverItem == null) return null;
-            HasGasMask = GearStats.IsGasMask(faceCoverItem);
-            gasProtection = GearStats.GasProtection(faceCoverItem);
-            radProtection = GearStats.RadProtection(faceCoverItem);
+            var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, faceCoverItem.TemplateId);
+            HasGasMask = gearStats.IsGasMask;
+            gasProtection = gearStats.GasProtection;
+            radProtection = gearStats.RadProtection;
             if (HasGasMask) 
             {
                 CalcGasMaskDuraFactor(player);
@@ -253,10 +257,11 @@ namespace RealismMod
             for (int i = 0; i < preAllocatedArmorComponents.Count; i++)
             {
                 ArmorComponent armorComponent = preAllocatedArmorComponents[i];
-                if (armorComponent.Item.Template._parent == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template._parent == "5a341c4686f77469e155819e") continue;
+                if (armorComponent.Item.Template.ParentId == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template.ParentId == "5a341c4686f77469e155819e") continue;
                 if (player.FaceShieldObserver.Component != null && player.FaceShieldObserver.Component.Item.TemplateId == armorComponent.Item.TemplateId)
                 {
-                    if (!fsIsON || !GearStats.BlocksMouth(armorComponent.Item)) continue;
+                    var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, armorComponent.Item.TemplateId);
+                    if (!fsIsON || !gearStats.BlocksMouth) continue;
                     totalErgo += armorComponent.WeaponErgonomicPenalty;
                     totalSpeed += armorComponent.SpeedPenalty + -15f;
                     continue;
@@ -292,8 +297,8 @@ namespace RealismMod
 
             totalErgo /= 100f;
             totalSpeed /= 100f;
-            PlayerState.GearErgoPenalty = Mathf.Clamp(1f + totalErgo, 0.1f, 2f);
-            PlayerState.GearSpeedPenalty = Mathf.Clamp(1f + totalSpeed, 0.1f, 2f);
+            PlayerValues.GearErgoPenalty = Mathf.Clamp(1f + totalErgo, 0.1f, 2f);
+            PlayerValues.GearSpeedPenalty = Mathf.Clamp(1f + totalSpeed, 0.1f, 2f);
 
             HandleGasMaskEffects(player, gasProtection, radProtection);
 
@@ -303,37 +308,30 @@ namespace RealismMod
                 StatCalc.UpdateAimParameters(fc, player.ProceduralWeaponAnimation);
             }
 
-            if (PluginConfig.EnableLogging.Value)
+            if (PluginConfig.EnableGeneralLogging.Value)
             {
-                Utils.Logger.LogWarning("gear speed " + PlayerState.GearSpeedPenalty);
-                Utils.Logger.LogWarning("gear ergo " + PlayerState.GearErgoPenalty);
+                Utils.Logger.LogWarning("gear speed " + PlayerValues.GearSpeedPenalty);
+                Utils.Logger.LogWarning("gear ergo " + PlayerValues.GearErgoPenalty);
             }
         }
 
-        public static float GetBeltReloadSpeed(Player player)
+        public static float GetGearReloadSpeed(Player player, EquipmentSlot[] slots)
         {
-            Item tacVest = player.Equipment.GetSlot(EquipmentSlot.ArmBand).ContainedItem;
-            if (tacVest != null)
+            float reloadSpeed = 1f;
+            foreach (var slot in slots) 
             {
-                return GearStats.ReloadSpeedMulti(tacVest);
-            }
-            else
-            {
-                return 1;
-            }
-        }
-
-        public static float GetRigReloadSpeed(Player player)
-        {
-            Item tacVest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
-            if (tacVest != null)
-            {
-                return GearStats.ReloadSpeedMulti(tacVest);
-            }
-            else
-            {
-                return 1;
-            }
+                Item gear = player.Equipment.GetSlot(slot).ContainedItem;
+                if (gear != null)
+                {
+                    var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, gear.TemplateId);
+                    reloadSpeed *= gearStats.ReloadSpeedMulti;
+                }
+                else
+                {
+                    reloadSpeed *= 1;
+                }
+            }    
+            return reloadSpeed;
         }
 
         public static bool GetFacecoverADS(Player player)
@@ -342,7 +340,8 @@ namespace RealismMod
 
             if (faceCover != null)
             {
-                return GearStats.AllowsADS(faceCover);
+                var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, faceCover.TemplateId);
+                return gearStats.AllowADS;
             }
             else
             {
@@ -357,28 +356,28 @@ namespace RealismMod
             List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
             player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
 
-            reloadMulti *= GetRigReloadSpeed(player);
-            reloadMulti *= GetBeltReloadSpeed(player);
+            reloadMulti *= GetGearReloadSpeed(player, [EquipmentSlot.ArmBand, EquipmentSlot.TacticalVest]);
             allowADS = GetFacecoverADS(player);
 
             foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
             {
-                if (armorComponent.Item.Template._parent == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template._parent == "5a341c4686f77469e155819e")
+                if (armorComponent.Item.Template.ParentId == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template.ParentId == "5a341c4686f77469e155819e")
                 {
                     break;
                 }
 
-                reloadMulti *= GearStats.ReloadSpeedMulti(armorComponent.Item);
+                var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, armorComponent.Item.TemplateId);
+                reloadMulti *= gearStats.ReloadSpeedMulti;
                 ArmorTemplate armorTemplate = armorComponent.Template as ArmorTemplate;
 
-                if (!GearStats.AllowsADS(armorComponent.Item))
+                if (!gearStats.AllowADS)
                 {
                     allowADS = false;
                 }
             }
 
-            PlayerState.GearReloadMulti = reloadMulti;
-            PlayerState.GearAllowsADS = allowADS;
+            PlayerValues.GearReloadMulti = reloadMulti;
+            PlayerValues.GearAllowsADS = allowADS;
         }
 
 

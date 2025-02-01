@@ -10,7 +10,7 @@ namespace RealismMod
     //thanks to Solarint for this stuff
     public class DebugGizmos
     {
-        public static bool DrawGizmos = PluginConfig.EnableLogging.Value;
+        public static bool DrawGizmos = PluginConfig.EnableGeneralLogging.Value;
 
         public class SingleObjects
         {

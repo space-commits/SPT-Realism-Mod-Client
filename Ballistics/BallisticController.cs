@@ -5,6 +5,7 @@ using EFT.InventoryLogic;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using DamageInfo = DamageInfoStruct;
 
 namespace RealismMod
 {
@@ -35,8 +36,8 @@ namespace RealismMod
         public static EBodyPartColliderType[] ArmCollidors = { EBodyPartColliderType.LeftUpperArm, EBodyPartColliderType.RightUpperArm, EBodyPartColliderType.LeftForearm, EBodyPartColliderType.RightForearm, };
         public static EBodyPartColliderType[] FaceSpallProtectionCollidors = { EBodyPartColliderType.NeckBack, EBodyPartColliderType.NeckFront, EBodyPartColliderType.Jaw, EBodyPartColliderType.Eyes, EBodyPartColliderType.HeadCommon };
         public static EBodyPartColliderType[] LegSpallProtectionCollidors = { EBodyPartColliderType.PelvisBack, EBodyPartColliderType.Pelvis};
-        private static List<EBodyPart> spallingBodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head, EBodyPart.Common, EBodyPart.Common };
-        private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
+        private static List<EBodyPart> _spallingBodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head, EBodyPart.Common, EBodyPart.Common };
+        private static List<ArmorComponent> _preAllocatedArmorComponents = new List<ArmorComponent>(20);
 
         public static void CalcAfterPenStats(float actualDurability, float armorClass, float templateDurability, ref float damage, ref float penetration, float factor = 1) 
         {
@@ -47,19 +48,19 @@ namespace RealismMod
             penetration *= penReductionFactor;
         }
 
-        public static void ModifyDamageByHitZone(EBodyPartColliderType hitPart, EBodyHitZone hitZone, ref DamageInfo di)
+        public static void ModifyDamageByHitZone(float maxHP, EBodyPartColliderType hitPart, EBodyHitZone hitZone, ref DamageInfo di)
         {
             switch (hitZone) 
             {
                 case EBodyHitZone.Unknown:
                     break;
                 case EBodyHitZone.AZone:
-                    di.Damage *= 2f * PluginConfig.GlobalDamageModifier.Value;
+                    di.Damage *= 2.1f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1.5f;
                     di.LightBleedingDelta *= 2f;
                     return;
                 case EBodyHitZone.CZone:
-                    di.Damage *= 1f * PluginConfig.GlobalDamageModifier.Value;
+                    di.Damage *= PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1f;
                     di.LightBleedingDelta *= 1f;
                     return;
@@ -69,12 +70,12 @@ namespace RealismMod
                     di.LightBleedingDelta *= 0.5f;
                     return;
                 case EBodyHitZone.Heart:
-                    di.Damage = 120f * PluginConfig.GlobalDamageModifier.Value;
+                    di.Damage = maxHP * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 10f;
                     di.LightBleedingDelta *= 10f;
                     return;
                 case EBodyHitZone.Spine:
-                    di.Damage = di.Damage + 80f * PluginConfig.GlobalDamageModifier.Value;
+                    di.Damage = (maxHP * 0.9f) * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1.15f;
                     di.LightBleedingDelta *= 1.5f;
                     return;
@@ -96,13 +97,13 @@ namespace RealismMod
                     break;
                 case EBodyPartColliderType.RightForearm:
                 case EBodyPartColliderType.LeftForearm:
-                    di.Damage *= 0.75f * PluginConfig.GlobalDamageModifier.Value;
+                    di.Damage *= 0.7f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 0.4f;
                     di.LightBleedingDelta *= 0.5f;
                     break;
                 case EBodyPartColliderType.LeftUpperArm:
                 case EBodyPartColliderType.RightUpperArm:
-                    di.Damage *= 0.95f * PluginConfig.GlobalDamageModifier.Value;
+                    di.Damage *= 0.9f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 0.65f;
                     di.LightBleedingDelta *= 0.65f;
                     break;
@@ -212,7 +213,7 @@ namespace RealismMod
             if (partHit == EBodyPartColliderType.RibcageUp || partHit == EBodyPartColliderType.RibcageLow || partHit == EBodyPartColliderType.SpineDown || partHit == EBodyPartColliderType.SpineTop)
             {
                 Collider col = damageInfo.HitCollider;
-                if (damageInfo.HitCollider == null) //fika can't send objects as part of peckets, need to find matching collider by checking collider type
+                if (damageInfo.HitCollider == null) //fika can't send objects as part of packets, need to find matching collider by checking collider type
                 {
                     List<Collider> collidors = player.GetComponent<PlayerPoolObject>().Colliders;
                     if (collidors == null || collidors.Count <= 0) return hitZone;
@@ -252,31 +253,31 @@ namespace RealismMod
             return hitZone;
         }
 
-        public static void ModifyDamageByZone(Player player, ref DamageInfo damageInfo, EBodyPartColliderType partHit)
+        public static void ModifyDamageByZone(Player player, ref DamageInfo damageInfo, EBodyPartColliderType partHit, float maxHp)
         {
             if (!damageInfo.Blunt || string.IsNullOrEmpty(damageInfo.BlockedBy))
             {
                 EBodyHitZone hitZone = GetBodyHitZone(player, partHit, damageInfo);
-                BallisticsController.ModifyDamageByHitZone(partHit, hitZone, ref damageInfo);
+                BallisticsController.ModifyDamageByHitZone(maxHp, partHit, hitZone, ref damageInfo);
             }
         }
 
 
-        public static bool ShouldDoSpalling(AmmoTemplate ammoTemp, DamageInfo damageInfo, EBodyPart bodyPartType)
+        public static bool ShouldDoSpalling(bool isBuckshot, AmmoTemplate ammoTemp, DamageInfo damageInfo, EBodyPart bodyPartType)
         {
-            if (ammoTemp == null || damageInfo.DamageType == EDamageType.Melee || !damageInfo.Blunt || (bodyPartType != EBodyPart.Chest && bodyPartType != EBodyPart.Stomach)) return false;
-            if (ammoTemp.ProjectileCount > 2)
+            if (isBuckshot || ammoTemp == null || damageInfo.DamageType == EDamageType.Melee || !damageInfo.Blunt || (bodyPartType != EBodyPart.Chest && bodyPartType != EBodyPart.Stomach)) return false;
+/*            if (isBuckshot)
             {
-                int rndNum = UnityEngine.Random.Range(1, 10);
+                int rndNum = UnityEngine.Random.Range(1, 30);
                 if (rndNum > 3)
                 {
                     return false;
                 }
-            }
+            }*/
             return true;
         }
 
-        public static void GetKineticEnergy(DamageInfo damageInfo, ref AmmoTemplate ammoTemp, ref float KE)
+        public static void GetKineticEnergy(DamageInfo damageInfo, AmmoTemplate ammoTemp, ref float KE)
         {
             if (damageInfo.DamageType == EDamageType.Melee)
             {
@@ -287,7 +288,6 @@ namespace RealismMod
             }
             else
             {
-                ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
                 if (damageInfo.ArmorDamage <= 1)
                 {
                     KE = (0.5f * ammoTemp.BulletMassGram * ammoTemp.InitialSpeed * ammoTemp.InitialSpeed) / 1000f;
@@ -334,10 +334,10 @@ namespace RealismMod
 
         public static void GetArmorComponents(Player player, DamageInfo damageInfo, EBodyPart bodyPartType, ref ArmorComponent armor, ref int faceProtectionCount, ref bool doSpalling, ref bool hasArmArmor, ref bool hasLegProtection)
         {
-            preAllocatedArmorComponents.Clear();
-            player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
+            _preAllocatedArmorComponents.Clear();
+            player.Inventory.GetPutOnArmorsNonAlloc(_preAllocatedArmorComponents);
 
-            foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
+            foreach (ArmorComponent armorComponent in _preAllocatedArmorComponents)
             {
                 if ((armorComponent.Item.Id == damageInfo.BlockedBy || armorComponent.Item.Id == damageInfo.DeflectedBy))
                 {
@@ -356,12 +356,13 @@ namespace RealismMod
                 }
             }
 
-            preAllocatedArmorComponents.Clear();
+            _preAllocatedArmorComponents.Clear();
         }
 
         public static void CalculatSpalling(Player player, ref DamageInfo damageInfo, float KE, ArmorComponent armor, AmmoTemplate ammoTemp, int faceProtectionCount, bool hasArmArmor, bool hasLegProtection)
         {
-            damageInfo.BleedBlock = false;
+            var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, armor.Item.TemplateId);
+
             bool isMetalArmor = armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || armor.Template.ArmorMaterial == EArmorMaterial.Titan ? true : false;
             float bluntDamage = damageInfo.Damage;
             float speedFactor = damageInfo.ArmorDamage / ammoTemp.InitialSpeed;
@@ -369,7 +370,7 @@ namespace RealismMod
             float lightBleedChance = damageInfo.LightBleedingDelta;
             float heavyBleedChance = damageInfo.HeavyBleedingDelta;
             float ricochetChance = ammoTemp.RicochetChance * speedFactor;
-            float spallReduction = GearStats.SpallReduction(armor.Item);
+            float spallReduction = gearStats.SpallReduction;
             float armorDamageActual = ammoTemp.ArmorDamage * speedFactor;
             float penPower = damageInfo.PenetrationPower;
 
@@ -384,7 +385,9 @@ namespace RealismMod
 
             float factoredSpallingDamage = maxPotentialSpallDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction * (isMetalArmor ? (1f - duraPercent) + 1f : 1f);
             float maxSpallingDamage = Mathf.Clamp(factoredSpallingDamage - bluntDamage, 7f, 35f * spallDuraFactor);
-            float splitSpallingDmg = maxSpallingDamage / spallingBodyParts.Count;
+            float splitSpallingDmg = maxSpallingDamage / _spallingBodyParts.Count;
+
+            damageInfo.BleedBlock = false;
 
             if (PluginConfig.EnableBallisticsLogging.Value)
             {
@@ -398,8 +401,8 @@ namespace RealismMod
                 Utils.Logger.LogWarning("Split Spalling Dmg " + splitSpallingDmg);
             }
 
-            int rndNum = Mathf.Max(1, UnityEngine.Random.Range(1, spallingBodyParts.Count + 1));
-            foreach (EBodyPart part in spallingBodyParts.OrderBy(x => UnityEngine.Random.value).Take(rndNum))
+            int rndNum = Mathf.Max(1, UnityEngine.Random.Range(1, _spallingBodyParts.Count + 1));
+            foreach (EBodyPart part in _spallingBodyParts.OrderBy(x => UnityEngine.Random.value).Take(rndNum))
             {
                 if (part == EBodyPart.Common)
                 {
@@ -467,9 +470,9 @@ namespace RealismMod
                 {
                     string colliderName = collider.name.ToLower();
                     if (colliderName == "left" || colliderName == "right" || colliderName == "top") boxCollider.size *= 0f;
-                    ModifyPlateHelper(collider, boxCollider, colliderName, "_chest", 0.975f, 0.475f, 0.86f); //chest plate, height, depth, width
-                    ModifyPlateHelper(collider, boxCollider, colliderName, "_back", 0.78f, 0.58f, 0.83f); //height, depth, width
-                    ModifyPlateHelper(collider, boxCollider, colliderName, "_side_", 0.8f, 1f, 0.7f); //height, width, depth
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_chest", 0.985f, 0.475f, 0.87f); //chest plate, height, depth, width
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_back", 0.78f, 0.58f, 0.84f); //height, depth, width
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_side_", 0.82f, 1f, 0.7f); //height, width, depth
                     ModifyPlateHelper(collider, boxCollider, colliderName, "chesttop", 1.55f, 0.9f, 1f);//armpits, height, width, depth
                 }
             }
@@ -561,8 +564,8 @@ namespace RealismMod
             if (hitPart == EBodyPartColliderType.RibcageUp || hitPart == EBodyPartColliderType.RibcageLow || hitPart == EBodyPartColliderType.SpineDown || hitPart == EBodyPartColliderType.SpineTop)
             {
                 float spineZ = 0.0125f;
-                float heartL = 0.0325f;
-                float heartR = -0.0175f;
+                float heartL = 0.0374f;
+                float heartR = -0.02f;
                 float heartTop = hitOrientation == EHitOrientation.BackHit ? -0.0435f : -0.063f;
                 float heartBottom = hitOrientation == EHitOrientation.BackHit ? -0.028f : -0.05f;
 

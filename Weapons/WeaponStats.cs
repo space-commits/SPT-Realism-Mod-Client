@@ -1,10 +1,10 @@
-﻿using EFT.InventoryLogic;
+﻿using EFT;
+using EFT.InventoryLogic;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace RealismMod
 {
-
 
     public static class UIWeaponStats
     {
@@ -31,116 +31,6 @@ namespace RealismMod
 
     public static class WeaponStats
     {
-
-        public static string WeaponType(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) ? weapon.ConflictingItems[1] : "Unknown";
-
-        }
-
-        public static float BaseTorqueDistance(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[2], out float result) ? result : 0f;
-
-        }
-
-        public static bool WepHasShoulderContact(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[3], out bool result) ? result : false;
-
-        }
-
-        public static float BaseReloadSpeed(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[4], out float result) ? result : 1f;
-
-        }
-
-        public static string OperationType(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) ? weapon.ConflictingItems[5] : "Unknown";
-
-        }
-
-        public static float WeaponAccuracy(Weapon weapon)
-        {
- 
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[6], out float result) ? result : 0f;
-
-        }
-
-        public static float RecoilDamping(Weapon weapon)
-        {;
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[7], out float result) ? result : 0f;
-
-        }
-
-        public static float RecoilHandDamping(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[8], out float result) ? result : 0.65f;
-
-        }
-
-        public static bool WeaponAllowsADS(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[9], out bool result) ? result : false;
-
-        }
-
-        public static float BaseChamberSpeed(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[10], out float result) ? result : 1f;
-
-        }
-
-        public static float MaxChamberSpeed(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[11], out float result) ? result : 1.2f;
-
-        }
-
-        public static float MinChamberSpeed(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[12], out float result) ? result : 0.7f;
-
-        }
-
-        public static bool IsManuallyOperated(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[13], out bool result) ? result : false;
-
-        }
-
-        public static float MaxReloadSpeed(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[14], out float result) ? result : 1.2f;
-
-        }
-
-        public static float MinReloadSpeed(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[15], out float result) ? result : 0.7f;
-
-        }
-
-        public static float BaseChamberCheckSpeed(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[16], out float result) ? result : 1f;
-
-        }
-
-        public static float BaseFixSpeed(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[17], out float result) ? result : 1f;
-
-        }
-
-        public static float VisualRecoilMulti(Weapon weapon)
-        {
-            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[18], out float result) ? result : 0.1f;
-
-        }
-
         public const float AdapterPistolGripBonusVRecoil = -1f;
         public const float AdapterPistolGripBonusHRecoil = -2f;
         public const float AdapterPistolGripBonusDispersion = -1f;
@@ -155,6 +45,8 @@ namespace RealismMod
         public const float FoldedDispersionFactor = 1.75f;
         public const float FoldedRecoilAngleFactor = 1.15f;
         public const float FoldedConvergenceFactor = 0.7f;
+
+        public static Weapon.EFireMode FireMode;
 
         public static int StockPosition = 0;
 
@@ -173,7 +65,8 @@ namespace RealismMod
         public static float BaseWeaponLength = 0f;
         public static float NewWeaponLength = 0f;
 
-        public static string WeapID = "";
+        //need a fake placeholder id for it to be valid
+        public static MongoID WeapID = "6783caffb5f1c2b4cfe64734";
 
         public static float TotalChamberCheckSpeed = 1;
 
@@ -315,7 +208,7 @@ namespace RealismMod
         public static float CurrentMagReloadSpeed = 1f;
         public static float NewMagReloadSpeed = 1f;
 
-        public static bool HasBipod = false;
+        public static bool BipodIsDeployed = false;
 
         public static bool HasBayonet = false;
         public static float BaseMeleeDamage = 0f;

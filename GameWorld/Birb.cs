@@ -3,7 +3,7 @@ using EFT.InventoryLogic;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using DamageInfo = DamageInfoStruct;
 
 namespace RealismMod
 {

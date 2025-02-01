@@ -1,17 +1,13 @@
-﻿using Audio.AmbientSubsystem;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Bootstrap;
 using Comfort.Common;
 using EFT;
-using EFT.Interactive;
 using Newtonsoft.Json;
+using RealismMod.Health;
 using SPT.Common.Http;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -35,10 +31,13 @@ namespace RealismMod
         public bool reload_changes { get; set; }
         public bool manual_chambering { get; set; }
         public bool food_changes { get; set; }
-        public bool enable_hazard_zones { get; set; }   
+        public bool enable_hazard_zones { get; set; }
+        public bool realistic_zombies { get; set; }
+        public bool bot_loot_changes { get; set; }
+        public bool spawn_waves { get; set; }
     }
 
-    public class RealismInfo : IRealismInfo
+    public class RealismEventInfo : IRealismInfo
     {
         public bool IsHalloween { get; set; }
         public bool DoGasEvent { get; set; }
@@ -50,18 +49,24 @@ namespace RealismMod
         public bool IsNightTime { get; set; }   
     }
 
+    public class RealismDir : IRealismInfo 
+    {
+        public string ServerBaseDirectory { get; set; }
+    }
+
     public enum EUpdateType 
     {
         Full,
         ModInfo,
         ModConfig,
-        TimeOfDay
+        TimeOfDay,
+        Path
     }
 
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.PLUGINVERSION)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string PLUGINVERSION = "1.4.7";
+        private const string PLUGINVERSION = "1.5.0";
 
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
         public static Dictionary<string, AudioClip> HitAudioClips = new Dictionary<string, AudioClip>();
@@ -71,13 +76,15 @@ namespace RealismMod
         public static Dictionary<string, AudioClip> RadEventAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> GasEventAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> GasEventLongAudioClips = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, AudioClip> FoodPoisoningSfx = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
         public static Dictionary<string, Texture> LoadedTextures = new Dictionary<string, Texture>();
 
         private string _baseBundleFilepath;
 
-        private float _realDeltaTime = 0f;
-        public static float FPS = 1f;
+        //private float _realDeltaTime = 0f;
+        private static float _averageFPS = 0f;
+        public static float FPS = 0f;
 
         //mounting UI
         public static GameObject MountingUIGameObject { get; private set; }
@@ -93,6 +100,10 @@ namespace RealismMod
         private GameObject RealismWeatherGameObject { get; set; }
         public static RealismWeatherController RealismWeatherComponent;
 
+        //audio controller
+        private GameObject AudioControllerGameObject { get; set; }
+        public static RealismAudioControllerComponent RealismAudioControllerComponent;
+
         public static bool HasReloadedAudio = false;
         public static bool FikaPresent = false;
         public static bool FOVFixPresent = false;
@@ -106,7 +117,8 @@ namespace RealismMod
         private bool _gotProfileId = false;
 
         public static RealismConfig ServerConfig;
-        public static RealismInfo ModInfo;
+        public static RealismEventInfo ModInfo;
+        public static RealismDir ModDir;
 
         private static T UpdateInfoFromServer<T>(string route) where T : class, IRealismInfo
         {
@@ -135,16 +147,18 @@ namespace RealismMod
             {
                 case EUpdateType.Full:
                     ServerConfig = UpdateInfoFromServer<RealismConfig>("/RealismMod/GetConfig");
-                    ModInfo = UpdateInfoFromServer<RealismInfo>("/RealismMod/GetInfo");
+                    ModInfo = UpdateInfoFromServer<RealismEventInfo>("/RealismMod/GetInfo");
+                    ModDir = UpdateInfoFromServer<RealismDir>("/RealismMod/GetDirectory");
+                    Utils.Logger.LogWarning("directory " + ModDir.ServerBaseDirectory);
                     break;
                 case EUpdateType.ModInfo:
-                    ModInfo = UpdateInfoFromServer<RealismInfo>("/RealismMod/GetInfo");
+                    ModInfo = UpdateInfoFromServer<RealismEventInfo>("/RealismMod/GetInfo");
                     break;
                 case EUpdateType.ModConfig:
                     ServerConfig = UpdateInfoFromServer<RealismConfig>("/RealismMod/GetConfig");
                     break;
                 case EUpdateType.TimeOfDay:
-                    ModInfo = UpdateInfoFromServer<RealismInfo>("/RealismMod/GetTimeOfDay");
+                    ModInfo = UpdateInfoFromServer<RealismEventInfo>("/RealismMod/GetTimeOfDay");
                     break;
             }
         }
@@ -296,6 +310,7 @@ namespace RealismMod
             string[] gasEventAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\default");
             string[] radEventAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\maprads");
             string[] gasEventLongAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\long");
+            string[] foodPoisoning = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\health\\foodpoisoning");
 
             HitAudioClips.Clear();
             GasMaskAudioClips.Clear();
@@ -303,6 +318,7 @@ namespace RealismMod
             DeviceAudioClips.Clear();
             GasEventAudioClips.Clear();
             RadEventAudioClips.Clear();
+            FoodPoisoningSfx.Clear();
 
             LoadAudioClipHelper(hitSoundsDir, HitAudioClips);
             LoadAudioClipHelper(gasMaskDir, GasMaskAudioClips);
@@ -310,8 +326,9 @@ namespace RealismMod
             LoadAudioClipHelper(deviceDir, DeviceAudioClips);
             LoadAudioClipHelper(gasEventAmbient, GasEventAudioClips);
             LoadAudioClipHelper(radEventAmbient, RadEventAudioClips);
-            LoadAudioClipHelper(gasEventLongAmbient, GasEventLongAudioClips);  
-            
+            LoadAudioClipHelper(gasEventLongAmbient, GasEventLongAudioClips);
+            LoadAudioClipHelper(foodPoisoning, FoodPoisoningSfx);
+
             Plugin.HasReloadedAudio = true;
         }
 
@@ -394,6 +411,13 @@ namespace RealismMod
             DontDestroyOnLoad(RealismWeatherGameObject);
         }
 
+        private void LoadAudioController() 
+        {
+            AudioControllerGameObject = new GameObject();
+            RealismAudioControllerComponent = AudioControllerGameObject.AddComponent<RealismAudioControllerComponent>();
+            DontDestroyOnLoad(AudioControllerGameObject);
+        }
+
         private void LoadHealthController()
         {
             DamageTracker dmgTracker = new DamageTracker();
@@ -414,6 +438,8 @@ namespace RealismMod
                 LoadAudioClips();
                 CacheIcons();
                 ZoneData.DeserializeZoneData();
+                Stats.GetStats();
+
             }
             catch (Exception exception)
             {
@@ -423,6 +449,8 @@ namespace RealismMod
             LoadMountingUI();
             LoadWeatherController();
             LoadHealthController();
+            LoadAudioController();
+
             PluginConfig.InitConfigBindings(Config);
 
             MoveDaCube.InitTempBindings(Config); //TEMPORARY
@@ -540,7 +568,7 @@ namespace RealismMod
                 }
                 catch 
                 {
-                    if (PluginConfig.EnableLogging.Value) Logger.LogWarning("Realism Mod: Error Getting Profile ID, Retrying");
+                    if (PluginConfig.EnableGeneralLogging.Value) Logger.LogWarning("Realism Mod: Error Getting Profile ID, Retrying");
                 }
             }
         }
@@ -564,15 +592,21 @@ namespace RealismMod
             //if (Input.GetKeyDown(KeyCode.Keypad5)) Instantiate(Plugin.ExplosionGO, new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value), new Quaternion(0, 0, 0, 0)); //new Vector3(1000f, 0f, 317f)
         }
 
+        //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
+        private void SetFps()
+        {
+            _averageFPS += ((Time.deltaTime / Time.timeScale) - _averageFPS) * 0.035f;
+            FPS = (1f / _averageFPS);
+            if (float.IsNaN(FPS) || FPS <= 1f) FPS = 144f;
+            FPS = Mathf.Clamp(FPS, 30f, 200f);
+        }
+
         void Update()
         {
             //TEMPORARY
             if (GameWorldController.GameStarted && PluginConfig.ZoneDebug.Value) MoveDaCube.Update();
 
-            //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
-            _realDeltaTime += (Time.unscaledDeltaTime - _realDeltaTime) * 0.1f;
-            FPS = 1.0f / _realDeltaTime;
-
+            SetFps();
             CheckForProfileData();
             CheckForMods();
 
@@ -591,19 +625,14 @@ namespace RealismMod
                     LoadAudioClips();
                 }
 
-                RecoilController.RecoilUpdate();
-
-                if (ServerConfig.headset_changes)
+                if (ServerConfig.headset_changes && ScreenEffectsController.PrismEffects != null)
                 {
                     HeadsetGainController.AdjustHeadsetVolume();
-                    if (DeafeningController.PrismEffects != null)
-                    {
-                        DeafeningController.DoDeafening();
-                    }
+                    DeafenController.DoDeafening();
                 }
                 if (ServerConfig.enable_stances) 
                 {
-                    StanceController.StanceState();
+                    StanceController.StanceUpdate();
                 }
             }
             else 
@@ -614,6 +643,11 @@ namespace RealismMod
 
         private void LoadGeneralPatches()
         {
+            if (ServerConfig.spawn_waves) new SpawnUpdatePatch().Enable();
+  
+            //deafening + adrenaline trigger
+            new FlyingBulletPatch().Enable();
+
             //misc
             new ChamberCheckUIPatch().Enable();
 
@@ -627,6 +661,8 @@ namespace RealismMod
             new FaceshieldMaskPatch().Enable();
             new PlayPhrasePatch().Enable();
             new OnGameStartPatch().Enable();
+            new StaticLootSpawnPatch().Enable();
+            new RigidLootSpawnPatch().Enable();
             new OnGameEndPatch().Enable();
             new QuestCompletePatch().Enable();
 
@@ -653,6 +689,7 @@ namespace RealismMod
             new RemoveSillyBossForcedMalf().Enable();
             new GetTotalMalfunctionChancePatch().Enable();
             new IsKnownMalfTypePatch().Enable();
+            new RemoveForcedMalf().Enable();
             if (ServerConfig.manual_chambering)
             {
                 new SetAmmoCompatiblePatch().Enable();
@@ -755,26 +792,29 @@ namespace RealismMod
                 new CheckChamberPatch().Enable();
                 new RechamberPatch().Enable();
                 new SetAnimatorAndProceduralValuesPatch().Enable();
+                new AimPunchPatch().Enable();
             }
         }
 
         private void LoadStancePatches()
         {
+            new ChangeScopePatch().Enable();
+            new TacticalReloadPatch().Enable();
+            new WeaponOverlapViewPatch().Enable();
+            new CollisionPatch().Enable();
+            new WeaponOverlappingPatch().Enable();
+            new WeaponLengthPatch().Enable();
             new ApplySimpleRotationPatch().Enable();
             new InitTransformsPatch().Enable();
             new ZeroAdjustmentsPatch().Enable();
-            new WeaponOverlappingPatch().Enable();
-            new WeaponLengthPatch().Enable();
             new OnWeaponDrawPatch().Enable();
             new UpdateHipInaccuracyPatch().Enable();
             new SetFireModePatch().Enable();
-            new WeaponOverlapViewPatch().Enable();
-            new CollisionPatch().Enable();
             new OperateStationaryWeaponPatch().Enable();
             new SetTiltPatch().Enable();
             new BattleUIScreenPatch().Enable();
             new ChangePosePatch().Enable();
-            new MountingPatch().Enable();
+            new MountingAndCollisionPatch().Enable();
             new ShouldMoveWeapCloserPatch().Enable();
         }
 
@@ -790,7 +830,6 @@ namespace RealismMod
             new HealthEffectsConstructorPatch().Enable();
             new HCApplyDamagePatch().Enable();
             new RestoreBodyPartPatch().Enable();
-            new FlyingBulletPatch().Enable();
             new ToggleHeadDevicePatch().Enable();
             new HealCostDisplayShortPatch().Enable();
             new HealCostDisplayFullPatch().Enable();
@@ -813,7 +852,6 @@ namespace RealismMod
             new PrismEffectsEnablePatch().Enable();
             new PrismEffectsDisablePatch().Enable();
             new UpdatePhonesPatch().Enable();
-            new SetCompressorPatch().Enable();
             new RegisterShotPatch().Enable();
             new ExplosionPatch().Enable();
             new GrenadeClassContusionPatch().Enable();
@@ -821,12 +859,12 @@ namespace RealismMod
             new CovertMovementVolumeBySpeedPatch().Enable();
             new CovertEquipmentVolumePatch().Enable();
             new HeadsetConstructorPatch().Enable();
+            new GunshotVolumePatch().Enable();
         }
 
         private void LoadBallisticsPatches()
         {
             /*new SetSkinPatch().Enable();*/
-            /*new CollidersPatch().Enable();*/
             new PenetrationUIPatch().Enable();
             new InitiateShotPatch().Enable();
             new VelocityPatch().Enable();

@@ -3,9 +3,10 @@ using EFT.InventoryLogic;
 using Comfort.Common;
 using System.Collections.Generic;
 using UnityEngine;
-using ExistanceClass = GClass2470;
+using ExistanceClass = GClass2788;
 using System.Linq;
 using EFT.Animations;
+using Diz.LanguageExtensions;
 
 namespace RealismMod
 {
@@ -71,7 +72,8 @@ namespace RealismMod
             if (_Player?.Inventory == null || _Player?.Equipment == null) return true;
             Item containedItem = _Player.Inventory?.Equipment?.GetSlot(EquipmentSlot.FaceCover)?.ContainedItem;
             if (containedItem == null) return false;
-            return GearStats.IsGasMask(containedItem);
+            var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, containedItem.TemplateId);
+            return gearStats.IsGasMask;
         }
 
         private void HandleBotGas(bool hasGasmask)
@@ -129,8 +131,8 @@ namespace RealismMod
         private void MoveEntityToSafeLocation()
         {
             Vector3 originalPos = _Player.Transform.position;
-            _Player.Transform.position = ZoneSpawner.GetSafeSpawnPoint(_Player, IsBot, ZonesThatBlockNavCount > 0, RadZoneCount > 0);
-            Utils.Logger.LogWarning($"Realism Mod: Spawned in Hazard, moved to: {_Player.Transform.position}, Original Position: {originalPos},  Was Bot? {IsBot}, time remaining {_timeActive}");
+            _Player.Transform.position = ZoneSpawner.TryGetSafeSpawnPoint(_Player, IsBot, ZonesThatBlockNavCount > 0, RadZoneCount > 0);
+            if(PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"Realism Mod: Spawned in Hazard, moved to: {_Player.Transform.position}, Original Position: {originalPos},  Was Bot? {IsBot}, time remaining {_timeActive}");
         }
 
         private void CheckSafeZones()

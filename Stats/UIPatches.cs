@@ -1,9 +1,8 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
-using Comfort.Common;
+﻿using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,12 +10,14 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using static RealismMod.Attributes;
-using ArmorPlateUIClass = GClass2648;
-using BarrelTemplateClass = GClass2593;
-using FormatArmorClass = GClass2534;
-using StatAttributeClass = GClass2768;
-using RootMotion.FinalIK;
-using System.Xml.Linq;
+using ArmorPlateUIClass = ArmorPlateItemClass;
+using FormatArmorClass = GClass2869;
+using StatAttributeClass = GClass3103;
+using ArmorSubCLass = EFT.InventoryLogic.ArmorComponent.Class2118;
+using UIClass = GClass3485;
+using AmmoPenUIClass = GClass623;
+using UIListClass = GClass3484;
+using Diz.LanguageExtensions;
 
 namespace RealismMod
 {
@@ -24,24 +25,26 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(ArmorComponent.Class1963).GetMethod("method_3", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(ArmorSubCLass).GetMethod("method_3", BindingFlags.Instance | BindingFlags.Public);
         }
 
         private static string GetItemClass(CompositeArmorComponent x)
         {
-            return x.Item.ShortName.Localized(null) + ": " + GearStats.ArmorClass(x.Item);
+            var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, x.Item.TemplateId);
+            return x.Item.ShortName.Localized(null) + ": " + gearStats.ArmorClass;
         }
 
         [PatchPrefix]
-        private static bool PatchPrefix(ArmorComponent.Class1963 __instance, ref string __result)
+        private static bool PatchPrefix(ArmorSubCLass __instance, ref string __result)
         {
             CompositeArmorComponent[] array = __instance.item.GetItemComponentsInChildren<CompositeArmorComponent>(true).ToArray<CompositeArmorComponent>();
+            var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, __instance.armorComponent_0.Item.TemplateId);
 
             if (array.Length > 1)
             {
                 __result = array.Select(new Func<CompositeArmorComponent, string>(GetItemClass)).CastToStringValue("\n", true);
             }
-            __result = GearStats.ArmorClass(__instance.armorComponent_0.Item);
+            __result = gearStats.ArmorClass;
             return false;
         }
     }
@@ -85,26 +88,26 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass3115).GetConstructor(new Type[] { typeof(float) });
+            return typeof(UIClass).GetConstructor(new Type[] { typeof(float) });
         }
 
         private static string GetStringValues(int armorClass, float penetrationPower)
         {
-            float penetrationChance = GClass566.RealResistance(100f, 100f, armorClass, penetrationPower).GetPenetrationChance(penetrationPower);
+            float penetrationChance = AmmoPenUIClass.RealResistance(100f, 100f, armorClass, penetrationPower).GetPenetrationChance(penetrationPower);
             string armorClassString = armorClass >= 10 ? "Lvl " + armorClass + " " : "Lvl " + armorClass + " "; //string.Format("<sprite name=\"armor_classes_{0}\"> ", armorClass)
-            return armorClassString + GClass3115.smethod_0(penetrationChance);
+            return armorClassString + UIClass.smethod_0(penetrationChance);
         }
 
 
         [PatchPostfix]
-        private static void PatchPrefix(GClass3115 __instance, float penetrationPower)
+        private static void PatchPrefix(UIClass __instance, float penetrationPower)
         {
-            List<GClass3114> list = new List<GClass3114>();
+            List<UIListClass> list = new List<UIListClass>();
             for (int i = 1; i <= 10; i++)
             {
-                list.Add(new GClass3114(GetStringValues(i, penetrationPower), null));
+                list.Add(new UIListClass(GetStringValues(i, penetrationPower), null));
             }
-            AccessTools.Field(typeof(GClass3115), "Lines").SetValue(__instance, list.ToArray());
+            AccessTools.Field(typeof(UIClass), "Lines").SetValue(__instance, list.ToArray());
         }
     }
 
@@ -120,6 +123,15 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostFix(AmmoTemplate __instance, ref List<ItemAttributeClass> __result)
         {
+         /*   if (Plugin.ServerConfig.realistic_ballistics)
+            {
+                var ammoTemplate = new BaseAmmoTemplate(__instance.BulletMassGram, __instance.BulletDiameterMilimeters, __instance.InitialSpeed, __instance.ArmorDamage, __instance.ProjectileCount, __instance.FragmentationChance, __instance.RicochetChance);
+                Logger.LogWarning("adding to dict " + __instance._id);
+                if (!Stats.BaseAmmoTemplateStats.ContainsKey(__instance._id))
+                {
+                    Stats.BaseAmmoTemplateStats.Add(__instance._id, ammoTemplate);
+                }
+            }*/
 
             if (!__result.Any((ItemAttributeClass i) => (ENewItemAttributeId)i.Id == ENewItemAttributeId.BallisticCoefficient) && !__result.Any((ItemAttributeClass i) => (ENewItemAttributeId)i.Id == ENewItemAttributeId.ProjectileCount))
             {
@@ -210,7 +222,7 @@ namespace RealismMod
                     ammoAttributes.Add(fireRateAtt);
                 }
 
-                float pelletCount = ammoTemplate.ProjectileCount;
+        /*        float pelletCount = ammoTemplate.ProjectileCount;
                 if (pelletCount > 1)
                 {
                     ItemAttributeClass pelletAtt = new ItemAttributeClass(ENewItemAttributeId.ProjectileCount);
@@ -221,7 +233,7 @@ namespace RealismMod
                     pelletAtt.LabelVariations = EItemAttributeLabelVariations.None;
                     ammoAttributes.Add(pelletAtt);
                 }
-
+*/
                 float fragChance = ammoTemplate.FragmentationChance * 100;
                 if (fragChance > 0)
                 {
@@ -280,7 +292,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(MagazineClass).GetMethod("method_40", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(MagazineItemClass).GetMethod("method_40", BindingFlags.Instance | BindingFlags.Public);
         }
 
         private static string[] malfChancesKeys = new string[]
@@ -294,7 +306,7 @@ namespace RealismMod
         };
 
         [PatchPrefix]
-        private static bool Prefix(MagazineClass __instance, ref string __result)
+        private static bool Prefix(MagazineItemClass __instance, ref string __result)
         {
             float malfChance = __instance.MalfunctionChance;
             string text = "";
@@ -384,7 +396,8 @@ namespace RealismMod
             int count = mods.Count();
             foreach (var mod in mods)
             {
-                string modType = AttachmentProperties.ModType(mod);
+                var weaponModStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, mod.TemplateId);
+                string modType = weaponModStats.ModType;
                 bool isBarrel = Utils.IsBarrel(mod);
                 if (isBarrel && _multiCals.Contains(modType))
                 {
@@ -410,11 +423,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BarrelModClass).GetConstructor(new Type[] { typeof(string), typeof(BarrelTemplateClass) });
+            return typeof(BarrelItemClass).GetConstructor(new Type[] { typeof(string), typeof(BarrelTemplateClass) });
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(BarrelModClass __instance, BarrelTemplateClass template)
+        private static void PatchPostfix(BarrelItemClass __instance, BarrelTemplateClass template)
         {
             float shotDisp = (template.ShotgunDispersion - 1f) * 100f;
 
@@ -440,31 +453,32 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Mod __instance, string id, ModTemplate template)
         {
-            float vRecoil = AttachmentProperties.VerticalRecoil(__instance);
-            float hRecoil = AttachmentProperties.HorizontalRecoil(__instance);
-            float disperion = AttachmentProperties.Dispersion(__instance);
-            float cameraRecoil = AttachmentProperties.CameraRecoil(__instance);
-            float autoROF = AttachmentProperties.AutoROF(__instance);
-            float semiROF = AttachmentProperties.SemiROF(__instance);
-            float malfChance = AttachmentProperties.ModMalfunctionChance(__instance);
-            float angle = AttachmentProperties.RecoilAngle(__instance);
-            float reloadSpeed = AttachmentProperties.ReloadSpeed(__instance);
-            float chamberSpeed = AttachmentProperties.ChamberSpeed(__instance);
-            float aimSpeed = AttachmentProperties.AimSpeed(__instance);
-            float shotDisp = AttachmentProperties.ModShotDispersion(__instance);
-            float conv = AttachmentProperties.ModConvergence(__instance);
-            float meleeDmg = AttachmentProperties.ModMeleeDamage(__instance);
-            float meleePen = AttachmentProperties.ModMeleePen(__instance);
-            float muzzleFlash = AttachmentProperties.ModFlashSuppression(__instance);
-            float aimStability = AttachmentProperties.ModAimStability(__instance);
-            float handling = AttachmentProperties.ModHandling(__instance);
+            var weaponModStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, __instance.TemplateId);
+            float vRecoil = weaponModStats.VerticalRecoil;
+            float hRecoil = weaponModStats.HorizontalRecoil;
+            float disperion = weaponModStats.Dispersion;
+            float cameraRecoil = weaponModStats.CameraRecoil;
+            float autoROF = weaponModStats.AutoROF      ;
+            float semiROF = weaponModStats.SemiROF                  ;
+            float malfChance = weaponModStats.ModMalfunctionChance;
+            float angle = weaponModStats.RecoilAngle;
+            float reloadSpeed = weaponModStats.ReloadSpeed;
+            float chamberSpeed = weaponModStats.ChamberSpeed;
+            float aimSpeed = weaponModStats.AimSpeed;
+            float shotDisp = weaponModStats.ModShotDispersion;
+            float conv = weaponModStats.Convergence;
+            float meleeDmg = weaponModStats.MeleeDamage;
+            float meleePen = weaponModStats.MeleePen;
+            float muzzleFlash = weaponModStats.Flash;
+            float aimStability = weaponModStats.AimStability;
+            float handling = weaponModStats.Handling;
 
             if (Plugin.ServerConfig.malf_changes == true)
             {
                 Utils.AddAttribute(__instance, ENewItemAttributeId.MalfunctionChance, malfChance, $"{getMalfOdds(malfChance)}", true);
             }
 
-            if (AttachmentProperties.StockAllowADS(__instance))
+            if (weaponModStats.StockAllowADS)
             {
                 Utils.AddAttribute(__instance, ENewItemAttributeId.CanADS, 1, "", colored: false);
             }
@@ -525,12 +539,12 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BarrelModClass).GetMethod("get_CenterOfImpactMOA", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(BarrelItemClass).GetMethod("get_CenterOfImpactMOA", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
         [PatchPrefix]
-        private static bool Prefix(BarrelModClass __instance, ref float __result)
+        private static bool Prefix(BarrelItemClass __instance, ref float __result)
         {
             BarrelComponent itemComponent = __instance.GetItemComponent<BarrelComponent>();
             if (itemComponent == null) __result = 0f;
@@ -649,7 +663,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            StatDeltaDisplay.DisplayDelta(__instance);
+            var weapStats = Stats.GetDataObj<Gun>(Stats.GunStats, __instance.TemplateId);
+            StatDeltaDisplay.DisplayDelta(__instance, weapStats);
             __result = UIWeaponStats.HRecoilDelta;
             return false;
         }
@@ -682,7 +697,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            StatDeltaDisplay.DisplayDelta(__instance);
+            var weapStats = Stats.GetDataObj<Gun>(Stats.GunStats, __instance.TemplateId);
+            StatDeltaDisplay.DisplayDelta(__instance, weapStats);
             __result = UIWeaponStats.VRecoilDelta;
             return false;
         }
@@ -774,7 +790,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            StatDeltaDisplay.DisplayDelta(__instance);
+            var weapStats = Stats.GetDataObj<Gun>(Stats.GunStats, __instance.TemplateId);
+            StatDeltaDisplay.DisplayDelta(__instance, weapStats);
             __result = UIWeaponStats.ErgoDelta;
             return false;
         }
@@ -791,9 +808,10 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
-            StatDeltaDisplay.DisplayDelta(__instance);
+            var weapStats = Stats.GetDataObj<Gun>(Stats.GunStats, __instance.TemplateId);
+            StatDeltaDisplay.DisplayDelta(__instance, weapStats);
             float ergoTotal = __instance.Template.Ergonomics * (1f + UIWeaponStats.ErgoDelta);
-            __result = Mathf.Clamp(ergoTotal, 0f, 100f).ToString("0.##");
+            __result = Mathf.Clamp(ergoTotal, 0f, 100f).ToString("0.##"); 
             return false;
         }
     }
@@ -801,9 +819,9 @@ namespace RealismMod
     public static class StatDeltaDisplay
     {
 
-        public static void DisplayDelta(Weapon __instance)
+        public static void DisplayDelta(Weapon __instance, Gun weapStats)
         {
-            bool isChonker = __instance.IsBeltMachineGun || __instance.GetSingleItemTotalWeight() > 10f;
+            bool isChonker = __instance.IsBeltMachineGun || __instance.TotalWeight > 10f;
 
             float baseCOI = __instance.CenterOfImpactBase;
             float currentCOI = baseCOI;
@@ -814,7 +832,7 @@ namespace RealismMod
             float baseSemiROF = Mathf.Max(__instance.Template.SingleFireRate, 240);
             float currentSemiROF = baseSemiROF;
 
-            float baseCamReturnSpeed = WeaponStats.VisualRecoilMulti(__instance);
+            float baseCamReturnSpeed = weapStats.VisualMulti;
             float currentCamReturnSpeed = baseCamReturnSpeed;
 
             float baseCamRecoil = __instance.Template.RecoilCamera;
@@ -843,36 +861,37 @@ namespace RealismMod
             float currentShotDisp = 0f;
             float currentMalfChance = 0f;
 
-            string weapOpType = WeaponStats.OperationType(__instance);
-            string weapType = WeaponStats.WeaponType(__instance);
+            string weapOpType = weapStats.OperationType;
+            string weapType = weapStats.WeapType;
 
             bool stockAllowsFSADS = false;
 
             bool folded = __instance.Folded;
             bool hasShoulderContact = false;
-            if (WeaponStats.WepHasShoulderContact(__instance) && !folded)
+            if (weapStats.HasShoulderContact && !folded)
             {
                 hasShoulderContact = true;
             }
 
             foreach (Mod mod in __instance.Mods)
             {
+                var weaponModStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, mod.TemplateId);
                 float modWeight = mod.Weight;
                 if (Utils.IsMagazine(mod))
                 {
-                    modWeight = mod.GetSingleItemTotalWeight();
+                    modWeight = mod.TotalWeight;
                 }
                 float modWeightFactored = StatCalc.FactoredWeight(modWeight);
                 float modErgo = mod.Ergonomics;
-                float modVRecoil = AttachmentProperties.VerticalRecoil(mod);
-                float modHRecoil = AttachmentProperties.HorizontalRecoil(mod);
-                float modAutoROF = AttachmentProperties.AutoROF(mod);
-                float modSemiROF = AttachmentProperties.SemiROF(mod);
-                float modCamRecoil = AttachmentProperties.CameraRecoil(mod);
-                float modConv = AttachmentProperties.ModConvergence(mod);
-                modVRecoil += modConv > 0f ? modConv * StatCalc.convVRecoilConversion : 0f;
-                float modDispersion = AttachmentProperties.Dispersion(mod);
-                float modAngle = AttachmentProperties.RecoilAngle(mod);
+                float modVRecoil = weaponModStats.VerticalRecoil;
+                float modHRecoil = weaponModStats.HorizontalRecoil;
+                float modAutoROF = weaponModStats.AutoROF;
+                float modSemiROF = weaponModStats.SemiROF;
+                float modCamRecoil = weaponModStats.CameraRecoil;
+                float modConv = weaponModStats.Convergence;
+                modVRecoil += modConv > 0f ? modConv * StatCalc.ConvVRecoilConversion : 0f;
+                float modDispersion = weaponModStats.Dispersion;
+                float modAngle = weaponModStats.RecoilAngle;
                 float modAccuracy = mod.Accuracy;
                 float modMalfChance = 0;
                 float modDuraBurn = 0;
@@ -883,9 +902,9 @@ namespace RealismMod
                 float modLoudness = 0;
                 float modAim = 0;
 
-                string modType = AttachmentProperties.ModType(mod);
+                string modType = weaponModStats.ModType;
                 string position = StatCalc.GetModPosition(mod, weapType, weapOpType, modType);
-                StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, 
+                StatCalc.ModConditionalStatCalc(__instance, weapStats, mod, weaponModStats, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, 
                     ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, 
                     ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, 
                     ref modMalfChance, ref modDuraBurn, ref modConv, ref modFlashSuppression, ref modStability, 
@@ -920,7 +939,7 @@ namespace RealismMod
             float totalCOIDelta = 0;
             float pureErgoDelta = 0f;
 
-            StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref totalRecoilDamping, ref totalRecoilHandDamping, currentCOI, hasShoulderContact, ref totalCOI, ref totalCOIDelta, baseCOI, pureErgo, ref pureErgoDelta, ref ergoLessMag, 0f, true);
+            StatCalc.WeaponStatCalc(__instance, weapStats, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref totalRecoilDamping, ref totalRecoilHandDamping, currentCOI, hasShoulderContact, ref totalCOI, ref totalCOIDelta, baseCOI, pureErgo, ref pureErgoDelta, ref ergoLessMag, 0f, true);
 
             UIWeaponStats.TotalConvergence = currentConv;
             UIWeaponStats.ConvergenceDelta = (currentConv - baseConv) / baseConv;

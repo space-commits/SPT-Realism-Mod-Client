@@ -16,6 +16,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using static RealismMod.Attributes;
+using ItemWeightClass = GClass2981;
 
 namespace RealismMod
 {
@@ -85,14 +86,13 @@ namespace RealismMod
 
         public static async Task LoadLoot(Vector3 position, Quaternion rotation, string templateId)
         {
-            Item item = Singleton<ItemFactory>.Instance.CreateItem(Utils.GenId(), templateId, null);
+            Item item = Singleton<ItemFactoryClass>.Instance.CreateItem(Utils.GenId(), templateId, null);
             item.StackObjectsCount = 1;
             item.SpawnedInSession = true;
             ResourceKey[] resources = item.Template.AllResources.ToArray();
             await LoadBundle(resources);
             IPlayer player = Singleton<GameWorld>.Instance.RegisteredPlayers.FirstOrDefault(new Func<IPlayer, bool>(GetIPlayer));
-            Singleton<GameWorld>.Instance.ThrowItem(item, player, position, rotation, Vector3.zero, Vector3.zero);
-
+            Singleton<GameWorld>.Instance.ThrowItem(item, player, position, rotation, Vector3.zero, Vector3.zero, true, true, EFTHardSettings.Instance.ThrowLootMakeVisibleDelay);
         }
 
         public static async Task LoadBundle(ResourceKey[] resources)
@@ -100,7 +100,41 @@ namespace RealismMod
             await Singleton<PoolManager>.Instance.LoadBundlesAndCreatePools(PoolManager.PoolsCategory.Raid, PoolManager.AssemblyType.Local, resources, JobPriority.Immediate, null, PoolManager.DefaultCancellationToken);
         }
 
-        public static bool AreFloatsEqual(float a, float b, float epsilon = 0.001f)
+        public static Vector3 ClampVector(Vector3 value, Vector3 min, Vector3 max)
+        {
+            return new Vector3(
+                Mathf.Clamp(value.x, min.x, max.x),
+                Mathf.Clamp(value.y, min.y, max.y),
+                Mathf.Clamp(value.z, min.z, max.z)
+            );
+        }
+
+        public static bool AreVector2sEqual(Vector2 a, Vector2 b, float epsilon = 0.001f)
+        {
+            return Vector2.Distance(a, b) < epsilon;
+        }
+
+        public static bool IsGreaterThanOrEqualTo(float a, float b, float epsilon = 0.0001f)
+        {
+            return IsGreaterThan(a, b, epsilon) || AreFloatsEqual(a, b, epsilon);
+        }
+
+        public static bool IsLessThanOrEqualTo(float a, float b, float epsilon = 0.0001f)
+        {
+            return IsLessThan(a, b, epsilon) || AreFloatsEqual(a, b, epsilon);
+        }
+
+        public static bool IsLessThan(float a, float b, float epsilon = 0.0001f)
+        {
+            return (b - a) > epsilon; 
+        }
+
+        public static bool IsGreaterThan(float a, float b, float epsilon = 0.0001f)
+        {
+            return (a - b) > epsilon;
+        }
+
+        public static bool AreFloatsEqual(float a, float b, float epsilon = 0.0001f)
         {
             float difference = Math.Abs(a - b);
             return difference < epsilon;
@@ -133,30 +167,6 @@ namespace RealismMod
                 }
             }
             return result;
-        }
-
-        public static bool IsConfItemNull(string[] confItemArray, int expectedLength = 0)
-        {
-            if (confItemArray != null && confItemArray.Length > expectedLength)
-            {
-                if (confItemArray[0] == "SPTRM")
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public static bool ConfItemsIsNullOrInvalid(string[] confItemArray, int length)
-        {
-            if (confItemArray != null && confItemArray.Length >= length)
-            {
-                if (confItemArray[0] == "SPTRM") 
-                {
-                    return false;
-                }
-            }
-            return true;
         }
 
         public static Player GetYourPlayer() 
@@ -223,6 +233,38 @@ namespace RealismMod
             }
         }
 
+        public static float GetSingleItemTotalWeight(Item item)
+        {
+            ItemWeightClass itemWeightClass;
+            if ((itemWeightClass = (item as ItemWeightClass)) == null) return item.TotalWeight;
+            return itemWeightClass.TotalWeight;
+        }
+
+        public static float CalcultateModifierFromRange(float value, float minValue, float maxValue, float minModifier, float maxModifier)
+        {
+            float slope = (maxModifier - minModifier) / (minValue - maxValue);
+            float intercept = minModifier - slope * maxValue;
+            float modifier = slope * value + intercept;
+            return Mathf.Clamp(modifier, minModifier, maxModifier);
+        }
+
+        public static T GetItemTemplate<T>(MongoID id) where T : ItemTemplate 
+        {
+            T template;
+            if (Singleton<ItemFactoryClass>.Instance.ItemTemplates.ContainsKey(id))
+            {
+                template = (Singleton<ItemFactoryClass>.Instance.ItemTemplates[id] as T);
+                return template;
+            }
+            return null;
+        }
+        
+
+        public static bool IsZombie(Player player) 
+        {
+            return player != null && player.UsedSimplifiedSkeleton;
+        }
+
         public static string GenId()
         {
             return MongoID.Generate();
@@ -246,7 +288,7 @@ namespace RealismMod
         }
         public static bool IsMagazine(Mod mod)
         {
-            return (mod is MagazineClass);
+            return (mod is MagazineItemClass);
         }
         public static bool IsFlashHider(Mod mod)
         {

@@ -11,7 +11,8 @@ using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using QuestUIClass = GClass2046;
+using QuestUIClass = GClass2269;
+using ChanceCalcClass = GClass824;
 using Color = UnityEngine.Color;
 using EFT.InventoryLogic;
 using HarmonyLib;
@@ -23,18 +24,125 @@ using static UnityEngine.UI.Selectable;
 using System.Threading.Tasks;
 using static RootMotion.FinalIK.GenericPoser;
 using Audio.AmbientSubsystem;
+using static BotsPresets;
 
 namespace RealismMod
 {
-    class DayTimeAmbientPatch : ModulePatch
+    /*  public class BotPatch1 : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(Struct67).GetMethod("MoveNext");
+          }
+
+          [PatchPrefix]
+          public static void PatchPrefix()
+          {
+              Logger.LogWarning("struct 67");
+          }
+      }
+
+      public class BotPatch2 : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(Struct70).GetMethod("MoveNext");
+          }
+
+          [PatchPrefix]
+          public static void PatchPrefix()
+          {
+              Logger.LogWarning("struct 70");
+          }
+      }
+
+      public class BotPatch3 : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(Struct69).GetMethod("MoveNext");
+          }
+
+          [PatchPrefix]
+          public static void PatchPrefix()
+          {
+              Logger.LogWarning("struct 69");
+          }
+      }
+
+      public class BotPatch4 : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(Struct68).GetMethod("MoveNext");
+          }
+
+          [PatchPrefix]
+          public static bool PatchPrefix()
+          {
+              Logger.LogWarning("struct 68");
+              if (PluginConfig.test1.Value > 10f) return false;
+              return true;
+          }
+      }*/
+
+    //attempt to prevent stutter when game needlessly generates new bot waves
+    public class SpawnUpdatePatch : ModulePatch
     {
-        private static FieldInfo _dayAudioSourceField;
-        private static FieldInfo _nightAudioSourceField;
         protected override MethodBase GetTargetMethod()
         {
-            _dayAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientDaySource");
-            _nightAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientNightSource");
-            return typeof(DayTimeAmbientBlender).GetMethod("method_0");
+            return typeof(NonWavesSpawnScenario).GetMethod("Update");
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(NonWavesSpawnScenario __instance)
+        {
+            if (GameWorldController.TimeInRaid >= 200f)
+            {
+                return false;
+            }
+            return true;
+
+        }
+    }
+
+    public class RigidLootSpawnPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GameWorld).GetMethod("CreateLootWithRigidbody");
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(Item item)
+        {
+            GameWorldController.ModifyLootResources(item);
+        }
+    }
+
+    public class StaticLootSpawnPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GameWorld).GetMethod("CreateStaticLoot");
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(Item item)
+        {
+            GameWorldController.ModifyLootResources(item);
+        }
+    }
+
+    class DayTimeAmbientPatch : ModulePatch
+    {
+/*        private static FieldInfo _dayAudioSourceField;
+        private static FieldInfo _nightAudioSourceField;*/
+        protected override MethodBase GetTargetMethod()
+        {
+/*            _dayAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientDaySource");
+            _nightAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientNightSource");*/
+            return typeof(DayTimeAmbientBlender).GetMethod("SetSeasonStatus");
         }
 
         [PatchPrefix]
@@ -67,7 +175,7 @@ namespace RealismMod
             GameWorldController.RunEarlyGameCheck();
 
             if (!GameWorldController.MuteAmbientAudio) return true;
-            var soundPlayers = (List<AbstractAmbientSoundPlayer>)_playerGroupField.GetValue(__instance);
+            var soundPlayers = (List<BaseAmbientSoundPlayer>)_playerGroupField.GetValue(__instance);
             foreach (var soundPlayer in soundPlayers)
             {
                 if (_clipsToDisable.Contains(soundPlayer.name.ToLower())) continue;
@@ -101,41 +209,60 @@ namespace RealismMod
     //for events I need to dynamically change boss spawn chance, but the point at which the event is declared server-side is too late for changing boss spawns
     public class BossSpawnPatch : ModulePatch 
     {
-        //no good way to know what map we're currently on at this poin in the raid loading, it is what it is.
-        private static string[] _forbiddenZones = { "BotZoneFloor1", "BotZoneFloor2", "BotZoneBasement", "BotZone" };
+        //Gas event can't be on labs or factory, so using these zones as proxy for map detection
+        //no good way to know what map we're currently on at this point in the raid loading, it is what it is.
+        private static string[] _forbiddenZones = { "BotZone", "BotZoneFloor1", "BotZoneFloor2", "BotZoneBasement" };
+
 
         protected override MethodBase GetTargetMethod()
         {
             return typeof(BossLocationSpawn).GetMethod("ParseMainTypesTypes");
         }
 
+        private static void HandleZombies(BossLocationSpawn __instance, ref bool disabledZombieSpawn, bool isZombie)
+        {
+            bool disableZombie = !Plugin.ServerConfig.realistic_zombies || (Plugin.ServerConfig.realistic_zombies && !Plugin.ModInfo.DoGasEvent);
+            if (isZombie && disableZombie)
+            {
+                __instance.BossChance = 0f;
+                __instance.ShallSpawn = false;
+                disabledZombieSpawn = true;
+            }
+        }
+        
         [PatchPostfix]
         public static void PatchPostfix(BossLocationSpawn __instance)
         {
             GameWorldController.RunEarlyGameCheck();
+            bool isZombie = __instance.BossType.ToString().ToLower().Contains("infected");
+            bool disabledZombieSpawn = false;
+            HandleZombies(__instance, ref disabledZombieSpawn, isZombie);
 
-            var zones = __instance.BossZone.Split(new char[]{','});
-            if (_forbiddenZones.Intersect(zones).Any()) return;
+            var zones = __instance.BossZone.Split(new char[] { ',' });
+            if (disabledZombieSpawn || _forbiddenZones.Intersect(zones).Any()) return;
 
             bool increaseSectantChance = __instance.BossType == WildSpawnType.sectantPriest && Plugin.ModInfo.DoGasEvent && !Plugin.ModInfo.DoExtraRaiders;
             bool increaseRaiderChance = __instance.BossType == WildSpawnType.pmcBot && Plugin.ModInfo.DoExtraRaiders;
             bool isPmc = __instance.BossType == WildSpawnType.pmcBEAR || __instance.BossType == WildSpawnType.pmcUSEC;
             bool postExpl = !isPmc && Plugin.ModInfo.IsHalloween && (Plugin.ModInfo.HasExploded || GameWorldController.DidExplosionClientSide);
+            bool isPreExpl = Plugin.ModInfo.IsPreExplosion && GameWorldController.IsRightDateForExp;
+            bool isSpecialEvent = postExpl || Plugin.ModInfo.DoGasEvent || isPreExpl;
+            bool isRaider = __instance.BossType == WildSpawnType.pmcBot;
+            bool isSectant = __instance.BossType != WildSpawnType.sectantPriest;
             if (increaseSectantChance) 
             {
                 bool doExtraCultists = Plugin.ModInfo.DoExtraCultists;
                 __instance.BossChance = __instance.BossChance == 0 && !doExtraCultists ? 25f : 100f;
-                __instance.ShallSpawn = GClass761.IsTrue100(__instance.BossChance);
+                __instance.ShallSpawn = ChanceCalcClass.IsTrue100(__instance.BossChance);
             }
-            if (increaseRaiderChance) 
+            else if (increaseRaiderChance) 
             {
                 __instance.BossChance = 100f;
-                __instance.ShallSpawn = true;
             }
-            if ((postExpl ||Plugin.ModInfo.DoGasEvent || (Plugin.ModInfo.IsPreExplosion && GameWorldController.IsRightDateForExp) || Plugin.ModInfo.DoExtraRaiders) && (__instance.BossType != WildSpawnType.sectantPriest && __instance.BossType != WildSpawnType.pmcBot && !isPmc))
+            else if ((isSpecialEvent || Plugin.ModInfo.DoExtraRaiders) && (!isRaider && !isSectant && !isPmc && !isZombie))
             {
-                __instance.BossChance *= 0.05f;
-                __instance.ShallSpawn = GClass761.IsTrue100(__instance.BossChance);
+                __instance.BossChance = 0f;
+                __instance.ShallSpawn = false;
             }
 
             if (PluginConfig.ZoneDebug.Value) 
@@ -383,18 +510,19 @@ namespace RealismMod
                 GameWorldController.IsMapThatCanDoRadEvent = GameWorldController.CurrentMap != "laboratory";
 
                 //audio components
-                AudioController.CreateAudioComponent();
+                Plugin.RealismAudioControllerComponent.RunReInitPlayer();
+
                 if (GameWorldController.DoMapGasEvent)
                 {
                     Player player = Utils.GetYourPlayer();
-                    ZoneSpawner.CreateAmbientAudioPlayers(player, player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.2f, minDelayBeforePlayback: 60f); //spooky short playback
-                    ZoneSpawner.CreateAmbientAudioPlayers(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.48f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
+                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.2f, minDelayBeforePlayback: 60f); //spooky short playback
+                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.38f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
                 }
 
                 if (GameWorldController.DoMapRads)
                 {
                     Player player = Utils.GetYourPlayer();
-                    ZoneSpawner.CreateAmbientAudioPlayers(player, player.gameObject.transform, Plugin.RadEventAudioClips, volume: 1f, minDelayBeforePlayback: 60f); //thunder
+                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.RadEventAudioClips, volume: 1f, minDelayBeforePlayback: 60f); //thunder
                 }
 
                 //spawn zones
@@ -436,6 +564,7 @@ namespace RealismMod
 
             GameWorldController.GameStarted = false;
             GameWorldController.RanEarliestGameCheck = false;
+            GameWorldController.TimeInRaid = 0f;
         }
     }
 }

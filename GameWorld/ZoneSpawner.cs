@@ -51,27 +51,8 @@ namespace RealismMod
             return PluginConfig.ZoneDebug.Value || ProfileData.PMCLevel >= 20 || HasMetQuestCriteria(new string[] { "66dad1a18cbba6e558486336", "670ae811bd43cbf026768126" },  new EQuestStatus[] { EQuestStatus.Started, EQuestStatus.Success });
         }
 
-        public static void CreateAmbientAudioPlayers(Player player, Transform parentTransform, Dictionary<string, AudioClip> clips, bool followPlayer = false, float minTime = 15f, float maxTime = 90f, float volume = 1f, float minDistance = 45f, float maxDistance = 95f, float minDelayBeforePlayback = 60f) 
-        {
-            GameObject audioGO = new GameObject("AmbientAudioPlayer");
-            var audioPlayer = audioGO.AddComponent<AmbientAudioPlayer>();
-            audioPlayer.ParentTransform = parentTransform;
-            audioPlayer._Player = player;
-            audioPlayer.FollowPlayer = followPlayer;
-            audioPlayer.MinTimeBetweenClips = minTime;
-            audioPlayer.MaxTimeBetweenClips = maxTime;
-            audioPlayer.MinDistance = minDistance;
-            audioPlayer.MaxDistance = maxDistance;
-            audioPlayer.Volume = volume;
-            audioPlayer.DelayBeforePlayback = minDelayBeforePlayback;
-            foreach (var clip in clips) 
-            {
-                audioPlayer.AudioClips.Add(clip.Value);
-            }
-        }
-
         //for player, get closest spawn. For bot, sort by min distance, or furthest from player failing that.
-        public static Vector3 GetSafeSpawnPoint(Player entitiy, bool isBot, bool blocksNav, bool isInRads)
+        public static Vector3 TryGetSafeSpawnPoint(Player entitiy, bool isBot, bool blocksNav, bool isInRads)
         {
             IEnumerable<Vector3> spawns = ZoneData.GetSafeSpawns();
             if (spawns == null || (isBot && !blocksNav) || (!isBot && GameWorldController.CurrentMap == "laboratory" && !isInRads)) return entitiy.Transform.position; //can't account for bot vs player, because of maps like Labs where player should spawn in gas
@@ -80,16 +61,16 @@ namespace RealismMod
 
             if (isBot)
             {
-                validSpawns = spawns.Where(s => Vector3.Distance(s, player.Transform.position) >= MinBotSpawnDistanceFromPlayer);
+                validSpawns = spawns.Where(s => Vector3.Distance(s, player.Transform.position) >= MinBotSpawnDistanceFromPlayer); //min distance from player for bot
             }
 
             if (validSpawns.Any() || !isBot)
             {
-                return validSpawns.OrderBy(s => Vector3.Distance(s, entitiy.Transform.position)).First();
+                return validSpawns.OrderBy(s => Vector3.Distance(s, entitiy.Transform.position)).First(); //if found spawns for bot, or if not a bot, find the closest spwan
             }
             else 
             {
-                return spawns.OrderByDescending(s => Vector3.Distance(s, player.Transform.position)).First();
+                return spawns.OrderByDescending(s => Vector3.Distance(s, player.Transform.position)).First(); //if failed to find spawn point that is min distance from player, get the closest one
             }
         }
 
@@ -108,7 +89,7 @@ namespace RealismMod
 
         private static bool ShouldSpawnZone(HazardLocation hazardLocation, EZoneType zoneType) 
         {
-            if(PluginConfig.ZoneDebug.Value) return true;
+            if (PluginConfig.ZoneDebug.Value) return true;
 
             if (!Plugin.FikaPresent) 
             {
