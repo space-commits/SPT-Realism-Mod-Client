@@ -3,6 +3,7 @@ using EFT;
 using EFT.Quests;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
@@ -134,6 +135,28 @@ namespace RealismMod
             return !isDisabled || isEnabled;
         }
 
+        public static void TryAddGasVisual(Zone zone, EZoneType zoneType, Vector3 position, Vector3 rotation, Vector3 size) 
+        {
+            if (zoneType == EZoneType.Gas || zoneType == EZoneType.GasAssets)
+            {
+                GameObject fogAsset = Assets.FogBundle.LoadAsset<GameObject>("Assets/Fog/Gray Volume Fog.prefab");
+                GameObject spawnedFog = UnityEngine.Object.Instantiate(fogAsset, position, Quaternion.Euler(rotation));
+
+
+                ParticleSystem ps = spawnedFog.GetComponentInChildren<ParticleSystem>();
+                if (ps != null)
+                {
+                    FogScript script = ps.gameObject.AddComponent<FogScript>();
+                    ParticleSystem.ShapeModule shapeModule = ps.shape;
+                    script.Scale = size * 0.95f;
+
+                    script.ParticleLifeTime = zone.VisParticleLifeTime;
+                    script.ParticleSize = 10f * zone.VisParticleSizeMult;
+                    Utils.Logger.LogWarning($"size {zone.VisParticleSizeMult}, count {zone.VisParticleLifeTime}, ParticleLifeTime {script.ParticleLifeTime}, script.ParticleSize {script.ParticleSize}");
+                }
+            }
+        }
+
         public static void CreateZone<T>(HazardLocation hazardLocation, EZoneType zoneType) where T : MonoBehaviour, IZone
         {
             if (hazardLocation.IsTriggered || !ShouldSpawnZone(hazardLocation, zoneType)) return;
@@ -146,7 +169,6 @@ namespace RealismMod
                 Vector3 position = new Vector3(subZone.Position.X, subZone.Position.Y, subZone.Position.Z);
                 Vector3 rotation = new Vector3(subZone.Rotation.X, subZone.Rotation.Y, subZone.Rotation.Z);
                 Vector3 size = new Vector3(subZone.Size.X, subZone.Size.Y, subZone.Size.Z);
-                Vector3 scale = size;
 
                 GameObject hazardZone = new GameObject(zoneName);
                 T hazard = hazardZone.AddComponent<T>();
@@ -203,10 +225,12 @@ namespace RealismMod
                     visualRepresentation.transform.localScale = size;
                     visualRepresentation.transform.localPosition = boxCollider.center;
                     visualRepresentation.transform.rotation = boxCollider.transform.rotation;
-                    visualRepresentation.GetComponent<Renderer>().material.color = hazard.ZoneType == EZoneType.Radiation || hazard.ZoneType == EZoneType.RadAssets ? new Color(0f, 1f, 0f, 0.15f) : new Color(1f, 0f, 0f, 0.15f);
+                    visualRepresentation.GetComponent<Renderer>().material.color = hazard.ZoneType == EZoneType.Radiation || hazard.ZoneType == EZoneType.RadAssets ? new UnityEngine.Color(0f, 1f, 0f, 0.15f) : new UnityEngine.Color(1f, 0f, 0f, 0.15f);
                     UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
                     MoveDaCube.AddComponentToExistingGO(visualRepresentation, zoneName);
                 }
+
+                if(subZone.UseVisual) TryAddGasVisual(subZone, zoneType, position, rotation, size);
             }
         }
 
@@ -223,14 +247,14 @@ namespace RealismMod
                 }
 
                 Vector3 position = new Vector3(asset.Position.X, asset.Position.Y, asset.Position.Z);
-                Vector3 rotaiton = new Vector3(asset.Rotation.X, asset.Rotation.Y, asset.Rotation.Z);
+                Vector3 rotation = new Vector3(asset.Rotation.X, asset.Rotation.Y, asset.Rotation.Z);
 
-                GameObject containerPrefab = GetAndLoadAsset(asset.AssetName);
-                if (containerPrefab == null) 
+                GameObject assetPrefab = GetAndLoadAsset(asset.AssetName);
+                if (assetPrefab == null) 
                 {
                     Utils.Logger.LogError("Realism Mod: Error Loading Asset From Bundle For Asset: " + asset.AssetName);
                 }
-                GameObject spawnedContainer = UnityEngine.Object.Instantiate(containerPrefab, position, Quaternion.Euler(rotaiton));
+                GameObject spawnedAsset = UnityEngine.Object.Instantiate(assetPrefab, position, Quaternion.Euler(rotation));
             }
         }
 
@@ -310,9 +334,9 @@ namespace RealismMod
         private static void LoadLooseLoot(Vector3 postion, Vector3 rotation, string tempalteId)
         {
             Quaternion quat = Quaternion.Euler(rotation);
-#pragma warning disable CS4014 
+#pragma warning disable CS4014
             Utils.LoadLoot(postion, quat, tempalteId); //yes, I know this isn't running asnyc
-#pragma warning restore CS4014 
+#pragma warning restore CS4014
         }
 
         public static void DebugZones()
@@ -342,7 +366,7 @@ namespace RealismMod
                 visualRepresentation.transform.localScale = boxCollider.size;
                 visualRepresentation.transform.localPosition = boxCollider.center;
                 visualRepresentation.transform.rotation = boxCollider.transform.rotation;
-                visualRepresentation.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.25f);
+                visualRepresentation.GetComponent<Renderer>().material.color = new UnityEngine.Color(1f, 1f, 1f, 0.25f);
                 UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
 
                 Utils.Logger.LogWarning("player pos " + Utils.GetYourPlayer().Transform.position);

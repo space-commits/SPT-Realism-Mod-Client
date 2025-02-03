@@ -541,6 +541,11 @@ namespace RealismMod
         {
             if (EFTPhysicsClass.Linecast(start, direction, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastArr, isHitIgnoreTest))
             {
+           /*     if (!StanceController.IsMounting) 
+                {
+                    StanceController.MountPos = raycastHit.point + raycastHit.normal * PluginConfig.test9.Value;
+                    StanceController.MountDir = Utils.GetYourPlayer().PlayerBones.weaponMountingView.GridRoot.forward;
+                }*/
                 SetMountingStatus(coverDir);
                 StanceController.CoverWiggleDirection = GetWiggleDir(coverDir);
                 return true;
@@ -1374,9 +1379,10 @@ namespace RealismMod
             pwa.HandsContainer.WeaponRoot.localPosition += _posePosOffest;
 
             //rotation
+            bool isMountedWithBipod = WeaponStats.BipodIsDeployed && StanceController.IsMounting;
             bool doCantedOffset = Mathf.Abs(pwa.CurrentScope.Rotation) >= EFTHardSettings.Instance.SCOPE_ROTATION_THRESHOLD && StanceController.IsAiming;
-            bool doMaskOffset = !doCantedOffset && (GearController.HasGasMask || GearController.FSIsActive) && pwa.IsAiming && WeaponStats.HasShoulderContact && !WeaponStats.IsStocklessPistol && !WeaponStats.IsMachinePistol;
-            bool doLongMagOffset = WeaponStats.HasLongMag && player.IsInPronePose;
+            bool doMaskOffset = !doCantedOffset && !isMountedWithBipod && (GearController.HasGasMask || GearController.FSIsActive) && pwa.IsAiming && WeaponStats.HasShoulderContact && !WeaponStats.IsStocklessPistol && !WeaponStats.IsMachinePistol;
+            bool doLongMagOffset = WeaponStats.HasLongMag && player.IsInPronePose && !isMountedWithBipod;
             float cantedOffsetBase = -0.41f;
             float magOffset = doCantedOffset ? 0f : doLongMagOffset && !pwa.IsAiming ? -0.35f : doLongMagOffset && pwa.IsAiming ? -0.12f : 0f;
             float ergoOffset = WeaponStats.ErgoFactor * -0.001f;

@@ -392,6 +392,7 @@ namespace RealismMod
             Assets.LabsBarrelPileBundle = LoadAndInitializePrefabs("hazard_assets\\labsbarrelpile.bundle");
             Assets.RadSign1 = LoadAndInitializePrefabs("hazard_assets\\radsign1.bundle");
             Assets.TerraGroupFence = LoadAndInitializePrefabs("hazard_assets\\terragroupchainfence.bundle");
+            Assets.FogBundle = LoadAndInitializePrefabs("hazard_assets\\fog.bundle");
             Assets.ExplosionBundle = LoadAndInitializePrefabs("exp\\expl.bundle");
             ExplosionGO = Assets.ExplosionBundle.LoadAsset<GameObject>("Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
             DontDestroyOnLoad(ExplosionGO);

@@ -149,6 +149,7 @@ namespace RealismMod
                 Utils.Logger.LogWarning("total ergo = " + WeaponStats.TotalErgo);
                 Utils.Logger.LogWarning("aimSpeed = " + aimSpeed);
                 Utils.Logger.LogWarning("base aimSpeed = " + baseAimspeed);
+                Utils.Logger.LogWarning("swayStrength = " + swayStrength);
                 Utils.Logger.LogWarning("total ergofactor = " + WeaponStats.ErgoFactor * (1f - (PlayerValues.StrengthSkillAimBuff * 1.5f)));
                 Utils.Logger.LogWarning("gear ergo factor = " + PlayerValues.GearErgoPenalty);
 

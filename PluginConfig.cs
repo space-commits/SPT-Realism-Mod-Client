@@ -41,20 +41,13 @@ namespace RealismMod
         public static ConfigEntry<bool> EnableCrank { get; set; }
         public static ConfigEntry<bool> EnableAdditionalRec { get; set; }
         public static ConfigEntry<float> VisRecoilMulti { get; set; }
-        public static ConfigEntry<float> ResetSpeed { get; set; }
         public static ConfigEntry<float> RecoilClimbFactor { get; set; }
         public static ConfigEntry<float> PistolRecClimbFactor { get; set; }
         public static ConfigEntry<float> RecoilDispersionFactor { get; set; }
         public static ConfigEntry<float> RecoilDispersionSpeed { get; set; }
-        public static ConfigEntry<float> RecoilSmoothness { get; set; }
-        public static ConfigEntry<float> NewPOASensitivity { get; set; }
-        public static ConfigEntry<float> ResetSensitivity { get; set; }
         public static ConfigEntry<float> AfterRecoilRandomness { get; set; }
         public static ConfigEntry<bool> UseFpsRecoilFactor { get; set; }
         public static ConfigEntry<float> RecoilRandomness { get; set; }
-        public static ConfigEntry<bool> ResetVertical { get; set; }
-        public static ConfigEntry<bool> ResetHorizontal { get; set; }
-        public static ConfigEntry<float> RecoilClimbLimit { get; set; }
         public static ConfigEntry<bool> EnableMuzzleEffects { get; set; }
 
         //stat display
@@ -333,17 +326,17 @@ namespace RealismMod
             string waponSettings = ".6. Weapon Settings.";
             string healthSettings = ".7. Health and Meds Settings.";
             string zoneSettings = ".8. Hazard Zone Settings.";
-            string moveSettings = ".8. Movement Settings.";
-            string deafSettings = ".9. Deafening and Audio.";
-            string speed = "10. Weapon Speed Modifiers.";
-            string weapAimAndPos = "11. Weapon Stances And Position.";
-            string stanceBinds = "12. Weapon Stances Keybinds.";
-            string activeAim = "13. Active Aim.";
-            string highReady = "14. High Ready.";
-            string lowReady = "15. Low Ready.";
-            string pistol = "16. Pistol Position And Stance.";
-            string shortStock = "17. Short-Stocking.";
-            string thirdPerson = "18. Third Person Animations.";
+            string moveSettings = ".9. Movement Settings.";
+            string deafSettings = ".10. Deafening and Audio.";
+            string speed = "11. Weapon Speed Modifiers.";
+            string weapAimAndPos = "12. Weapon Stances And Position.";
+            string stanceBinds = "13. Weapon Stances Keybinds.";
+            string activeAim = "14. Active Aim.";
+            string highReady = "15. High Ready.";
+            string lowReady = "16. Low Ready.";
+            string pistol = "17. Pistol Position And Stance.";
+            string shortStock = "18. Short-Stocking.";
+            string thirdPerson = "19. Third Person Animations.";
 
             test1 = config.Bind<float>(testing, "test 1", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 170, IsAdvanced = true, Browsable = true }));
             test2 = config.Bind<float>(testing, "test 2", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 160, IsAdvanced = true, Browsable = true }));
@@ -385,15 +378,8 @@ namespace RealismMod
             CamWiggle = config.Bind<float>(advancedRecoilSettings, "Camera Recoil Wiggle", 0.81f, new ConfigDescription("Higher = More Camera Wiggle", new AcceptableValueRange<float>(0f, 0.9f), new ConfigurationManagerAttributes { Order = 130, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             EnableAdditionalRec = config.Bind<bool>(advancedRecoilSettings, "Enable Additional Visual Recoil", Plugin.ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Enables Additonal Visual Recoil Elements. Makes The Weapon Visually Move More In New Directions While Firing, Doesn't Have A Significant Effect On Spread.", null, new ConfigurationManagerAttributes { Order = 120, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             VisRecoilMulti = config.Bind<float>(advancedRecoilSettings, "Visual Recoil Multi", 1f, new ConfigDescription("Multi For All Of The Mod's Visual Recoil Elements, Makes The Weapon Vibrate More While Firing. Visual Recoil Is Affected By Weapon Stats.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 110, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            ResetVertical = config.Bind<bool>(advancedRecoilSettings, "Enable Vertical Reset", true, new ConfigDescription("Enables Weapon Reseting Back To Original Vertical Position.", null, new ConfigurationManagerAttributes { Order = 80, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            ResetHorizontal = config.Bind<bool>(advancedRecoilSettings, "Enable Horizontal Reset", false, new ConfigDescription("Enables Weapon Reseting Back To Original Horizontal Position.", null, new ConfigurationManagerAttributes { Order = 70, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            ResetSpeed = config.Bind<float>(advancedRecoilSettings, "Reset Speed", 0.65f, new ConfigDescription("How Fast The Weapon's Vertical Position Resets After Firing. Weapon's Convergence Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 60, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            ResetSensitivity = config.Bind<float>(advancedRecoilSettings, "Reset Sensitvity", 0.14f, new ConfigDescription("The Amount Of Mouse Movement Needed After Firing Needed To Cancel Reseting Back To Weapon's Original Position. Lower = Less Movement Needed.", new AcceptableValueRange<float>(0f, 500f), new ConfigurationManagerAttributes { Order = 50, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            NewPOASensitivity = config.Bind<float>(advancedRecoilSettings, "Reset Position Shift Sensitvity", 0.5f, new ConfigDescription("Multi For The Amount Of Mouse Movement Needed While Firing To Change The Position To Where Aim Will Reset After Firing. Lower = Less Movement Needed.", new AcceptableValueRange<float>(0f, 500f), new ConfigurationManagerAttributes { Order = 45, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            RecoilSmoothness = config.Bind<float>(advancedRecoilSettings, "Recoil Smoothness", 7f, new ConfigDescription("How Fast Recoil Moves Weapon While Firing, Higher Value Increases Smoothness.", new AcceptableValueRange<float>(0f, 2000f), new ConfigurationManagerAttributes { Order = 40, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             RecoilClimbFactor = config.Bind<float>(advancedRecoilSettings, "Recoil Climb Multi.", 0.0055f, new ConfigDescription("Multiplier For How Much Non-Pistols Climbs Vertically Per Shot. Weapon's Vertical Recoil Stat Increases This.", new AcceptableValueRange<float>(-50f, 50f), new ConfigurationManagerAttributes { Order = 30, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             PistolRecClimbFactor = config.Bind<float>(advancedRecoilSettings, "Pistol Recoil Climb Multi", 0.001f, new ConfigDescription("Multiplier For How Much Pistols Vertically Per Shot. Weapon's Vertical Recoil Stat Increases This.", new AcceptableValueRange<float>(0f, 5000f), new ConfigurationManagerAttributes { Order = 29, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            RecoilClimbLimit = config.Bind<float>(advancedRecoilSettings, "Recoil Climb Limit", 7f, new ConfigDescription("How Far Recoil Can Climb.", new AcceptableValueRange<float>(0f, 5000f), new ConfigurationManagerAttributes { Order = 25, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             RecoilDispersionFactor = config.Bind<float>(advancedRecoilSettings, "S-Pattern Multi.", 0.0012f, new ConfigDescription("Increases The Size The Classic S Pattern. Weapon's Dispersion Stat Increases This.", new AcceptableValueRange<float>(0f, 10000f), new ConfigurationManagerAttributes { Order = 20, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             RecoilDispersionSpeed = config.Bind<float>(advancedRecoilSettings, "S-Pattern Speed Multi", 3f, new ConfigDescription("Increases The Speed At Which Recoil Makes The Classic S Pattern.", new AcceptableValueRange<float>(0f, 10000f), new ConfigurationManagerAttributes { Order = 10, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             ShotResetDelay = config.Bind<float>(advancedRecoilSettings, "Reset Delay", 0.15f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Recoil Will Not Reset Until It Is Over.", new AcceptableValueRange<float>(0.01f, 0.5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 4, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
@@ -478,7 +464,7 @@ namespace RealismMod
 
             PistolGlobalAimSpeedModifier = config.Bind<float>(speed, "Pistol Aim Speed Multi.", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 17, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             GlobalAimSpeedModifier = config.Bind<float>(speed, "Aim Speed Multi.", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            GlobalReloadSpeedMulti = config.Bind<float>(speed, "Magazine Reload Speed Multi", 1.125f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
+            GlobalReloadSpeedMulti = config.Bind<float>(speed, "Magazine Reload Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             GlobalFixSpeedMulti = config.Bind<float>(speed, "Malfunction Fix Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             GlobalUBGLReloadMulti = config.Bind<float>(speed, "UBGL Reload Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13, IsAdvanced = true, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             RechamberPistolSpeedMulti = config.Bind<float>(speed, "Pistol Rechamber Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
@@ -490,7 +476,7 @@ namespace RealismMod
             GlobalCheckChamberPistolSpeedMulti = config.Bind<float>(speed, "Pistol Chamber Check Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             GlobalCheckAmmoPistolSpeedMulti = config.Bind<float>(speed, "Pistol Check Ammo Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             GlobalCheckAmmoMulti = config.Bind<float>(speed, "Check Ammo Multi.", 1.3f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            QuickReloadSpeedMulti = config.Bind<float>(speed, "Quick Reload Multi", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
+            QuickReloadSpeedMulti = config.Bind<float>(speed, "Quick Reload Multi", 1.45f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             InternalMagReloadMulti = config.Bind<float>(speed, "Internal Magazine Reload", 1.15f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
 
             ModifyBSGCollision = config.Bind<bool>(weapAimAndPos, "Modify BSG Collision", Plugin.ServerConfig.enable_stances, new ConfigDescription("Slows Down Weapon Collision, Makes It Less Janky.", null, new ConfigurationManagerAttributes { Order = 420, Browsable = Plugin.ServerConfig.enable_stances }));

@@ -516,7 +516,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.2f, minDelayBeforePlayback: 60f); //spooky short playback
-                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.38f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
+                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.3f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
                 }
 
                 if (GameWorldController.DoMapRads)

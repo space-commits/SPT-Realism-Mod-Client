@@ -31,7 +31,7 @@ namespace RealismMod
         private static string GetItemClass(CompositeArmorComponent x)
         {
             var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, x.Item.TemplateId);
-            return x.Item.ShortName.Localized(null) + ": " + gearStats.ArmorClass;
+            return x.Item.ShortName.Localized(null) + ": " + gearStats.ArmorClass; 
         }
 
         [PatchPrefix]
@@ -48,7 +48,6 @@ namespace RealismMod
             return false;
         }
     }
-
 
     public class ArmorLevelDisplayPatch : ModulePatch
     {
@@ -97,7 +96,6 @@ namespace RealismMod
             string armorClassString = armorClass >= 10 ? "Lvl " + armorClass + " " : "Lvl " + armorClass + " "; //string.Format("<sprite name=\"armor_classes_{0}\"> ", armorClass)
             return armorClassString + UIClass.smethod_0(penetrationChance);
         }
-
 
         [PatchPostfix]
         private static void PatchPrefix(UIClass __instance, float penetrationPower)

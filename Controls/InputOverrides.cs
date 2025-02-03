@@ -168,7 +168,22 @@ namespace RealismMod
                 {
                     StanceController.IsMounting = false;
                 }
-                if (StanceController.IsMounting && WeaponStats.BipodIsDeployed) ChangeScopeModeOnMount(pwa, fc);
+                if (StanceController.IsMounting && WeaponStats.BipodIsDeployed)
+                {
+                    ChangeScopeModeOnMount(pwa, fc);
+/*
+                    MountPointData mountData = new MountPointData(StanceController.MountPos, StanceController.MountDir, EMountSideDirection.Forward);
+                    Quaternion targetBodyRotation = Quaternion.AngleAxis(player.MovementContext.Yaw, Vector3.up);
+                    player.MovementContext.PlayerMountingPointData.SetData(mountData, player.MovementContext.TransformPosition, player.MovementContext.PoseLevel, player.MovementContext.Yaw, PluginConfig.test10.Value, targetBodyRotation, new Vector2(0f, 0f), new Vector2(-3, 6), new Vector2(-10, 10));
+                    player.MovementContext.EnterMountedState();
+                    player.MovementContext.PlayerAnimator.SetProneBipodMount(true);*/
+
+                    /*         AccessTools.Field(typeof(MovementContext), "_inMountedState").SetValue(player.MovementContext, true);
+                             player.MovementContext.PlayerAnimator.SetProneBipodMount(true);
+                             fc.FirearmsAnimator.SetMounted(true);
+                             player.ProceduralWeaponAnimation.SetMountingData(true, true);*/
+                }
+         
                 return false;
             }
             return true;

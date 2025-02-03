@@ -395,13 +395,6 @@ namespace RealismMod
             if (fc != null)
             {
                 ShootController.ShootUpdate(player);
-                //hyperburst
-                /*          fc.Item.MalfState.OverheatFirerateMultInited = true;
-                            if (ShootController.ShotCount < PluginConfig.test3.Value && (fc.Item.SelectedFireMode == Weapon.EFireMode.fullauto || fc.Item.SelectedFireMode == Weapon.EFireMode.burst)) 
-                            {
-                                fc.Item.MalfState.OverheatFirerateMult = PluginConfig.test1.Value;
-                            }
-                            else fc.Item.MalfState.OverheatFirerateMult = PluginConfig.test2.Value;*/
 
                 WeaponStats.BipodIsDeployed = fc.HasBipod && fc.BipodState;
                 WeaponStats.FireMode = fc.Item.SelectedFireMode;

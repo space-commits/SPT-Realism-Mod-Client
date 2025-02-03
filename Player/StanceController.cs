@@ -3,6 +3,7 @@ using EFT;
 using EFT.Animations;
 using EFT.Animations.NewRecoil;
 using EFT.InventoryLogic;
+using EFT.WeaponMounting;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,6 +57,9 @@ namespace RealismMod
          new Keyframe(0.9f, 0.95f),
          new Keyframe(1, 1f)
         );
+
+        public static Vector3 MountPos {  get; set; }
+        public static Vector3 MountDir { get; set; }
 
         public static bool ShouldBlockAllStances 
         {
@@ -139,9 +143,27 @@ namespace RealismMod
         public static bool HaveSetAiming = false;
         public static bool HaveSetActiveAim = false;
 
-        public static float HighReadyManipBuff = 1f;
-        public static float ActiveAimManipBuff = 1f;
-        public static float LowReadyManipBuff = 1f;
+        public static float HighReadyManipBuff 
+        { 
+            get
+            {
+                return CurrentStance == EStance.HighReady ? 1.18f : 1f;
+            } 
+        }
+        public static float ActiveAimManipBuff
+        {
+            get
+            {
+                return CurrentStance == EStance.ActiveAiming && PluginConfig.ActiveAimReload.Value ? 1.15f : 1f;
+            }
+        }
+        public static float LowReadyManipBuff
+        {
+            get
+            {
+                return CurrentStance == EStance.LowReady ? 1.21f : 1f;
+            }
+        }
 
         public static bool CancelPistolStance = false;
         public static bool PistolIsColliding = false;
@@ -258,6 +280,9 @@ namespace RealismMod
                     float accuracy = fc.Item.GetTotalCenterOfImpact(false); //forces accuracy to update
                     AccessTools.Field(typeof(Player.FirearmController), "float_3").SetValue(fc, accuracy); //update weapon accuracy
                     player.ProceduralWeaponAnimation.UpdateTacticalReload(); //gives better chamber animations
+                    player.MovementContext.PlayerAnimator.SetProneBipodMount(player.MovementContext.IsInPronePose && WeaponStats.BipodIsDeployed && value);
+                    fc.FirearmsAnimator.SetMounted(value);
+                    //player.ProceduralWeaponAnimation.SetMountingData(value, BracingDirection == EBracingDirection.Top);
                 }
             }
         }
@@ -780,10 +805,6 @@ namespace RealismMod
                 }
                 else IsInForcedLowReady = false;
             }
-
-            HighReadyManipBuff = CurrentStance == EStance.HighReady ? 1.22f : 1f;
-            ActiveAimManipBuff = CurrentStance == EStance.ActiveAiming && PluginConfig.ActiveAimReload.Value ? 1.15f : 1f;
-            LowReadyManipBuff = CurrentStance == EStance.LowReady ? 1.25f : 1f;
 
             if (ShouldResetStances)
             {
@@ -1686,7 +1707,7 @@ namespace RealismMod
             SetRotationClamped(ref _cumulativeMountYaw, ref _cumulativeMountPitch, clamp);
         }
 
-        static void ApplyPivotPoint(ProceduralWeaponAnimation pwa, float pivotPoint, float aimPivot)
+        static void ApplyPivotPoint(ProceduralWeaponAnimation pwa, Player player, float pivotPoint, float aimPivot)
         {
             float aimMultiplier = 1f - ((1f - aimPivot) * _mountAimSmoothed);
 
@@ -1694,14 +1715,7 @@ namespace RealismMod
 
             if (weaponRootAnim == null) return;
 
-            weaponRootAnim.LocalRotateAround(
-                Vector3.up * -pivotPoint,
-                new Vector3(
-                    _cumulativeMountPitch * aimMultiplier,
-                    0,
-                    _cumulativeMountYaw * aimMultiplier
-                )
-            );
+            weaponRootAnim.LocalRotateAround(Vector3.up * -pivotPoint, new Vector3( _cumulativeMountPitch * aimMultiplier, 0, _cumulativeMountYaw * aimMultiplier));
 
             // Not doing this messes up pivot for all offsets after this
             weaponRootAnim.LocalRotateAround(
@@ -1716,7 +1730,7 @@ namespace RealismMod
 
             UpdateMountRotation(currentYawPitch, clamp);
             UpdateAimSmoothed(pwa, deltaTime);
-            ApplyPivotPoint(pwa, pivotPoint, aimPivot);
+            ApplyPivotPoint(pwa, player, pivotPoint, aimPivot);
         }
 
         static readonly System.Diagnostics.Stopwatch aimWatch = new();
