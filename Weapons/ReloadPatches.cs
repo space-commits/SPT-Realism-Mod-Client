@@ -23,7 +23,6 @@ using EFT.Animations;
 
 namespace RealismMod
 {
-
     //enable reloading while aiming
     public class TacticalReloadPatch : ModulePatch
     {

@@ -1193,7 +1193,7 @@ namespace RealismMod
                     Vector3 distanceVect = player.AIData.BotOwner.AimingData.RealTargetPoint - player.AIData.BotOwner.MyHead.position;
                     float realDistance = distanceVect.magnitude;
 
-                    bool isTacBot = StanceController.botsToUseTacticalStances.IndexOf(player.AIData.BotOwner.Profile.Info.Settings.Role.ToString()) != -1;
+                    bool isTacBot = StanceController._botsToUseTacticalStances.IndexOf(player.AIData.BotOwner.Profile.Info.Settings.Role.ToString()) != -1;
                     bool isPeace = player.AIData.BotOwner.Memory.IsPeace;
                     bool notShooting = !player.AIData.BotOwner.ShootData.Shooting && Time.time - player.AIData.BotOwner.ShootData.LastTriggerPressd > 15f;
                     bool isInStance = false;

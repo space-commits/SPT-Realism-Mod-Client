@@ -25,6 +25,7 @@ using TunnelVisionInterface = GInterface325;
 using TremorInterface = GInterface323;
 using RealismMod.Health;
 using static EFT.Player;
+using System.Reflection.Emit;
 
 namespace RealismMod
 {
@@ -745,7 +746,7 @@ namespace RealismMod
             MedsItemClass placeHolderItem = (MedsItemClass)Singleton<ItemFactoryClass>.Instance.CreateItem(Utils.GenId(), debuffId, null);
             placeHolderItem.CurrentAddress = player.InventoryController.FindQuestGridToPickUp(placeHolderItem); //item needs an address to be valid, this is a hacky workaround
             player.ActiveHealthController.DoMedEffect(placeHolderItem, EBodyPart.Head, null);
-
+            
             if (PluginConfig.EnableGeneralLogging.Value)
             {
                 Utils.Logger.LogWarning("is null " + (placeHolderItem == null));
@@ -2191,7 +2192,7 @@ namespace RealismMod
             }
 
             InventoryCheckerHelper(inventoryItems);
-            InventoryCheckerHelper(questItems, true); //needs tp be handled differently
+            InventoryCheckerHelper(questItems, true); //needs to be handled differently
         }
 
         private bool RollRadsCoughChance() 

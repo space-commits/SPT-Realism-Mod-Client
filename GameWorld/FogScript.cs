@@ -24,7 +24,7 @@ public class FogScript : MonoBehaviour
     private int _maxParticles = 1500;
     private float _timeExisted = 0f;
     private float _alpha= 0.08f;
-    private float _speed = 1f;
+    private float _speed = 2.5f;
     private MinMaxCurve _startSpeed = new ParticleSystem.MinMaxCurve(1, 1);
 
     void Awake()
@@ -43,7 +43,7 @@ public class FogScript : MonoBehaviour
             ParticleRate = 5000f; //ensure max particles
             ParticleSize = new ParticleSystem.MinMaxCurve(16f, 24f);
             _alpha = 0.12f;
-            _speed = 1.5f;
+            _speed = 3f;
         }
     }
 

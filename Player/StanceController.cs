@@ -35,7 +35,7 @@ namespace RealismMod
     public static class StanceController
     {
         //need to change to type WildSpawnType, and somehow get PMC type
-        public static string[] botsToUseTacticalStances = { "bossKolontay", "pmcBEAR", "pmcUSEC", "exUsec", "pmcBot", "bossKnight", "followerBigPipe", "followerBirdEye", "bossGluhar", "followerGluharAssault", "followerGluharScout", "followerGluharSecurity", "followerGluharSnipe" };
+        public static string[] _botsToUseTacticalStances = { "bossKolontay", "pmcBEAR", "pmcUSEC", "exUsec", "pmcBot", "bossKnight", "followerBigPipe", "followerBirdEye", "bossGluhar", "followerGluharAssault", "followerGluharScout", "followerGluharSecurity", "followerGluharSnipe" };
         /*        public static Dictionary<string, bool> LightDictionary = new Dictionary<string, bool>();*/
 
         public static Player.BetterValueBlender StanceBlender = new Player.BetterValueBlender

@@ -1,8 +1,11 @@
 ﻿using EFT;
 using EFT.InventoryLogic;
+using EFT.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static RootMotion.FinalIK.InteractionTrigger.Range;
 using static WheelDrive;
 using ArmorTemplate = GClass2550; //to find again, search for HasHinge field
 
@@ -11,7 +14,8 @@ namespace RealismMod
     public static class GearController
     {
         public const string SAFE_CONTAINER_ID = "66fd588d397ed74159826cf0";
-
+        public static readonly string[] GasAnalysers = { "590a3efd86f77437d351a25b" };
+        public static readonly string[] RadDevices = { "5672cb724bdc2dc2088b456b" };
         public static bool HasSafeContainer { get; set; } = false;
         public static bool HasGasMask { get; private set; } = false;
         public static bool HasGasFilter { get; private set; } = false;
@@ -29,10 +33,6 @@ namespace RealismMod
           EquipmentSlot.Backpack,
           EquipmentSlot.SecuredContainer
         };
-
-        private static float _currentGasProtection;
-        private static float _currentRadProtection;
-        private static float _gasMaskDurabilityFactor;
 
         public static bool HasGasMaskWithFilter
         {
@@ -69,7 +69,71 @@ namespace RealismMod
             }
         }
 
+        private static float _currentGasProtection;
+        private static float _currentRadProtection;
+        private static float _gasMaskDurabilityFactor;
         private static bool _hadGasMask = true;
+        private static ItemAddress _gasMaskAddress;
+
+        private static Item FindGasMask(Inventory invClass)
+        {
+            IEnumerable<Item> slot = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.Pockets, EquipmentSlot.ArmBand, EquipmentSlot.TacticalVest }) ?? Enumerable.Empty<Item>();
+
+            foreach (var item in slot)
+            {
+                if (item == null || item?.TemplateId == null) continue;
+
+                var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
+                if (gearStats.IsGasMask)
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
+
+        private static void EquipGasMask(Item item, Player player)
+        {
+            ItemAddress itemAddress = player.InventoryController.FindSlotToPickUp(item);
+            if (itemAddress != null)
+            {
+                ItemUiContext.smethod_0(player.InventoryController, item, InteractionsHandlerClass.Move(item, itemAddress, player.InventoryController, true), null);
+                player.MovementContext.PlayerAnimator.AnimatedInteractions.SetInteraction(EInteraction.FaceshieldOnGear);
+                player.OnAnimatedInteraction(EInteraction.FaceshieldOnGear);
+            }
+        }
+
+        private static void RemoveGasMask(Item item, Player player)
+        {
+            if (_gasMaskAddress != null) 
+            {
+                ItemUiContext.smethod_0(player.InventoryController, item, InteractionsHandlerClass.Move(item, _gasMaskAddress, player.InventoryController, true), null);
+                player.MovementContext.PlayerAnimator.AnimatedInteractions.SetInteraction(EInteraction.FaceshieldOffGear);
+                player.OnAnimatedInteraction(EInteraction.FaceshieldOffGear);
+            }
+        }
+
+        public static void ToggleGasMask(Player player)
+        {
+            var faceCoverSlot = player?.Inventory?.Equipment?.GetSlot(EquipmentSlot.FaceCover);
+            if (faceCoverSlot != null)
+            {
+                var slotItem = faceCoverSlot?.ContainedItem;
+                if (slotItem == null)
+                {
+                    var gasMask = FindGasMask(player.Inventory);
+                    if (gasMask != null)
+                    {
+                        EquipGasMask(gasMask, player);
+                        _gasMaskAddress = gasMask.CurrentAddress;
+                    }
+                }
+                else
+                {
+                    RemoveGasMask(slotItem, player);
+                }
+            }
+        }
 
         private static void HandleGasMaskEffects(Player player, float gasProtection, float radProtection) 
         {
@@ -106,27 +170,17 @@ namespace RealismMod
             {
                 if (item == null || item?.TemplateId == null) continue;
 
-                if (item.TemplateId == "590a3efd86f77437d351a25b")
-                {
-                    HasGasAnalyser = true;
-                }
-                if (item.TemplateId == "5672cb724bdc2dc2088b456b")
-                {
-                    HasGeiger = true;
-                }
+                if (Array.Exists(GasAnalysers, i => i == item.TemplateId)) HasGasAnalyser = true;
+                if (Array.Exists(RadDevices, i => i == item.TemplateId)) HasGeiger = true;
             }
         }
 
         public static void CheckForDevices(Inventory invClass) 
         {
-            IEnumerable<Item> vestItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.TacticalVest}) ?? Enumerable.Empty<Item>();
-            IEnumerable<Item> armbandItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.ArmBand }) ?? Enumerable.Empty<Item>();
-            IEnumerable<Item> pocketItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.Pockets }) ?? Enumerable.Empty<Item>();
+            IEnumerable<Item> items = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.TacticalVest, EquipmentSlot.ArmBand, EquipmentSlot.Pockets }) ?? Enumerable.Empty<Item>();
             HasGasAnalyser = false;
             HasGeiger = false;
-            DeviceCheckerHelper(vestItems);
-            DeviceCheckerHelper(armbandItems);
-            DeviceCheckerHelper(pocketItems);
+            DeviceCheckerHelper(items);
         }
 
         public static float GetModifiedInventoryWeight(Inventory invClass)
@@ -172,10 +226,9 @@ namespace RealismMod
             return containedItem.GetItemComponent<EquipmentPenaltyComponent>();
         }
 
-        public static Item GetSlotItem(Player player, EquipmentSlot slot) 
+        public static Item GetSlotItem(Player player, EquipmentSlot slot)
         {
            return player?.Inventory?.Equipment?.GetSlot(slot)?.ContainedItem;
-
         }
 
         public static void UpdateFilterResource(Player player, PlayerZoneBridge phb)
@@ -238,7 +291,7 @@ namespace RealismMod
             return faceCoverItem.GetItemComponent<EquipmentPenaltyComponent>();
         }
 
-        public static void GetGearPenalty(Player player)
+        public static void CheckGear(Player player)
         {
             FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
             NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
@@ -379,7 +432,5 @@ namespace RealismMod
             PlayerValues.GearReloadMulti = reloadMulti;
             PlayerValues.GearAllowsADS = allowADS;
         }
-
-
     }
 }

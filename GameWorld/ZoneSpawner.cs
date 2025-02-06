@@ -158,7 +158,7 @@ namespace RealismMod
             }
         }
 
-        private static void SetUpsubZone<T>(HazardLocation hazardLocation, Zone subZone, EZoneType zoneType, bool isBufferZone = false) where T : MonoBehaviour, IZone
+        private static void SetUpSubZone<T>(HazardLocation hazardLocation, Zone subZone, EZoneType zoneType, bool isBufferZone = false) where T : MonoBehaviour, IZone
         {
             string zoneName = subZone.Name;
             Vector3 position = new Vector3(subZone.Position.X, subZone.Position.Y, subZone.Position.Z);
@@ -215,7 +215,7 @@ namespace RealismMod
             if (!isBufferZone && subZone.UseVisual && isGasZone && PluginConfig.ShowGasEffects.Value) AddGasVisual(subZone, hazardZone, zoneType, position, rotation, size);
 
             // visual representation for debugging
-            if (PluginConfig.ZoneDebug.Value)
+            if (PluginConfig.ZoneDebug.Value && !isBufferZone)
             {
                 GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 visualRepresentation.name = zoneName + "Visual";
@@ -236,13 +236,13 @@ namespace RealismMod
             Zone bufferZone = new Zone();
             bufferZone.Name = subZone.Name + "_buffeZone";
             bufferZone.UsesDistanceFalloff = false;
-            bufferZone.Strength = 5;
+            bufferZone.Strength = 10;
             bufferZone.BlockNav = false;
             bufferZone.Position = subZone.Position;
             bufferZone.Rotation = subZone.Rotation;
-            Vector3 size = new Vector3(subZone.Size.X, subZone.Size.Y, subZone.Size.Z) * 1.33f;
+            Vector3 size = new Vector3(subZone.Size.X, subZone.Size.Y, subZone.Size.Z) * 1.4f;
             bufferZone.Size = new Size { X = size.x, Y = size.y, Z = size.z };
-            SetUpsubZone<T>(hazardLocation, bufferZone, zoneType, true);
+            SetUpSubZone<T>(hazardLocation, bufferZone, zoneType, true);
         }
 
         public static void CreateZone<T>(HazardLocation hazardLocation, EZoneType zoneType) where T : MonoBehaviour, IZone
@@ -253,7 +253,7 @@ namespace RealismMod
 
             foreach (var subZone in hazardLocation.Zones)
             {
-                SetUpsubZone<T>(hazardLocation, subZone, zoneType);
+                SetUpSubZone<T>(hazardLocation, subZone, zoneType);
                 if(subZone.UseVisual && (zoneType == EZoneType.Gas || zoneType == EZoneType.GasAssets)) AddBufferZone<T>(hazardLocation, subZone, zoneType);
             }
         }

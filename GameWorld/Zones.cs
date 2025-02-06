@@ -139,15 +139,14 @@ namespace RealismMod
             _fogScript = GetComponentsInChildren<FogScript>();
         }
 
-        //I either need to 100% set it programmatically, or just do it manually, so don't bother with this right now
+        //I either need to 100% set the values programmatically, or just do it manually. Don't use this too heavily.
         private void ModifyVisualEffects() 
         {
             foreach (var fog in _fogScript)
             {
-                float strengthFactor = 1f + CalculateGasStrengthBox(Vector3.zero, true); //Mathf.Pow((1f + CalculateGasStrengthBox(Vector3.zero, true)), 0.5f);
+                float strengthFactor = Mathf.Pow((1f + CalculateGasStrengthBox(Vector3.zero, true)), 0.25f);
                 fog.ParticleRate *= strengthFactor;
                 fog.OpacityModi *= strengthFactor;
-                Utils.Logger.LogWarning($"zone {this.name}, strength {strengthFactor}");
             }
         }
 

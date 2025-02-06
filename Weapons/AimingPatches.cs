@@ -35,7 +35,7 @@ namespace RealismMod
 
                 if (HeadDeviceStateChanged) 
                 {
-                    GearController.GetGearPenalty(Utils.GetYourPlayer());
+                    GearController.CheckGear(Utils.GetYourPlayer());
                     HeadDeviceStateChanged = false;
                 }
 

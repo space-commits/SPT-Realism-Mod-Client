@@ -16,9 +16,47 @@ using WeaponSkills = EFT.SkillManager.GClass1981;
 using WeaponStateClass = GClass1668;
 using EFT.AssetsManager;
 using System;
+using static RootMotion.FinalIK.InteractionTrigger.Range;
+using Diz.LanguageExtensions;
+using System.Linq;
+using EFT.UI;
+using System.Runtime.CompilerServices;
 
 namespace RealismMod
 {
+    //door animations are jank as of SPT 3.10, and don't work well with stances
+    public class DoorAnimationOverride : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+
+            return typeof(MovementContext).GetMethod("SetInteractInHands", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void PatchPrefix(MovementContext __instance, ref EInteraction interaction)
+        {
+            Player player = (Player)AccessTools.Field(typeof(MovementContext), "_player").GetValue(__instance);
+            if (player.IsYourPlayer)
+            {
+                Logger.LogWarning("interaction " + interaction);
+                switch (interaction)
+                {
+                    case EInteraction.DoorPullBackward:
+                    case EInteraction.PullHingeLeft:
+                    case EInteraction.PushHingeLeft:
+                        interaction = (EInteraction)PluginConfig.test9.Value;
+                        break;
+                    case EInteraction.DoorPushForward:
+                    case EInteraction.PushHingeRight:
+                    case EInteraction.PullHingeRight:
+                        interaction = (EInteraction)PluginConfig.test10.Value;
+                        break;
+                }
+            }
+        }
+    }
+
     public class FlyingBulletPatch : ModulePatch
     {
         private static FieldInfo _playerField;
@@ -109,7 +147,7 @@ namespace RealismMod
                 PlayerValues.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
-                GearController.GetGearPenalty(__instance);
+                GearController.CheckGear(__instance);
                 if (Plugin.ServerConfig.enable_hazard_zones) 
                 { 
                     Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
@@ -140,7 +178,7 @@ namespace RealismMod
             {
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
-                GearController.GetGearPenalty(__instance);
+                GearController.CheckGear(__instance);
                 GearController.CheckForDevices(__instance.Inventory);
                 if (Plugin.ServerConfig.enable_hazard_zones) Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
             }
@@ -428,11 +466,9 @@ namespace RealismMod
 
                 GetStaminaPerc(player);
 
-                if (!ShootController.IsFiringMovement && Plugin.ServerConfig.enable_stances)
-                {
-                    SetStancePWAValues(player, fc);
-                }
-                if (StanceController.IsInThirdPerson) player.MovementContext.SetPatrol(StanceController.CurrentStance == EStance.PatrolStance ? true : false);
+                if (!ShootController.IsFiringMovement && Plugin.ServerConfig.enable_stances) SetStancePWAValues(player, fc);
+
+                player.MovementContext.SetPatrol(StanceController.IsInThirdPerson && StanceController.CurrentStance == EStance.PatrolStance ? true : false);
             }
             else if (Plugin.ServerConfig.enable_stances && PluginConfig.EnableStanceStamChanges.Value && !StanceController.HaveResetStamDrain)
             {
@@ -468,7 +504,6 @@ namespace RealismMod
             if (Utils.PlayerIsReady && __instance.IsYourPlayer)
             {
                 GameWorldController.TimeInRaid += Time.deltaTime;
-
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 PlayerValues.IsSprinting = __instance.IsSprintEnabled;
                 PlayerValues.EnviroType = __instance.Environment;
@@ -476,6 +511,11 @@ namespace RealismMod
                 StanceController.IsInInventory = __instance.IsInventoryOpened;
                 //bit wise operation, Mask property has serveral combined enum values
                 PlayerValues.IsMoving = __instance.IsSprintEnabled || (__instance.ProceduralWeaponAnimation.Mask & EProceduralAnimationMask.Walking) != (EProceduralAnimationMask)0;//Plugin.FikaPresent ? false : __instance.IsSprintEnabled ||  !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.x, 0f, 0.001f) || !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.z, 0f, 0.001f);
+
+                if (Input.GetKeyDown(PluginConfig.ToggleGasMaskKey.Value.MainKey) && PluginConfig.ToggleGasMaskKey.Value.Modifiers.All(Input.GetKey)) 
+                {
+                    GearController.ToggleGasMask(__instance);
+                }
 
                 if (PluginConfig.EnableSprintPenalty.Value)
                 {

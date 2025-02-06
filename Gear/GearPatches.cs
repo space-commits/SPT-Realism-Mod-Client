@@ -42,7 +42,6 @@ namespace RealismMod
         }
     }
 
-
     public class EquipmentPenaltyComponentPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

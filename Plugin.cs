@@ -36,6 +36,7 @@ namespace RealismMod
         public bool bot_loot_changes { get; set; }
         public bool spawn_waves { get; set; }
         public bool boss_spawns { get; set; }
+        public bool loot_changes { get; set; }
     }
 
     public class RealismEventInfo : IRealismInfo
@@ -664,14 +665,18 @@ namespace RealismMod
             new FaceshieldMaskPatch().Enable();
             new PlayPhrasePatch().Enable();
             new OnGameStartPatch().Enable();
-            new StaticLootSpawnPatch().Enable();
-            new RigidLootSpawnPatch().Enable();
             new OnGameEndPatch().Enable();
             new QuestCompletePatch().Enable();
 
             //stats used by multiple features
             new RigConstructorPatch().Enable();
             new EquipmentPenaltyComponentPatch().Enable();
+
+            if (ServerConfig.loot_changes)
+            {
+                new StaticLootSpawnPatch().Enable();
+                new RigidLootSpawnPatch().Enable();
+            }
         }
 
         private void LoadHazardPatches()
@@ -801,6 +806,7 @@ namespace RealismMod
 
         private void LoadStancePatches()
         {
+            new DoorAnimationOverride().Enable();
             new ChangeScopePatch().Enable();
             new TacticalReloadPatch().Enable();
             new WeaponOverlapViewPatch().Enable();
