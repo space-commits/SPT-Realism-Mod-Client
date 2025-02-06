@@ -4,35 +4,46 @@ using UnityEngine;
 using Unity;
 using RealismMod;
 using static UnityEngine.ParticleSystem;
+using static MuzzleJet;
+using static Systems.Effects.Effects.Effect;
 
 public class FogScript : MonoBehaviour
 {
-    public float ParticleLifeTime { get; set; }
-    public float ParticleSize { get; set; }
+    public MinMaxCurve ParticleSize { get; set; }
     public Vector3 Scale { get; set; }
+    public float ParticleRate { get; set; }
+    public float OpacityModi { get; set; }
+    public float SpeedModi { get; set; }
+    public bool UsePhysics { get; set; }
     private ParticleSystem _ps;
     private ParticleSystem.MainModule _mainModule;
     private ParticleSystem.ShapeModule _shapeModule;
     private ParticleSystem.CollisionModule _collisionModule;
+    private ParticleSystem.EmissionModule _emissionModule;
     private bool _isLabs = false;
-    private int _maxParticles = 600;
+    private int _maxParticles = 1500;
     private float _timeExisted = 0f;
+    private float _alpha= 0.08f;
+    private float _speed = 1f;
+    private MinMaxCurve _startSpeed = new ParticleSystem.MinMaxCurve(1, 1);
 
     void Awake()
     {
         _ps = GetComponent<ParticleSystem>();
         _mainModule = _ps.main;
         _shapeModule = _ps.shape;
+        _emissionModule = _ps.emission;
         _collisionModule = _ps.collision;
-        _collisionModule.enabled = false;
-        _mainModule.gravityModifier = 0f;
-        _shapeModule.scale = Scale;
+        _collisionModule.enabled = UsePhysics;
+
         _isLabs = GameWorldController.CurrentMap == "laboratory";
         if (_isLabs) 
         {
             _maxParticles = 5000;
-            ParticleLifeTime = 100f;
-            ParticleSize = 50f;
+            ParticleRate = 5000f; //ensure max particles
+            ParticleSize = new ParticleSystem.MinMaxCurve(16f, 24f);
+            _alpha = 0.12f;
+            _speed = 1.5f;
         }
     }
 
@@ -43,15 +54,14 @@ public class FogScript : MonoBehaviour
             _timeExisted += Time.deltaTime;
         }
 
-        _shapeModule.scale = Scale;
+        _shapeModule.scale = Scale * PluginConfig.test1.Value; //0.85 
         _mainModule.maxParticles = _maxParticles; 
-        _mainModule.gravityModifier = 0.015f; 
-        _mainModule.simulationSpeed = _timeExisted <= 2f ? 100f : 0.01f; //early stages of particle sim have lighting issues, speed it up to get to a later stage of the sim.
-        _mainModule.startSizeX = ParticleSize; 
-        _mainModule.startSizeY = ParticleSize; 
-        _mainModule.startSizeZ = ParticleSize; 
-        _mainModule.startColor = new UnityEngine.Color(1f, 1f, 1f, 1f);
-        _mainModule.startLifetime = ParticleLifeTime; 
-        _mainModule.duration = 5f; 
+        _mainModule.gravityModifier = 0f; 
+        _mainModule.simulationSpeed = (_timeExisted <= 2f ? 1000 : _speed) * SpeedModi * PluginConfig.test2.Value; 
+        _mainModule.startSpeed = _startSpeed; 
+        _mainModule.startSize = ParticleSize; 
+        _mainModule.startLifetime = new ParticleSystem.MinMaxCurve(20f, 30f); 
+        _emissionModule.rateOverTime = ParticleRate;
+        _mainModule.startColor = new Color(1f, 1f, 1f, _alpha * OpacityModi * PluginConfig.test3.Value);
     }
 }

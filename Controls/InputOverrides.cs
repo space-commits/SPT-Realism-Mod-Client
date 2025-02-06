@@ -162,7 +162,7 @@ namespace RealismMod
                     if (WeaponStats.BipodIsDeployed && (StanceController.BracingDirection != EBracingDirection.Top)) return false;
                     StanceController.IsMounting = !StanceController.IsMounting;
                     if (StanceController.IsMounting) StanceController.CancelAllStances();
-                    StanceController.DoWiggleEffects(player, pwa, fc.Weapon, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true, wiggleFactor: 0.5f);
+                    StanceController.DoWiggleEffects(player, pwa, fc.Weapon, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
                 }
                 if (!StanceController.IsBracing && StanceController.IsMounting)
                 {

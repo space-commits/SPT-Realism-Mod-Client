@@ -67,7 +67,8 @@ namespace RealismMod
         GearSpecific,
         Unknown,
         Pills,
-        Food
+        Food,
+        Gas
     }
 
     public class RealismHealthController
@@ -1197,7 +1198,7 @@ namespace RealismMod
             //will have to make mask exception for moustache, balaclava etc.
             if (mouthBlocked)
             {
-                if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Food), EFT.Communications.ENotificationDurationType.Long);
+                if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(IsCoughingInGas ? EHealBlockType.Gas : EHealBlockType.Food), EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
@@ -1465,6 +1466,8 @@ namespace RealismMod
                     return "Can't Take Pills, Mouth Is Blocked By Active Faceshield/NVGs Or Mask";
                 case EHealBlockType.Food:
                     return "Can't Eat/Drink, Mouth Is Blocked By Active Faceshield/NVGs Or Mask";
+                case EHealBlockType.Gas:
+                    return "Can't Eat/Drink Due To Gas Exposure";
                 case EHealBlockType.Unknown:
                     return "No Suitable Bodypart Was Found For Healing";
                 default:
@@ -1527,7 +1530,7 @@ namespace RealismMod
                 Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
                 Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
 
-                bool mouthBlocked = Plugin.RealHealthController.MouthIsBlocked(player, head, face, equipment);
+                bool mouthBlocked = MouthIsBlocked(player, head, face, equipment);
                 bool hasBodyGear = vest != null || tacrig != null; //|| bag != null
                 bool hasHeadGear = head != null || ears != null || face != null;
 
@@ -2211,7 +2214,6 @@ namespace RealismMod
                     float timerFactor = (1f + PlayerValues.ImmuneSkillStrong) * (1f - (HazardTracker.TotalRadiation / 200f));
                     int timer =  Mathf.RoundToInt(300f * timerFactor);
                     if (Time.time % timer < 1f) DoCoughingAudio = true;
-               
                 }
                 else DoCoughingAudio = true;
 

@@ -35,6 +35,7 @@ namespace RealismMod
         public bool realistic_zombies { get; set; }
         public bool bot_loot_changes { get; set; }
         public bool spawn_waves { get; set; }
+        public bool boss_spawns { get; set; }
     }
 
     public class RealismEventInfo : IRealismInfo
@@ -393,6 +394,7 @@ namespace RealismMod
             Assets.RadSign1 = LoadAndInitializePrefabs("hazard_assets\\radsign1.bundle");
             Assets.TerraGroupFence = LoadAndInitializePrefabs("hazard_assets\\terragroupchainfence.bundle");
             Assets.FogBundle = LoadAndInitializePrefabs("hazard_assets\\fog.bundle");
+            Assets.GasBundle = LoadAndInitializePrefabs("hazard_assets\\gas.bundle");
             Assets.ExplosionBundle = LoadAndInitializePrefabs("exp\\expl.bundle");
             ExplosionGO = Assets.ExplosionBundle.LoadAsset<GameObject>("Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
             DontDestroyOnLoad(ExplosionGO);
@@ -677,7 +679,7 @@ namespace RealismMod
             new HealthPanelPatch().Enable();
             new DropItemPatch().Enable();
             new GetAvailableActionsPatch().Enable();
-            new BossSpawnPatch().Enable();
+            if (ServerConfig.boss_spawns) new BossSpawnPatch().Enable();
             new LampPatch().Enable();
             new AmbientSoundPlayerGroupPatch().Enable();
             new DayTimeAmbientPatch().Enable();

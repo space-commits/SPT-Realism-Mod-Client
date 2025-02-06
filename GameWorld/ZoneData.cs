@@ -42,6 +42,7 @@ namespace RealismMod
         public static AssetBundle RadSign1 { get; set; }
         public static AssetBundle TerraGroupFence { get; set; }
         public static AssetBundle FogBundle { get; set; }
+        public static AssetBundle GasBundle { get; set; }
         public static AssetBundle ExplosionBundle { get; set; }
     }
 
@@ -296,8 +297,11 @@ namespace RealismMod
         public Rotation Rotation { get; set; }
         public Size Size { get; set; }
         public bool UseVisual { get; set; } = true;
-        public float VisParticleLifeTime { get; set; } = 5f;
-        public float VisParticleSizeMult { get; set; } = 1f;
+        public float VisParticleRate { get; set; } = 40f;
+        public float VisOpacityModi { get; set; } = 1f;
+        public float VisSpeedModi { get; set; } = 1f;
+        public float VisZoneSizeMulti { get; set; } = 0.85f;
+        public bool VisUsePhysics { get; set; } = false;
     }
 
     public class Loot 

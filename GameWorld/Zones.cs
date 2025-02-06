@@ -112,6 +112,7 @@ namespace RealismMod
         private bool _isSphere = false;
         private float _tick = 0f;
         private float _maxDistance = 0f;
+        private FogScript[] _fogScript;
 
         void Start()
         {
@@ -135,6 +136,19 @@ namespace RealismMod
             }
             Name = name;
             ActiveDevices = new List<GameObject>();
+            _fogScript = GetComponentsInChildren<FogScript>();
+        }
+
+        //I either need to 100% set it programmatically, or just do it manually, so don't bother with this right now
+        private void ModifyVisualEffects() 
+        {
+            foreach (var fog in _fogScript)
+            {
+                float strengthFactor = 1f + CalculateGasStrengthBox(Vector3.zero, true); //Mathf.Pow((1f + CalculateGasStrengthBox(Vector3.zero, true)), 0.5f);
+                fog.ParticleRate *= strengthFactor;
+                fog.OpacityModi *= strengthFactor;
+                Utils.Logger.LogWarning($"zone {this.name}, strength {strengthFactor}");
+            }
         }
 
         public override void TriggerEnter(Player player)
@@ -194,10 +208,10 @@ namespace RealismMod
             }
         }
 
-        float CalculateGasStrengthBox(Vector3 playerPosition)
+        float CalculateGasStrengthBox(Vector3 playerPosition, bool getStaticValue = false)
         {
             if (!UsesDistanceFalloff) return (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f)) / 1000f;
-            float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
+            float distance = getStaticValue ? 1f : Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float invertedDistance = _maxDistance - distance;  // invert the distance
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
             return invertedDistance / (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));

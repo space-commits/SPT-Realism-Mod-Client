@@ -109,11 +109,11 @@ namespace RealismMod
         public float HpRegened { get; set; }
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
-        public float HpRegenLimit { get; }
+        public float HpRegenLimitFactor { get; }
         private bool hasRemovedTrnqt = false;
         private bool haveNotified = false;
 
-        public SurgeryEffect(float hpTick, int? dur, EBodyPart part, Player player, int delay, float limit, RealismHealthController realHealthController)
+        public SurgeryEffect(float hpTick, int? dur, EBodyPart part, Player player, int delay, float limitFactor, RealismHealthController realHealthController)
         {
             TimeExisted = 0;
             HpRegened = 0;
@@ -122,7 +122,7 @@ namespace RealismMod
             BodyPart = part;
             _Player = player;
             Delay = delay;
-            HpRegenLimit = limit;
+            HpRegenLimitFactor = limitFactor;
             EffectType = EHealthEffectType.Surgery;
             RealHealthController = realHealthController;
         }
@@ -148,7 +148,7 @@ namespace RealismMod
 
                 float currentHp = _Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
                 float maxHp = _Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Maximum;
-                float maxHpRegen = maxHp * HpRegenLimit;
+                float maxHpRegen = maxHp * HpRegenLimitFactor;
 
                 if (HpRegened < maxHpRegen && TimeExisted % 3 == 0)
                 {
