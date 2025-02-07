@@ -39,7 +39,6 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(MovementContext), "_player").GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                Logger.LogWarning("interaction " + interaction);
                 switch (interaction)
                 {
                     case EInteraction.DoorPullBackward:

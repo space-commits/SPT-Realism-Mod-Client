@@ -1053,7 +1053,7 @@ namespace RealismMod
                     slots.Add(EquipmentSlot.Headwear);
                     slots.Add(EquipmentSlot.Earpiece);
                     slots.Add(EquipmentSlot.FaceCover);
-                }
+                } 
                 if (BodyPartHasBleed(player, EBodyPart.Stomach) || BodyPartHasBleed(player, EBodyPart.Chest))
                 {
                     slots.Add(EquipmentSlot.TacticalVest);

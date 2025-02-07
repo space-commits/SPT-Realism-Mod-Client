@@ -1,10 +1,15 @@
-﻿using EFT;
+﻿using Diz.LanguageExtensions;
+using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
+using GPUInstancer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
+using System.Reflection.Emit;
 using UnityEngine;
+using static EFT.SpeedTree.TreeWind;
 using static RootMotion.FinalIK.InteractionTrigger.Range;
 using static WheelDrive;
 using ArmorTemplate = GClass2550; //to find again, search for HasHinge field
@@ -73,13 +78,13 @@ namespace RealismMod
         private static float _currentRadProtection;
         private static float _gasMaskDurabilityFactor;
         private static bool _hadGasMask = true;
-        private static ItemAddress _gasMaskAddress;
+        private static ItemAddress _gasMaskStartingAddress;
+
 
         private static Item FindGasMask(Inventory invClass)
         {
-            IEnumerable<Item> slot = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.Pockets, EquipmentSlot.ArmBand, EquipmentSlot.TacticalVest }) ?? Enumerable.Empty<Item>();
-
-            foreach (var item in slot)
+            IEnumerable<Item> mainSlots = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.Pockets, EquipmentSlot.ArmBand, EquipmentSlot.TacticalVest }) ?? Enumerable.Empty<Item>();
+            foreach (var item in mainSlots)
             {
                 if (item == null || item?.TemplateId == null) continue;
 
@@ -92,25 +97,114 @@ namespace RealismMod
             return null;
         }
 
+        private static void DoEquipAnimation(Player player) 
+        {
+            player.MovementContext.PlayerAnimator.AnimatedInteractions.SetInteraction(EInteraction.FaceshieldOnGear);
+            player.OnAnimatedInteraction(EInteraction.FaceshieldOnGear);
+        }
+
+        private static void DoUnEquipAnimation(Player player)
+        {
+            player.MovementContext.PlayerAnimator.AnimatedInteractions.SetInteraction(EInteraction.FaceshieldOffGear);
+            player.OnAnimatedInteraction(EInteraction.FaceshieldOffGear);
+        }
+
         private static void EquipGasMask(Item item, Player player)
         {
             ItemAddress itemAddress = player.InventoryController.FindSlotToPickUp(item);
             if (itemAddress != null)
             {
                 ItemUiContext.smethod_0(player.InventoryController, item, InteractionsHandlerClass.Move(item, itemAddress, player.InventoryController, true), null);
-                player.MovementContext.PlayerAnimator.AnimatedInteractions.SetInteraction(EInteraction.FaceshieldOnGear);
-                player.OnAnimatedInteraction(EInteraction.FaceshieldOnGear);
+                DoEquipAnimation(player);
             }
+        }
+
+
+        public static IEnumerable<StashGridClass> GetGrids(InventoryEquipment equipment)
+        {
+            Slot tacVestslot = equipment.GetSlot(EquipmentSlot.TacticalVest);
+            Slot pocketSlot = equipment.GetSlot(EquipmentSlot.Pockets); //in case player has increaesed pocket size
+            Slot armBandSlot = equipment.GetSlot(EquipmentSlot.ArmBand);
+            VestItemClass vestItemClass = tacVestslot.ContainedItem as VestItemClass;
+            PocketsItemClass pocketsItemClass = pocketSlot.ContainedItem as PocketsItemClass; 
+            VestItemClass beltItemClass = armBandSlot.ContainedItem as VestItemClass;
+            StashGridClass[] vestGrid = (vestItemClass != null) ? vestItemClass.Grids : new StashGridClass[0];
+            StashGridClass[] pocketGrid = (pocketsItemClass != null) ? pocketsItemClass.Grids : new StashGridClass[0];
+            StashGridClass[] beltGrid = (beltItemClass != null) ? beltItemClass.Grids : new StashGridClass[0];
+            return pocketGrid.Concat(vestGrid).Concat(beltGrid);
+        }
+
+        //special slots don't use grids, they use slots
+        public static IEnumerable<Slot> GetSlots(InventoryEquipment equipment)
+        {
+            Slot pocketSlot = equipment.GetSlot(EquipmentSlot.Pockets);
+            PocketsItemClass pocketsItemClass = pocketSlot.ContainedItem as PocketsItemClass;
+            Slot[] pocketGrid = (pocketsItemClass != null) ? pocketsItemClass.Slots : new Slot[0];
+            return pocketGrid;
+        }
+
+        private static ItemAddress FindAddressForMask(Player player, Item item)
+        {
+            ItemAddress itemAddress = null;
+
+            itemAddress = GetSlots(player.InventoryController.Inventory.Equipment)
+                .Select(slot =>
+                {
+                    slot.TryFindLocationForItem(item, out var address);
+                    return address;
+                })
+                .FirstOrDefault(address => address != null);
+
+            if (itemAddress != null) 
+            {
+                Utils.Logger.LogWarning("found in pocket");
+                return itemAddress;
+            }
+
+            itemAddress = GetGrids(player.InventoryController.Inventory.Equipment)
+                .Select(grid => grid.FindLocationForItem(item))
+                .Where(address => address != null)
+                .FirstOrDefault();
+
+            return itemAddress;
+
+
+     /*       //this was a good way to figure out how the inventory is structured, keeping for that reason
+            foreach (var c in player.InventoryController.Inventory.Equipment.Containers)
+            {
+                foreach (var i in c.Items)
+                {
+                    CompoundItem comp = i as CompoundItem;
+                    if (comp != null)
+                    {
+                        foreach (var g in comp.Grids)
+                        {
+                            Utils.Logger.LogWarning($"grid id {g.ID}");
+                            var location = g.FindLocationForItem(item);
+                            return g.CreateItemAddress(location.LocationInGrid);
+                        }
+                        foreach (var s in comp.Slots)
+                        {
+                            if (s.IsSpecial && s.Items.Count() <= 0)
+                            {
+                                s.TryFindLocationForItem(item, out itemAddress);
+                                if (itemAddress != null) return itemAddress;
+                            }
+                        }
+                    }
+                }
+            }*/
         }
 
         private static void RemoveGasMask(Item item, Player player)
         {
-            if (_gasMaskAddress != null) 
-            {
-                ItemUiContext.smethod_0(player.InventoryController, item, InteractionsHandlerClass.Move(item, _gasMaskAddress, player.InventoryController, true), null);
-                player.MovementContext.PlayerAnimator.AnimatedInteractions.SetInteraction(EInteraction.FaceshieldOffGear);
-                player.OnAnimatedInteraction(EInteraction.FaceshieldOffGear);
-            }
+            Utils.Logger.LogWarning($"is null {_gasMaskStartingAddress == null}");
+            ItemAddress address = _gasMaskStartingAddress ?? FindAddressForMask(player, item);
+            Utils.Logger.LogWarning($"is null still {address == null}");
+            if (address == null) return;
+            Utils.Logger.LogWarning($"container name {address.ContainerName}, id {address.Container.ID}");
+            ItemUiContext.smethod_0(player.InventoryController, item, InteractionsHandlerClass.Move(item, address, player.InventoryController, true), null);
+            DoUnEquipAnimation(player);
         }
 
         public static void ToggleGasMask(Player player)
@@ -124,12 +218,19 @@ namespace RealismMod
                     var gasMask = FindGasMask(player.Inventory);
                     if (gasMask != null)
                     {
+                        _gasMaskStartingAddress = gasMask.CurrentAddress;
                         EquipGasMask(gasMask, player);
-                        _gasMaskAddress = gasMask.CurrentAddress;
+
+                        Utils.Logger.LogWarning($"container {_gasMaskStartingAddress.ContainerName}, id {_gasMaskStartingAddress.Container.ID}, items count {_gasMaskStartingAddress.Container.Items.Count()}");
+                        foreach (var i in _gasMaskStartingAddress.Container.Items)
+                        {
+                            Utils.Logger.LogWarning($"item {i.LocalizedName()}");
+                        }
                     }
                 }
                 else
                 {
+                    Utils.Logger.LogWarning("remove");
                     RemoveGasMask(slotItem, player);
                 }
             }
