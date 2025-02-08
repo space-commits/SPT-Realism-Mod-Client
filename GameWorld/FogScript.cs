@@ -56,7 +56,7 @@ public class FogScript : MonoBehaviour
             _timeExisted += Time.deltaTime;
         }
 
-        _dynamicOpacityModi = Mathf.Lerp(_dynamicOpacityModi, DynamicOpacityModiTarget, PluginConfig.test2.Value);
+        _dynamicOpacityModi = Mathf.Lerp(_dynamicOpacityModi, DynamicOpacityModiTarget, 0.0005f);
         _shapeModule.scale = Scale; //0.85 
         _mainModule.maxParticles = _maxParticles; 
         _mainModule.gravityModifier = 0f; 

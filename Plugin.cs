@@ -78,6 +78,7 @@ namespace RealismMod
         public static Dictionary<string, AudioClip> RadEventAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> GasEventAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> GasEventLongAudioClips = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, AudioClip> InteractableClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> FoodPoisoningSfx = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
         public static Dictionary<string, Texture> LoadedTextures = new Dictionary<string, Texture>();
@@ -313,6 +314,7 @@ namespace RealismMod
             string[] radEventAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\maprads");
             string[] gasEventLongAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\long");
             string[] foodPoisoning = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\health\\foodpoisoning");
+            string[] interactable = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\interactable");
 
             HitAudioClips.Clear();
             GasMaskAudioClips.Clear();
@@ -320,6 +322,7 @@ namespace RealismMod
             DeviceAudioClips.Clear();
             GasEventAudioClips.Clear();
             RadEventAudioClips.Clear();
+            InteractableClips.Clear();
             FoodPoisoningSfx.Clear();
 
             LoadAudioClipHelper(hitSoundsDir, HitAudioClips);
@@ -330,6 +333,7 @@ namespace RealismMod
             LoadAudioClipHelper(radEventAmbient, RadEventAudioClips);
             LoadAudioClipHelper(gasEventLongAmbient, GasEventLongAudioClips);
             LoadAudioClipHelper(foodPoisoning, FoodPoisoningSfx);
+            LoadAudioClipHelper(interactable, InteractableClips);
 
             Plugin.HasReloadedAudio = true;
         }
@@ -808,6 +812,7 @@ namespace RealismMod
         {
             new DoorAnimationOverride().Enable();
             new ChangeScopePatch().Enable();
+            new DisableAimOnReloadPatch().Enable();
             new TacticalReloadPatch().Enable();
             new WeaponOverlapViewPatch().Enable();
             new CollisionPatch().Enable();

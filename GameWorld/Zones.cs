@@ -122,6 +122,7 @@ namespace RealismMod
     //set its own status
     public class InteractionZone : InteractableObject, IZone 
     {
+        public const float VALVE_AUDIO_VOL = 0.75f;
         public EZoneType ZoneType { get; }
         public float ZoneStrength { get; set; }
         public bool BlocksNav { get; set; }
@@ -151,52 +152,101 @@ namespace RealismMod
         public List<GameObject> InteractableGameObjects{ get; set; }
         public List<ActionsTypesClass> InteractableActions = new List<ActionsTypesClass>();
 
+        private AudioSource _valveAudioSource;
         private GameObject _targetGameObject;
         private bool _isRotating = false;
 
         void Start()
         {
             _state = Interactable.StartingState;
+            SetUpValveAudio();
+            GetChildObjects();
+            InitActions();
+        }
 
+        private void GetChildObjects() 
+        {
             var box = this.gameObject.GetComponentInParent<BoxCollider>();
-            Bounds bounds = box.bounds; 
+            Bounds bounds = box.bounds;
             Collider[] colliders = Physics.OverlapBox(bounds.center, bounds.extents, Quaternion.identity);
             Utils.Logger.LogWarning($"Found {colliders.Length} objects in the box collider bounds:");
             foreach (Collider col in colliders)
             {
-                if (col.gameObject.name == "Valve_red_01_A_COLLIDER")
+                if (col.gameObject.name == Interactable.TargeObject)
                 {
                     _targetGameObject = col.gameObject.transform.parent.gameObject;
                     Utils.Logger.LogWarning("===match");
                 }
             }
-            InitActions();
         }
 
-        IEnumerator RotateOverTime(float maxSpeed, float duration)
+        private void SetUpValveAudio()
         {
+            _valveAudioSource = this.gameObject.AddComponent<AudioSource>();
+            _valveAudioSource.clip = Plugin.InteractableClips["valve_loop_3.wav"];
+            _valveAudioSource.volume = VALVE_AUDIO_VOL;
+            _valveAudioSource.loop = false;
+            _valveAudioSource.playOnAwake = false;
+            _valveAudioSource.spatialBlend = 1.0f;
+            _valveAudioSource.minDistance = 1.5f;
+            _valveAudioSource.maxDistance = 5f;
+            _valveAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        }
+
+        IEnumerator AdjustVolume(float targetVolume, float speed, AudioSource audioSource)
+        {
+            while (audioSource.volume != targetVolume)
+            {
+                audioSource.volume = Mathf.MoveTowards(audioSource.volume, targetVolume, speed * Time.deltaTime);
+                yield return null;
+            }
+            audioSource.volume = targetVolume;
+        }
+
+        private IEnumerator PlayRandomValveClipLoop()
+        {
+            while (_isRotating)
+            {
+                if (!_valveAudioSource.isPlaying) 
+                {
+                    string[] clips = { "valve_loop_1.wav", "valve_loop_2.wav", "valve_loop_3.wav" };
+                    string clip = clips[UnityEngine.Random.Range(0, clips.Length)];
+                    _valveAudioSource.clip = Plugin.InteractableClips[clip];
+                    _valveAudioSource.Play();
+                }
+                yield return new WaitForSeconds(_valveAudioSource.clip.length - 1f);
+            }
+        }
+
+        private IEnumerator StopValveLoop()
+        {
+            if (_valveAudioSource.isPlaying)
+            {
+                yield return new WaitForSeconds(_valveAudioSource.clip.length - _valveAudioSource.time);
+            }
+            _valveAudioSource.Stop();
+        }
+
+        //todo: figure out how long this lasts and don't allow playback if elapsedtime is greater than X
+        IEnumerator RotateValveOverTime(float maxSpeed, float duration)
+        {
+            if (_isRotating) yield break;
+
             _isRotating = true;
-
             float elapsedTime = 0f;
-
+            StartCoroutine(PlayRandomValveClipLoop());
+            StartCoroutine(AdjustVolume(VALVE_AUDIO_VOL, 1f, _valveAudioSource));
             while (elapsedTime < duration)
             {
-                // Normalize time (0 to 1)
                 float t = elapsedTime / duration;
-
-                // Apply smooth acceleration & deceleration using a sine wave
-                float speedModifier = Mathf.Sin(t * Mathf.PI); // Creates ease-in & ease-out effect
-
-                // Calculate current rotation speed
+                float speedModifier = Mathf.Sin(t * Mathf.PI); 
                 float currentSpeed = maxSpeed * speedModifier;
-
-                // Apply rotation
                _targetGameObject.transform.Rotate(0, 0, currentSpeed * Time.deltaTime);
-
                 elapsedTime += Time.deltaTime;
-                yield return null; // Wait for the next frame
+                yield return null; 
             }
-
+            StartCoroutine(AdjustVolume(0f, 1f, _valveAudioSource));
+            yield return StartCoroutine(StopValveLoop());
             _isRotating = false;
         }
 
@@ -225,14 +275,16 @@ namespace RealismMod
         public void TurnON() 
         {
             if (State == EInteractableState.On || _isRotating) return;
-            StartCoroutine(RotateOverTime(PluginConfig.test4.Value, PluginConfig.test1.Value));
+            StopAllCoroutines();
+            StartCoroutine(RotateValveOverTime(300f, 5f));
             State = EInteractableState.On;
         }
 
         public void TurnOff()
         {
             if (State == EInteractableState.Off || _isRotating) return;
-            StartCoroutine(RotateOverTime(PluginConfig.test5.Value, PluginConfig.test1.Value));
+            StopAllCoroutines();
+            StartCoroutine(RotateValveOverTime(-300f, 5f));
             State = EInteractableState.Off;
         }
     }
@@ -436,7 +488,7 @@ namespace RealismMod
                 _tick = 0f;
             }
 
-            _strengthModi = Mathf.Lerp(_strengthModi, ZoneStrengthTargetModi, PluginConfig.test3.Value);
+            _strengthModi = Mathf.Lerp(_strengthModi, ZoneStrengthTargetModi, 0.0005f);
         }
 
         float CalculateGasStrengthBox(Vector3 playerPosition, bool getStaticValue = false)

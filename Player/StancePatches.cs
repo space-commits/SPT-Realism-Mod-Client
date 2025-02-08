@@ -15,6 +15,27 @@ using CollisionLayerClass = GClass3367;
 
 namespace RealismMod
 {
+    public class DisableAimOnReloadPatch : ModulePatch
+    {
+        private static FieldInfo _playerField;
+        protected override MethodBase GetTargetMethod()
+        {
+            _playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            return typeof(Player.FirearmController).GetMethod("DisableAimingOnReload");
+        }
+
+        [PatchPrefix]
+        private static bool PatchPreFix(FirearmController __instance)
+        {
+            Player player = (Player)_playerField.GetValue(__instance);
+            if (player.IsYourPlayer && StanceController.IsMounting)
+            {
+                return false;
+            }
+            return true;
+        }
+    }
+
     public class ChangeScopePatch : ModulePatch
     {
         private static FieldInfo _playerField;

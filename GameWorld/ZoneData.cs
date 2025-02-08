@@ -366,7 +366,7 @@ namespace RealismMod
         public EIneractableType InteractionType { get; set; }
         public int CompletionStep { get; set; } = 0; //what step this interactable is if order of completion is needed
         public EInteractableState StartingState { get; set; } = EInteractableState.On;
-        public string[] TargeObjects { get; set; }
+        public string TargeObject { get; set; }
         public EIneractableAction[] InteractionAction { get; set; }
     }
 
