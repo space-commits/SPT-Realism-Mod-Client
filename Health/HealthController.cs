@@ -76,7 +76,8 @@ namespace RealismMod
     {
         public const float TOXIC_ITEM_FACTOR = 0.05f;
         public const float RAD_ITEM_FACTOR = 0.15f;
-        public const float MIN_COUGH_THRESHOLD = 0.09f;
+        public const float MIN_COUGH_THRESHOLD = 0.075f;
+        public const float MIN_TOXICITY_THRESHOLD = 30f;
         public const float MIN_COUGH_DAMAGE_THRESHOLD = 0.14f;
 
         HashSet<string> ToxicItems = new HashSet<string>(new string[] {
@@ -2100,7 +2101,7 @@ namespace RealismMod
 
         private void GasZoneTick(Player player)
         {
-            bool isInGasZone = PlayerHazardBridge.GasZoneCount > 0 && !PlayerHazardBridge.IsProtectedFromSafeZone;
+            bool isInGasZone = PlayerHazardBridge.GasZoneCount > 0 && PlayerHazardBridge.TotalGasRate > 0.01f && !PlayerHazardBridge.IsProtectedFromSafeZone;
             bool zonePreventsHeal = isInGasZone && GearController.CurrentGasProtection <= 0f;
             bool isBeingHazarded = zonePreventsHeal || IsCoughingInGas;
 
@@ -2203,14 +2204,14 @@ namespace RealismMod
         
         private void CoughController(Player player)
         {
-            bool isBeingIrradiated = (HazardTracker.TotalRadiation >= RADIATION_THRESHOLD && !Plugin.RealHealthController.HasBaseEFTEffect(player, "PainKiller"));
-            bool isBeingGassed = HazardTracker.TotalToxicity >= 30f;
-            bool hasHazardification = isBeingGassed || isBeingIrradiated;
-            bool isGettingHazarded = HazardTracker.TotalToxicityRate >= MIN_COUGH_THRESHOLD * (1f + PlayerValues.ImmuneSkillStrong);
+            bool totalRadsExceedsThreshold = (HazardTracker.TotalRadiation >= RADIATION_THRESHOLD && !Plugin.RealHealthController.HasBaseEFTEffect(player, "PainKiller"));
+            bool totalToxicityExceedsTheshold = HazardTracker.TotalToxicity >= MIN_TOXICITY_THRESHOLD;
+            bool toxicityRateExceedsThreshold = HazardTracker.TotalToxicityRate >= MIN_COUGH_THRESHOLD * (1f + PlayerValues.ImmuneSkillStrong);
+            bool hasHazardification = totalToxicityExceedsTheshold || totalRadsExceedsThreshold || totalToxicityExceedsTheshold;
 
-            if (player.HealthController.IsAlive && !(GearController.HasGasMaskWithFilter && GearController.GasMaskDurabilityFactor > 0f) && (hasHazardification || isGettingHazarded))
+            if (player.HealthController.IsAlive && !(GearController.HasGasMaskWithFilter && GearController.GasMaskDurabilityFactor > 0f) && (hasHazardification || toxicityRateExceedsThreshold))
             {
-                if (isBeingIrradiated && !isBeingGassed) 
+                if (totalRadsExceedsThreshold && !totalToxicityExceedsTheshold) 
                 {
                     float timerFactor = (1f + PlayerValues.ImmuneSkillStrong) * (1f - (HazardTracker.TotalRadiation / 200f));
                     int timer =  Mathf.RoundToInt(300f * timerFactor);
@@ -2218,7 +2219,7 @@ namespace RealismMod
                 }
                 else DoCoughingAudio = true;
 
-                if (isGettingHazarded) IsCoughingInGas = true;
+                if (toxicityRateExceedsThreshold) IsCoughingInGas = true;
                 else IsCoughingInGas = false;
             }
             else 

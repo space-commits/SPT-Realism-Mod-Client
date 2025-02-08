@@ -238,7 +238,9 @@ namespace RealismMod
 
         private float GetBreathVolume() 
         {
-            return BASE_BREATH_VOLUME * (2f - PlayerValues.BaseStaminaPerc) * PluginConfig.GasMaskBreathVolume.Value;
+            float baseVol = BASE_BREATH_VOLUME + PluginConfig.HeadsetGain.Value * 0.02f;
+            float modifiers = (2f - PlayerValues.BaseStaminaPerc) * PluginConfig.GasMaskBreathVolume.Value;
+            return Mathf.Max(baseVol * modifiers, 0);
         }
 
         private string GetAudioFromOtherStates()
@@ -374,7 +376,7 @@ namespace RealismMod
         {
             switch (gasLevel)
             {
-                case <= 0f:
+                case <= 0.01f:
                     volumeModi = 1f;
                     return null;
                 case <= 0.02f:
@@ -427,6 +429,13 @@ namespace RealismMod
             }
         }
 
+        private float GetDeviceVolume(float baseVol, float additionalModi = 1f)
+        {
+            baseVol += (PluginConfig.HeadsetGain.Value * 0.02f);
+            float modifiers = PluginConfig.DeviceVolume.Value * additionalModi;
+            return Mathf.Max(baseVol * modifiers, 0);
+        }
+
         public void PlayGasAnalyserClips(Player player)
         {
             float volumeModi = 1f;
@@ -434,7 +443,7 @@ namespace RealismMod
             if (clip == null) return;
             AudioClip audioClip = Plugin.DeviceAudioClips[clip];
             _currentGasClipLength = audioClip.length;
-            float volume = (_muteGasAnalyser ? 0f : (GAS_DEVICE_VOLUME + (PluginConfig.HeadsetGain.Value * 0.01f)) * PluginConfig.DeviceVolume.Value) * volumeModi;
+            float volume = _muteGasAnalyser ? 0f : GetDeviceVolume(GEIGER_VOLUME, volumeModi);
 
             _gasAnalyserSource.volume = volume;
             _gasAnalyserSource.clip = audioClip;
@@ -449,7 +458,7 @@ namespace RealismMod
             string clip = clips[rndNumber];
             AudioClip audioClip = Plugin.DeviceAudioClips[clip];
             _currentGeigerClipLength = audioClip.length;
-            float volume = _muteGeiger ? 0f : (GEIGER_VOLUME + (PluginConfig.HeadsetGain.Value * 0.01f)) * PluginConfig.DeviceVolume.Value;
+            float volume = _muteGeiger ? 0f : GetDeviceVolume(GEIGER_VOLUME);
 
             _geigerAudioSource.volume = volume;
             _geigerAudioSource.clip = audioClip;

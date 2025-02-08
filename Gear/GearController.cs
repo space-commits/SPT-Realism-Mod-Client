@@ -109,17 +109,6 @@ namespace RealismMod
             player.OnAnimatedInteraction(EInteraction.FaceshieldOffGear);
         }
 
-        private static void EquipGasMask(Item item, Player player)
-        {
-            ItemAddress itemAddress = player.InventoryController.FindSlotToPickUp(item);
-            if (itemAddress != null)
-            {
-                ItemUiContext.smethod_0(player.InventoryController, item, InteractionsHandlerClass.Move(item, itemAddress, player.InventoryController, true), null);
-                DoEquipAnimation(player);
-            }
-        }
-
-
         public static IEnumerable<StashGridClass> GetGrids(InventoryEquipment equipment)
         {
             Slot tacVestslot = equipment.GetSlot(EquipmentSlot.TacticalVest);
@@ -143,68 +132,87 @@ namespace RealismMod
             return pocketGrid;
         }
 
-        private static ItemAddress FindAddressForMask(Player player, Item item)
+        private static ItemAddress TryFindAddressForMask(Player player, Item item)
         {
-            ItemAddress itemAddress = null;
-
-            itemAddress = GetSlots(player.InventoryController.Inventory.Equipment)
-                .Select(slot =>
-                {
+            ItemAddress itemAddress = GetSlots(player.InventoryController.Inventory.Equipment)
+                .Select(slot => {
                     slot.TryFindLocationForItem(item, out var address);
                     return address;
                 })
-                .FirstOrDefault(address => address != null);
-
-            if (itemAddress != null) 
-            {
-                Utils.Logger.LogWarning("found in pocket");
-                return itemAddress;
-            }
-
-            itemAddress = GetGrids(player.InventoryController.Inventory.Equipment)
-                .Select(grid => grid.FindLocationForItem(item))
-                .Where(address => address != null)
-                .FirstOrDefault();
+                .FirstOrDefault(address => address != null)
+                ?? GetGrids(player.InventoryController.Inventory.Equipment)
+                    .Select(grid => grid.FindLocationForItem(item))
+                    .FirstOrDefault(address => address != null);
 
             return itemAddress;
 
 
-     /*       //this was a good way to figure out how the inventory is structured, keeping for that reason
-            foreach (var c in player.InventoryController.Inventory.Equipment.Containers)
-            {
-                foreach (var i in c.Items)
-                {
-                    CompoundItem comp = i as CompoundItem;
-                    if (comp != null)
-                    {
-                        foreach (var g in comp.Grids)
-                        {
-                            Utils.Logger.LogWarning($"grid id {g.ID}");
-                            var location = g.FindLocationForItem(item);
-                            return g.CreateItemAddress(location.LocationInGrid);
-                        }
-                        foreach (var s in comp.Slots)
-                        {
-                            if (s.IsSpecial && s.Items.Count() <= 0)
-                            {
-                                s.TryFindLocationForItem(item, out itemAddress);
-                                if (itemAddress != null) return itemAddress;
-                            }
-                        }
-                    }
-                }
-            }*/
+            /*       //this was a good way to figure out how the inventory is structured, keeping for that reason
+                   foreach (var c in player.InventoryController.Inventory.Equipment.Containers)
+                   {
+                       foreach (var i in c.Items)
+                       {
+                           CompoundItem comp = i as CompoundItem;
+                           if (comp != null)
+                           {
+                               foreach (var g in comp.Grids)
+                               {
+                                   Utils.Logger.LogWarning($"grid id {g.ID}");
+                                   var location = g.FindLocationForItem(item);
+                                   return g.CreateItemAddress(location.LocationInGrid);
+                               }
+                               foreach (var s in comp.Slots)
+                               {
+                                   if (s.IsSpecial && s.Items.Count() <= 0)
+                                   {
+                                       s.TryFindLocationForItem(item, out itemAddress);
+                                       if (itemAddress != null) return itemAddress;
+                                   }
+                               }
+                           }
+                       }
+                   }*/
         }
 
+        private static void EquipGasMask(Item item, Player player)
+        {
+            ItemAddress itemAddress = player.InventoryController.FindSlotToPickUp(item);
+            if (itemAddress != null)
+            {
+                GStruct446<GClass3132> operation = InteractionsHandlerClass.Move(item, itemAddress, player.InventoryController, true);
+                if (operation.Succeeded) 
+                {
+                    ItemUiContext.smethod_0(player.InventoryController, item, operation, null);
+                    DoEquipAnimation(player);
+                    return;
+                }
+            }
+        }
+
+        private static bool TryRemoveGasMask(Item item, Player player, ItemAddress address)
+        {
+            GStruct446<GClass3132> operation = InteractionsHandlerClass.Move(item, address, player.InventoryController, true);
+            if (operation.Succeeded)
+            {
+                ItemUiContext.smethod_0(player.InventoryController, item, operation, null);
+                DoUnEquipAnimation(player);
+                return true;
+            }
+            return false;
+        }
+
+        // using the stored address is bad, I need to instead store a reference to the slot or grid the gas mask was originally in, then check that grid or slot somehow to see if it's empty
         private static void RemoveGasMask(Item item, Player player)
         {
-            Utils.Logger.LogWarning($"is null {_gasMaskStartingAddress == null}");
-            ItemAddress address = _gasMaskStartingAddress ?? FindAddressForMask(player, item);
-            Utils.Logger.LogWarning($"is null still {address == null}");
-            if (address == null) return;
-            Utils.Logger.LogWarning($"container name {address.ContainerName}, id {address.Container.ID}");
-            ItemUiContext.smethod_0(player.InventoryController, item, InteractionsHandlerClass.Move(item, address, player.InventoryController, true), null);
-            DoUnEquipAnimation(player);
+            ItemAddress address = _gasMaskStartingAddress;
+
+            //if stored address is null or the operation using stored address fails, try again with a different address
+            if (address == null || !TryRemoveGasMask(item, player, address)) 
+            {
+                address = TryFindAddressForMask(player, item);
+                if (address == null) return;
+                TryRemoveGasMask(item, player, address);
+            }
         }
 
         public static void ToggleGasMask(Player player)
@@ -220,17 +228,10 @@ namespace RealismMod
                     {
                         _gasMaskStartingAddress = gasMask.CurrentAddress;
                         EquipGasMask(gasMask, player);
-
-                        Utils.Logger.LogWarning($"container {_gasMaskStartingAddress.ContainerName}, id {_gasMaskStartingAddress.Container.ID}, items count {_gasMaskStartingAddress.Container.Items.Count()}");
-                        foreach (var i in _gasMaskStartingAddress.Container.Items)
-                        {
-                            Utils.Logger.LogWarning($"item {i.LocalizedName()}");
-                        }
                     }
                 }
                 else
                 {
-                    Utils.Logger.LogWarning("remove");
                     RemoveGasMask(slotItem, player);
                 }
             }

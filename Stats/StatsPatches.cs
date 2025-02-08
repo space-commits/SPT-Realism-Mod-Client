@@ -87,12 +87,12 @@ namespace RealismMod
             {
                 WeaponSkills skillsClass = (WeaponSkills)_skillField.GetValue(__instance);
                 float deltaErgo = skillsClass.DeltaErgonomics;
-                if (!PluginConfig.OverrideMounting.Value && player.MovementContext.IsInMountedState)
+                if (!PluginConfig.OverrideMounting.Value && Plugin.ServerConfig.enable_stances && player.MovementContext.IsInMountedState)
                 {
                     deltaErgo += ((player.MovementContext.PlayerMountingPointData.MountPointData.MountSideDirection != EMountSideDirection.Forward || !__instance.BipodState) ? skillsClass.MountingBonusErgo : skillsClass.BipodBonusErgo);
                 }
                 bool isBracingTop = StanceController.IsBracing && StanceController.BracingDirection == EBracingDirection.Top;
-                if (PluginConfig.OverrideMounting.Value && WeaponStats.BipodIsDeployed && !StanceController.IsMounting && !isBracingTop) 
+                if (Plugin.ServerConfig.enable_stances && PluginConfig.OverrideMounting.Value && WeaponStats.BipodIsDeployed && !StanceController.IsMounting && !isBracingTop) 
                 {
                     deltaErgo -= 0.15f;
                 }

@@ -30,7 +30,7 @@ namespace RealismMod
         private static bool PatchPreFix(FirearmController __instance)
         {
             Player player = (Player)_playerField.GetValue(__instance);
-            if (player.IsYourPlayer && PluginConfig.OverrideMounting.Value)
+            if (player.IsYourPlayer && PluginConfig.OverrideMounting.Value && Plugin.ServerConfig.enable_stances)
             {
                 if (WeaponStats.BipodIsDeployed && StanceController.IsMounting)
                 {
@@ -674,7 +674,7 @@ namespace RealismMod
         
                     RaycastHit raycastHit;
 
-                    if (PluginConfig.OverrideMounting.Value) 
+                    if (PluginConfig.OverrideMounting.Value && Plugin.ServerConfig.enable_stances) 
                     {
                         if (IsBracingProne(player) ||
                         CheckForCoverCollision(EBracingDirection.Top, startDown, forwardDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass) ||

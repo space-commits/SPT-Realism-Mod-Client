@@ -8,31 +8,247 @@ using System.Linq;
 using UnityEngine;
 using Comfort.Common;
 using KeyInteractionResultClass = GClass3344;
+using SPT.Common.Utils;
+using static CW2.Animations.PhysicsSimulator.UnityValueDevice;
+using UnityEngine.Rendering.PostProcessing;
 
 namespace RealismMod
 {
     public interface IZone
     {
         public EZoneType ZoneType { get; }
-        public float ZoneStrengthModifier { get; set; }
+        public float ZoneStrength { get; set; }
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool IsAnalysable { get; set; }
         public bool HasBeenAnalysed { get; set; }
         public string Name { get; set; }
         public List<GameObject> ActiveDevices { get; set; }
+        public InteractableSubZone Interactable { get; set; }
+    }
+
+    //get all child interaction zone objects on start
+    //get all target hazard zones on start
+    //either use actions/triggers to update the status of the child interactbles
+    //if conditons are met (all valves are in correct state), tell zones to turn "off", including any particle systems
+    public class InteractableGroupComponent: MonoBehaviour
+    {
+        public InteractableGroup GroupData { get; set; }
+        public List<IZone> _hazardZones = new List<IZone>();
+
+        private List<InteractionZone> _interactionZones = new List<InteractionZone>();
+        private bool _isTurnedOff = false;
+        private int _completedSteps = 0;
+
+
+        void Start()
+        {
+            foreach (var targets in GroupData.TargtetZones)
+            {
+                foreach (var targetName in targets.ZoneNames)
+                {
+                    GameObject zone = GameObject.Find(targetName);
+                    if (zone != null)
+                    {
+                        Utils.Logger.LogWarning($"found hazard zone GO {targetName}");
+                        IZone hazard = zone.GetComponent<IZone>();
+                        if (hazard != null)
+                        {
+                            Utils.Logger.LogWarning($"found hazard component");
+                            _hazardZones.Add(hazard);
+                        }
+                    }
+                }
+            }
+
+            InteractionZone[] interactionZones = GetComponentsInChildren<InteractionZone>();
+            foreach (var interactable in interactionZones)
+            {
+                _interactionZones.Add(interactable);
+                interactable.OnInteractableStateChanged += HandleValveStateChanged;
+            }
+        }
+
+
+        //instead of just setting it to 1 or 0, check if a valve should set a specific zone's modifier to a intermediary value
+        //then check what combinatio of off or on should the zones be and that that is met
+
+        private void HandleValveStateChanged(InteractionZone interactable, EInteractableState newState)
+        {
+            Utils.Logger.LogWarning($"==Valve {interactable.gameObject.name} changed to {newState}");
+            bool allOff = true;
+            _completedSteps = 0;
+            foreach (InteractionZone zone in _interactionZones)
+            {
+                //if state is equal to desired state, _completedSteps += 1
+                //the interactive subzones will need to be able to get thsi value for cases of buttons that can only be toggled if preivous steps are completed
+                if (zone.State == EInteractableState.On) allOff = false;
+                Utils.Logger.LogWarning($"Valve {interactable.gameObject.name} is currently {newState}");
+            }
+
+            if (allOff)
+            {
+                Utils.Logger.LogWarning($"turning off the gas");
+                foreach (var hazard in _hazardZones)
+                {
+                    GasZone gas = hazard as GasZone;
+                    if (gas != null)
+                    {
+                        Utils.Logger.LogWarning($"{gas.name} strength set to 0");
+                        gas.ZoneStrengthTargetModi = 0f;
+                    }
+                }
+                _isTurnedOff = true;
+            }
+            else 
+            {
+                Utils.Logger.LogWarning($"turning the gas on");
+                foreach (var hazard in _hazardZones)
+                {
+                    GasZone gas = hazard as GasZone;
+                    if (gas != null)
+                    {
+                        Utils.Logger.LogWarning($"{gas.name} strength set to 1");
+                        gas.ZoneStrengthTargetModi = 1f;
+                        _isTurnedOff = true;
+                    }
+                }
+                _isTurnedOff = false;
+            }
+        }
+    }
+
+    //look for gameobjects it's supposed to interact with, add actions UI to the collider
+    //set its own status
+    public class InteractionZone : InteractableObject, IZone 
+    {
+        public EZoneType ZoneType { get; }
+        public float ZoneStrength { get; set; }
+        public bool BlocksNav { get; set; }
+        public bool UsesDistanceFalloff { get; set; }
+        public bool IsAnalysable { get; set; }
+        public bool HasBeenAnalysed { get; set; }
+        public string Name { get; set; }
+        public List<GameObject> ActiveDevices { get; set; }
+
+        public InteractableSubZone Interactable { get; set; }
+        public delegate void OnStateChanged(InteractionZone interacatble, EInteractableState newState);
+        public event OnStateChanged OnInteractableStateChanged;
+
+        private EInteractableState _state;
+        public EInteractableState State 
+        {
+            get 
+            {
+                return _state;
+            }
+            set 
+            {
+                _state = value;
+                OnInteractableStateChanged?.Invoke(this, State);
+            }
+        }
+        public List<GameObject> InteractableGameObjects{ get; set; }
+        public List<ActionsTypesClass> InteractableActions = new List<ActionsTypesClass>();
+
+        private GameObject _targetGameObject;
+        private bool _isRotating = false;
+
+        void Start()
+        {
+            _state = Interactable.StartingState;
+
+            var box = this.gameObject.GetComponentInParent<BoxCollider>();
+            Bounds bounds = box.bounds; 
+            Collider[] colliders = Physics.OverlapBox(bounds.center, bounds.extents, Quaternion.identity);
+            Utils.Logger.LogWarning($"Found {colliders.Length} objects in the box collider bounds:");
+            foreach (Collider col in colliders)
+            {
+                if (col.gameObject.name == "Valve_red_01_A_COLLIDER")
+                {
+                    _targetGameObject = col.gameObject.transform.parent.gameObject;
+                    Utils.Logger.LogWarning("===match");
+                }
+            }
+            InitActions();
+        }
+
+        IEnumerator RotateOverTime(float maxSpeed, float duration)
+        {
+            _isRotating = true;
+
+            float elapsedTime = 0f;
+
+            while (elapsedTime < duration)
+            {
+                // Normalize time (0 to 1)
+                float t = elapsedTime / duration;
+
+                // Apply smooth acceleration & deceleration using a sine wave
+                float speedModifier = Mathf.Sin(t * Mathf.PI); // Creates ease-in & ease-out effect
+
+                // Calculate current rotation speed
+                float currentSpeed = maxSpeed * speedModifier;
+
+                // Apply rotation
+               _targetGameObject.transform.Rotate(0, 0, currentSpeed * Time.deltaTime);
+
+                elapsedTime += Time.deltaTime;
+                yield return null; // Wait for the next frame
+            }
+
+            _isRotating = false;
+        }
+
+        void InitActions()
+        {
+            this.gameObject.layer = LayerMask.NameToLayer("Interactive");
+
+            InteractableActions.AddRange(
+                new List<ActionsTypesClass>()
+                {
+                    new ActionsTypesClass
+                    {
+                        Name = "Turn On",
+                        Action = TurnON
+                    },
+                    new ActionsTypesClass
+                    {
+                        Name = "Turn Off",
+                        Action = TurnOff
+                    }
+                }
+             );
+        }
+
+        //turn SFX on/off, trigger action
+        public void TurnON() 
+        {
+            if (State == EInteractableState.On || _isRotating) return;
+            StartCoroutine(RotateOverTime(PluginConfig.test4.Value, PluginConfig.test1.Value));
+            State = EInteractableState.On;
+        }
+
+        public void TurnOff()
+        {
+            if (State == EInteractableState.Off || _isRotating) return;
+            StartCoroutine(RotateOverTime(PluginConfig.test5.Value, PluginConfig.test1.Value));
+            State = EInteractableState.Off;
+        }
     }
 
     public class QuestZone : TriggerWithId, IZone
     {
         public EZoneType ZoneType { get; } = EZoneType.Quest;
-        public float ZoneStrengthModifier { get; set; } = 1f;
+        public float ZoneStrength { get; set; } = 1f;
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool IsAnalysable { get; set; } = false;
         public bool HasBeenAnalysed { get; set; } = false;
         public string Name { get; set; }
         public List<GameObject> ActiveDevices { get; set; }
+        public InteractableSubZone Interactable { get; set; }
+
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private BoxCollider _zoneCollider;
         private float _tick = 0f;
@@ -100,19 +316,23 @@ namespace RealismMod
     public class GasZone : TriggerWithId, IZone
     {
         public EZoneType ZoneType { get; } = EZoneType.Gas;
-        public float ZoneStrengthModifier { get; set; } = 1f;
+        public float ZoneStrength { get; set; } = 1f;
+        public float ZoneStrengthTargetModi { get; set; } = 1f;
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool IsAnalysable { get; set; } = false;
         public bool HasBeenAnalysed { get; set; } = false;
         public string Name { get; set; }
         public List<GameObject> ActiveDevices { get; set; }
+        public InteractableSubZone Interactable { get; set; }
+
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private Collider _zoneCollider;
         private bool _isSphere = false;
         private float _tick = 0f;
         private float _maxDistance = 0f;
         private FogScript[] _fogScript;
+        private float _strengthModi = 1f;
 
         void Start()
         {
@@ -137,16 +357,24 @@ namespace RealismMod
             Name = name;
             ActiveDevices = new List<GameObject>();
             _fogScript = GetComponentsInChildren<FogScript>();
+            ModifyVisualEffects(true);
         }
 
-        //I either need to 100% set the values programmatically, or just do it manually. Don't use this too heavily.
-        private void ModifyVisualEffects() 
+        private void ModifyVisualEffects(bool onInit) 
         {
             foreach (var fog in _fogScript)
             {
-                float strengthFactor = Mathf.Pow((1f + CalculateGasStrengthBox(Vector3.zero, true)), 0.25f);
-                fog.ParticleRate *= strengthFactor;
-                fog.OpacityModi *= strengthFactor;
+                if (onInit)
+                {
+                    Utils.Logger.LogWarning($"fog found {fog.transform.parent.name}");
+                    float strengthFactor = Mathf.Pow((1f + CalculateGasStrengthBox(Vector3.zero, true)), 0.1f);
+                    fog.ParticleRate *= strengthFactor;
+                    fog.OpacityModi *= strengthFactor;
+                }
+                else 
+                {
+                    fog.DynamicOpacityModiTarget = ZoneStrengthTargetModi;
+                }
             }
         }
 
@@ -195,7 +423,7 @@ namespace RealismMod
                         return;
                     }
                     float gasAmount = _isSphere ? CalculateGasStrengthSphere(player.gameObject.transform.position) : CalculateGasStrengthBox(player.gameObject.transform.position);
-                    playerBridge.GasRates[this.name] = Mathf.Max(gasAmount, 0f);
+                    playerBridge.GasRates[this.name] = Mathf.Max(gasAmount * _strengthModi, 0f);
                 }
 
                 foreach (var p in playersToRemove)
@@ -203,41 +431,49 @@ namespace RealismMod
                     _containedPlayers.Remove(p);
                 }
 
+                ModifyVisualEffects(false);
+
                 _tick = 0f;
             }
+
+            _strengthModi = Mathf.Lerp(_strengthModi, ZoneStrengthTargetModi, PluginConfig.test3.Value);
         }
 
         float CalculateGasStrengthBox(Vector3 playerPosition, bool getStaticValue = false)
         {
-            if (!UsesDistanceFalloff) return (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f)) / 1000f;
+            if (_strengthModi == 0f) return 0f;
+            if (!UsesDistanceFalloff) return (ZoneStrength * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f)) / 1000f;
             float distance = getStaticValue ? 1f : Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float invertedDistance = _maxDistance - distance;  // invert the distance
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
-            return invertedDistance / (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));
+            return invertedDistance / (ZoneStrength * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));
         }
 
         float CalculateGasStrengthSphere(Vector3 playerPosition)
         {
-            if (!UsesDistanceFalloff) return (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f)) / 1000f;
+            if (_strengthModi == 0f) return 0f;
+            if (!UsesDistanceFalloff) return (ZoneStrength * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f)) / 1000f;
             float distanceToCenter = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float radius = _zoneCollider.bounds.extents.magnitude;
             float effectiveDistance = Mathf.Max(0, distanceToCenter - radius); 
             float invertedDistance = _maxDistance - effectiveDistance; 
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); 
-            return invertedDistance / (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));
+            return invertedDistance / (ZoneStrength * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));
         }
     }
 
     public class RadiationZone : TriggerWithId, IZone
     {
         public EZoneType ZoneType { get; } = EZoneType.Radiation;
-        public float ZoneStrengthModifier { get; set; } = 1f;
+        public float ZoneStrength { get; set; } = 1f;
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool IsAnalysable { get; set; } = false;
         public bool HasBeenAnalysed { get; set; } = false;
         public string Name { get; set; }
         public List<GameObject> ActiveDevices { get; set; }
+        public InteractableSubZone Interactable { get; set; }
+
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private Collider _zoneCollider;
         private bool _isSphere = false;
@@ -325,21 +561,21 @@ namespace RealismMod
 
         float CalculateRadStrengthBox(Vector3 playerPosition)
         {
-            if (!UsesDistanceFalloff) return (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f)) / 1000f;
+            if (!UsesDistanceFalloff) return (ZoneStrength * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f)) / 1000f;
             float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float invertedDistance = _maxDistance - distance;  // invert the distance
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
-            return invertedDistance / (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));
+            return invertedDistance / (ZoneStrength * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));
         }
 
         float CalculateRadStrengthSphere(Vector3 playerPosition)
         {
-            if (!UsesDistanceFalloff) return (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f)) / 1000f;
+            if (!UsesDistanceFalloff) return (ZoneStrength * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f)) / 1000f;
             float distanceToCenter = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float radius = (_zoneCollider as SphereCollider).radius * transform.localScale.magnitude;
             float distanceFromSurface = radius - distanceToCenter;
             float clampedDistance = Mathf.Max(0f, distanceFromSurface);
-            return clampedDistance / (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));
+            return clampedDistance / (ZoneStrength * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));
         }
     }
 
@@ -349,7 +585,7 @@ namespace RealismMod
         const float SHUT_VOLUME = 0.41f;
         const float OPEN_VOLUME = 0.12f;
         public EZoneType ZoneType { get; } = EZoneType.SafeZone;
-        public float ZoneStrengthModifier { get; set; } = 0f;
+        public float ZoneStrength { get; set; } = 0f;
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool IsActive { get; set; } = true;
@@ -358,6 +594,8 @@ namespace RealismMod
         public bool HasBeenAnalysed { get; set; } = false;
         public string Name { get; set; }
         public List<GameObject> ActiveDevices { get; set; }
+        public InteractableSubZone Interactable { get; set; }
+
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private BoxCollider _zoneCollider;
         private float _tick = 0f;

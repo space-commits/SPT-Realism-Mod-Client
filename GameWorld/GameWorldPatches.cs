@@ -295,13 +295,24 @@ namespace RealismMod
         public static bool PatchPrefix(object[] __args, ref ActionsReturnClass __result)
         {
             // __args[1] is a GInterface called "interactive", it represents the component that enables interaction
-            if (__args[1] is InteractableComponent)
+            if (__args[1] is DebugComponent)
             {
-                var customInteractable = __args[1] as InteractableComponent;
+                var debugInteraction = __args[1] as DebugComponent;
 
                 __result = new ActionsReturnClass()
                 {
-                    Actions = customInteractable.Actions
+                    Actions = debugInteraction.DebugActions
+                };
+                return false;
+
+            }
+            if (__args[1] is InteractionZone)
+            {
+                var interactableZone = __args[1] as InteractionZone;
+
+                __result = new ActionsReturnClass()
+                {
+                    Actions = interactableZone.InteractableActions
                 };
                 return false;
 
@@ -531,6 +542,7 @@ namespace RealismMod
                 if (ZoneSpawner.ShouldSpawnDynamicZones()) ZoneSpawner.CreateZones(ZoneData.RadAssetZoneLocations);
                 ZoneSpawner.CreateZones(ZoneData.SafeZoneLocations);
                 ZoneSpawner.CreateZones(ZoneData.QuestZoneLocations);
+                ZoneSpawner.CreateZones(ZoneData.InteractionLocations);
 
                 //hazardtracker 
                 HazardTracker.GetHazardValues(ProfileData.CurrentProfileId);

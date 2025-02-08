@@ -86,10 +86,11 @@ namespace RealismMod
                 if (collection.ZoneType == EZoneType.Radiation || collection.ZoneType == EZoneType.RadAssets) CreateZone<RadiationZone>(zone, collection.ZoneType);
                 if (collection.ZoneType == EZoneType.SafeZone) CreateZone<LabsSafeZone>(zone, collection.ZoneType);
                 if (collection.ZoneType == EZoneType.Quest) CreateZone<QuestZone>(zone, collection.ZoneType);
+                if (collection.ZoneType == EZoneType.Interactable) CreateZone<InteractionZone>(zone, collection.ZoneType);
             }
         }
 
-        private static bool ShouldSpawnZone(HazardLocation hazardLocation, EZoneType zoneType) 
+        private static bool ShouldSpawnZone(HazardGroup hazardLocation, EZoneType zoneType) 
         {
             if (PluginConfig.ZoneDebug.Value) return true;
 
@@ -136,12 +137,13 @@ namespace RealismMod
             return !isDisabled || isEnabled;
         }
 
-        public static void AddGasVisual(Zone zone, GameObject hazardZone, EZoneType zoneType, Vector3 position, Vector3 rotation, Vector3 size) 
+        public static void AddGasVisual(Zone subZone, GameObject hazardZone, EZoneType zoneType, Vector3 position, Vector3 rotation, Vector3 size) 
         {
             GameObject fogAsset = Assets.FogBundle.LoadAsset<GameObject>("Assets/Fog/Gray Volume Fog.prefab");
             GameObject spawnedFog = UnityEngine.Object.Instantiate(fogAsset, position, Quaternion.Euler(rotation));
             spawnedFog.transform.SetParent(hazardZone.transform, true);
             var particleSystems = spawnedFog.GetComponentsInChildren<ParticleSystem>();
+            spawnedFog.name = subZone.Name + "_particle_system";
 
             foreach (var ps in particleSystems)
             {
@@ -149,16 +151,16 @@ namespace RealismMod
                 ps.gameObject.transform.rotation = Quaternion.Euler(rotation);
                 ps.gameObject.transform.position = position;
                 ParticleSystem.ShapeModule shapeModule = ps.shape;
-                fogComponent.Scale = size * zone.VisZoneSizeMulti;
-                fogComponent.UsePhysics = zone.VisUsePhysics;
-                fogComponent.SpeedModi = zone.VisSpeedModi;
-                fogComponent.OpacityModi = zone.VisOpacityModi;
-                fogComponent.ParticleRate = zone.VisParticleRate;
+                fogComponent.Scale = size * subZone.VisZoneSizeMulti;
+                fogComponent.UsePhysics = subZone.VisUsePhysics;
+                fogComponent.SpeedModi = subZone.VisSpeedModi;
+                fogComponent.OpacityModi = subZone.VisOpacityModi;
+                fogComponent.ParticleRate = subZone.VisParticleRate;
                 fogComponent.ParticleSize = new ParticleSystem.MinMaxCurve(4f, 7f);
             }
         }
 
-        private static void SetUpSubZone<T>(HazardLocation hazardLocation, Zone subZone, EZoneType zoneType, bool isBufferZone = false) where T : MonoBehaviour, IZone
+        private static void SetUpSubZone<T>(HazardGroup hazardLocation, Zone subZone, GameObject zoneGroup, EZoneType zoneType, bool isBufferZone = false) where T : MonoBehaviour, IZone
         {
             string zoneName = subZone.Name;
             Vector3 position = new Vector3(subZone.Position.X, subZone.Position.Y, subZone.Position.Z);
@@ -176,7 +178,7 @@ namespace RealismMod
             {
                 strengthModifier = UnityEngine.Random.Range(0.9f, 1.15f);
             }
-            hazard.ZoneStrengthModifier = subZone.Strength * strengthModifier;
+            hazard.ZoneStrength = subZone.Strength * strengthModifier;
             hazard.IsAnalysable = subZone?.Analysable == null ? false : CheckIsAnalysable(subZone.Analysable);
 
             hazardZone.transform.position = position;
@@ -212,10 +214,17 @@ namespace RealismMod
                 navMeshObstacle.size = boxCollider.size;
             }
 
+            if (zoneType == EZoneType.Interactable) 
+            {
+                hazard.Interactable = subZone.Interactable;
+            }
+
             if (!isBufferZone && subZone.UseVisual && isGasZone && PluginConfig.ShowGasEffects.Value) AddGasVisual(subZone, hazardZone, zoneType, position, rotation, size);
 
+            hazardZone.transform.SetParent(zoneGroup.transform, true);
+
             // visual representation for debugging
-            if (PluginConfig.ZoneDebug.Value && !isBufferZone)
+            if (PluginConfig.ZoneDebug.Value && !isBufferZone && zoneType != EZoneType.Interactable)
             {
                 GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 visualRepresentation.name = zoneName + "Visual";
@@ -227,11 +236,10 @@ namespace RealismMod
                 UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
                 MoveDaCube.AddComponentToExistingGO(visualRepresentation, zoneName);
             }
-
         }
 
         //add low-strength buffer zone around subzone to warn player
-        private static void AddBufferZone<T>(HazardLocation hazardLocation, Zone subZone, EZoneType zoneType) where T : MonoBehaviour, IZone
+        private static void AddBufferZone<T>(HazardGroup hazardLocation, Zone subZone, GameObject zoneGroup, EZoneType zoneType) where T : MonoBehaviour, IZone
         {
             Zone bufferZone = new Zone();
             bufferZone.Name = subZone.Name + "_buffeZone";
@@ -242,23 +250,30 @@ namespace RealismMod
             bufferZone.Rotation = subZone.Rotation;
             Vector3 size = new Vector3(subZone.Size.X, subZone.Size.Y, subZone.Size.Z) * 1.4f;
             bufferZone.Size = new Size { X = size.x, Y = size.y, Z = size.z };
-            SetUpSubZone<T>(hazardLocation, bufferZone, zoneType, true);
+            SetUpSubZone<T>(hazardLocation, bufferZone, zoneGroup, zoneType, true);
         }
 
-        public static void CreateZone<T>(HazardLocation hazardLocation, EZoneType zoneType) where T : MonoBehaviour, IZone
+        public static void CreateZone<T>(HazardGroup hazardLocation, EZoneType zoneType) where T : MonoBehaviour, IZone
         {
             if (hazardLocation.IsTriggered || !ShouldSpawnZone(hazardLocation, zoneType)) return;
             HandleZoneAssets(hazardLocation);
             HandleZoneLoot(hazardLocation);
 
+            GameObject hazardGroupObject = new GameObject(zoneType + Utils.GenId());
             foreach (var subZone in hazardLocation.Zones)
             {
-                SetUpSubZone<T>(hazardLocation, subZone, zoneType);
-                if(subZone.UseVisual && (zoneType == EZoneType.Gas || zoneType == EZoneType.GasAssets)) AddBufferZone<T>(hazardLocation, subZone, zoneType);
+                SetUpSubZone<T>(hazardLocation, subZone, hazardGroupObject, zoneType);
+                if(subZone.UseVisual && (zoneType == EZoneType.Gas || zoneType == EZoneType.GasAssets)) AddBufferZone<T>(hazardLocation, subZone, hazardGroupObject, zoneType);
+            }
+
+            if (zoneType == EZoneType.Interactable) 
+            {
+                var group = hazardGroupObject.AddComponent<InteractableGroupComponent>();
+                group.GroupData = hazardLocation.InteractableGroup;
             }
         }
 
-        public static void HandleZoneAssets(HazardLocation zone) 
+        public static void HandleZoneAssets(HazardGroup zone) 
         {
             if (zone.Assets == null) return;
             foreach (var asset in zone.Assets) 
@@ -282,7 +297,7 @@ namespace RealismMod
             }
         }
 
-        public static void HandleZoneLoot(HazardLocation zone)
+        public static void HandleZoneLoot(HazardGroup zone)
         {
             if (zone.Loot == null || Plugin.FikaPresent) return;
 

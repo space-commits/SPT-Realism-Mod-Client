@@ -151,7 +151,7 @@ namespace RealismMod
             {
                 return false;
             }
-            if (command == ECommand.WeaponMounting && PluginConfig.OverrideMounting.Value)
+            if (command == ECommand.WeaponMounting && PluginConfig.OverrideMounting.Value && Plugin.ServerConfig.enable_stances)
             {
                 Player player = Utils.GetYourPlayer();
                 ProceduralWeaponAnimation pwa = player.ProceduralWeaponAnimation;

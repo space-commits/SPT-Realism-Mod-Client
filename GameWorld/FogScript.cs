@@ -13,6 +13,7 @@ public class FogScript : MonoBehaviour
     public Vector3 Scale { get; set; }
     public float ParticleRate { get; set; }
     public float OpacityModi { get; set; }
+    public float DynamicOpacityModiTarget { get; set; } = 1f;
     public float SpeedModi { get; set; }
     public bool UsePhysics { get; set; }
     private ParticleSystem _ps;
@@ -25,6 +26,7 @@ public class FogScript : MonoBehaviour
     private float _timeExisted = 0f;
     private float _alpha= 0.08f;
     private float _speed = 2.5f;
+    private float _dynamicOpacityModi = 1f;
     private MinMaxCurve _startSpeed = new ParticleSystem.MinMaxCurve(1, 1);
 
     void Awake()
@@ -54,14 +56,15 @@ public class FogScript : MonoBehaviour
             _timeExisted += Time.deltaTime;
         }
 
-        _shapeModule.scale = Scale * PluginConfig.test1.Value; //0.85 
+        _dynamicOpacityModi = Mathf.Lerp(_dynamicOpacityModi, DynamicOpacityModiTarget, PluginConfig.test2.Value);
+        _shapeModule.scale = Scale; //0.85 
         _mainModule.maxParticles = _maxParticles; 
         _mainModule.gravityModifier = 0f; 
-        _mainModule.simulationSpeed = (_timeExisted <= 2f ? 1000 : _speed) * SpeedModi * PluginConfig.test2.Value; 
+        _mainModule.simulationSpeed = (_timeExisted <= 2f ? 1000 : _speed) * SpeedModi; 
         _mainModule.startSpeed = _startSpeed; 
         _mainModule.startSize = ParticleSize; 
         _mainModule.startLifetime = new ParticleSystem.MinMaxCurve(20f, 30f); 
         _emissionModule.rateOverTime = ParticleRate;
-        _mainModule.startColor = new Color(1f, 1f, 1f, _alpha * OpacityModi * PluginConfig.test3.Value);
+        _mainModule.startColor = new Color(1f, 1f, 1f, _alpha * OpacityModi * _dynamicOpacityModi);
     }
 }

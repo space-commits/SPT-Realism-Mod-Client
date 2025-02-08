@@ -36,6 +36,7 @@ namespace RealismMod
         [PatchPrefix]
         private static void PatchPrefix(MovementContext __instance, ref EInteraction interaction)
         {
+            if (!PluginConfig.EnableAnimationFixes.Value) return;
             Player player = (Player)AccessTools.Field(typeof(MovementContext), "_player").GetValue(__instance);
             if (player.IsYourPlayer)
             {
@@ -43,13 +44,13 @@ namespace RealismMod
                 {
                     case EInteraction.DoorPullBackward:
                     case EInteraction.PullHingeLeft:
-                    case EInteraction.PushHingeLeft:
-                        interaction = (EInteraction)PluginConfig.test9.Value;
+                    case EInteraction.PullHingeRight:
+                        interaction = (EInteraction)31;
                         break;
                     case EInteraction.DoorPushForward:
                     case EInteraction.PushHingeRight:
-                    case EInteraction.PullHingeRight:
-                        interaction = (EInteraction)PluginConfig.test10.Value;
+                    case EInteraction.PushHingeLeft:
+                        interaction = (EInteraction)33;
                         break;
                 }
             }
@@ -193,6 +194,8 @@ namespace RealismMod
         private static float _sprintTimer = 0f;
         private static bool _didSprintPenalties = false;
         private static bool _resetSwayAfterFiring = false;
+        private static float _animationWeight;
+
 
         private static bool SkipSprintPenalty
         { 
@@ -482,15 +485,30 @@ namespace RealismMod
             player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerValues.SprintHipfirePenalty, 0.1f, 0.5f);
         }
 
+        private static void SmoothenAnimations(Player player) 
+        {
+            if (player.IsInventoryOpened)
+            {
+                _animationWeight = Mathf.Lerp(_animationWeight, 0.1f, 0.1f);
+                player._animators[0].SetLayerWeight(20, _animationWeight);
+            }
+            else
+            {
+                _animationWeight = Mathf.MoveTowards(_animationWeight, 1f, 0.05f);
+                player._animators[0].SetLayerWeight(20, _animationWeight);
+            }
+        }
+
         protected override MethodBase GetTargetMethod()
         {
             surfaceField = AccessTools.Field(typeof(Player), "_currentSet");
             return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.Public);
         }
-
+  
         [PatchPostfix] 
         private static void PatchPostfix(Player __instance)
         {
+            if (PluginConfig.EnableAnimationFixes.Value) SmoothenAnimations(__instance);
             if (Plugin.ServerConfig.headset_changes)
             {
                 SurfaceSet currentSet = (SurfaceSet)surfaceField.GetValue(__instance);
