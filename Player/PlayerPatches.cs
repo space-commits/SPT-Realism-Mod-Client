@@ -489,12 +489,12 @@ namespace RealismMod
         {
             if (player.IsInventoryOpened)
             {
-                _animationWeight = Mathf.Lerp(_animationWeight, 0.1f, 0.1f);
+                _animationWeight = Mathf.Lerp(_animationWeight, 0.1f, 0.75f * Time.deltaTime);
                 player._animators[0].SetLayerWeight(20, _animationWeight);
             }
             else
             {
-                _animationWeight = Mathf.MoveTowards(_animationWeight, 1f, 0.05f);
+                _animationWeight = Mathf.MoveTowards(_animationWeight, 1f, 0.4f * Time.deltaTime);
                 player._animators[0].SetLayerWeight(20, _animationWeight);
             }
         }

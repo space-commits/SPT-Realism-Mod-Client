@@ -20,12 +20,12 @@ namespace RealismMod
         private static FieldInfo _playerField;
         protected override MethodBase GetTargetMethod()
         {
-            _playerField = AccessTools.Field(typeof(FirearmController), "_player");
-            return typeof(Player.FirearmController).GetMethod("DisableAimingOnReload");
+            _playerField = AccessTools.Field(typeof(Player.FirearmController.GClass1771), "player_0");
+            return typeof(Player.FirearmController.GClass1771).GetMethod("DisableAimingOnReload");
         }
 
         [PatchPrefix]
-        private static bool PatchPreFix(FirearmController __instance)
+        private static bool PatchPreFix(Player.FirearmController.GClass1771 __instance)
         {
             Player player = (Player)_playerField.GetValue(__instance);
             if (player.IsYourPlayer && StanceController.IsMounting)

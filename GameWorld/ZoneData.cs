@@ -345,20 +345,12 @@ namespace RealismMod
         public string[] DisabledBy { get; set; }
     }
 
-    public class InteractableZoneTargets
-    {
-        public string[] ZoneNames { get; set; }
-        public string InteractableName { get; set; } //the interactable responsible for affecting it partially
-        public float PartialCompletionModifier { get; set; } //modifer for when the primary interactable is triggered
-        public float FullCompletiionModifer { get; set; } = 0f;
-        public EInteractableState DesiredEndState { get; set; } = 0f;
-    }
 
     public class InteractableGroup
     {
         public string[] EnabledBy { get; set; }
         public string[] DisabledBy { get; set; }
-        public InteractableZoneTargets[] TargtetZones { get; set; }
+        public string[] ExtractsToBlock { get; set; }
     }
 
     public class InteractableSubZone
@@ -366,8 +358,13 @@ namespace RealismMod
         public EIneractableType InteractionType { get; set; }
         public int CompletionStep { get; set; } = 0; //what step this interactable is if order of completion is needed
         public EInteractableState StartingState { get; set; } = EInteractableState.On;
+        public EInteractableState DesiredEndState { get; set; } = EInteractableState.Off;
         public string TargeObject { get; set; }
         public EIneractableAction[] InteractionAction { get; set; }
+        public float PartialCompletionModifier { get; set; } //modifer for when the primary interactable is triggered
+        public float FullCompletionModifer { get; set; } = 0f;
+        public string[] ZoneNames { get; set; }
+
     }
 
     public class Position

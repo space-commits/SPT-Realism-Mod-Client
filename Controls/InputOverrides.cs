@@ -14,6 +14,7 @@ using StatusStruct = GStruct446<GInterface385>;
 using ItemEventClass = EFT.InventoryLogic;
 using EFT.Animations;
 using EFT.WeaponMounting;
+using System.Linq;
 
 namespace RealismMod
 {

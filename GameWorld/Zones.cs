@@ -14,6 +14,11 @@ using UnityEngine.Rendering.PostProcessing;
 
 namespace RealismMod
 {
+    public class ZoneConstants 
+    {
+        public const float ZONE_LERP_SPEED = 0.05f;
+    }
+
     public interface IZone
     {
         public EZoneType ZoneType { get; }
@@ -24,96 +29,87 @@ namespace RealismMod
         public bool HasBeenAnalysed { get; set; }
         public string Name { get; set; }
         public List<GameObject> ActiveDevices { get; set; }
-        public InteractableSubZone Interactable { get; set; }
+        public InteractableSubZone InteractableData { get; set; }
     }
 
-    //get all child interaction zone objects on start
-    //get all target hazard zones on start
-    //either use actions/triggers to update the status of the child interactbles
-    //if conditons are met (all valves are in correct state), tell zones to turn "off", including any particle systems
     public class InteractableGroupComponent: MonoBehaviour
     {
         public InteractableGroup GroupData { get; set; }
-        public List<IZone> _hazardZones = new List<IZone>();
+        public int ComplatedSteps { get { return _completedSteps; } }
 
         private List<InteractionZone> _interactionZones = new List<InteractionZone>();
-        private bool _isTurnedOff = false;
         private int _completedSteps = 0;
-
 
         void Start()
         {
-            foreach (var targets in GroupData.TargtetZones)
-            {
-                foreach (var targetName in targets.ZoneNames)
-                {
-                    GameObject zone = GameObject.Find(targetName);
-                    if (zone != null)
-                    {
-                        Utils.Logger.LogWarning($"found hazard zone GO {targetName}");
-                        IZone hazard = zone.GetComponent<IZone>();
-                        if (hazard != null)
-                        {
-                            Utils.Logger.LogWarning($"found hazard component");
-                            _hazardZones.Add(hazard);
-                        }
-                    }
-                }
-            }
-
             InteractionZone[] interactionZones = GetComponentsInChildren<InteractionZone>();
             foreach (var interactable in interactionZones)
             {
                 _interactionZones.Add(interactable);
                 interactable.OnInteractableStateChanged += HandleValveStateChanged;
             }
+
+            EvaluateInteractableStates(true);
         }
-
-
-        //instead of just setting it to 1 or 0, check if a valve should set a specific zone's modifier to a intermediary value
-        //then check what combinatio of off or on should the zones be and that that is met
 
         private void HandleValveStateChanged(InteractionZone interactable, EInteractableState newState)
         {
-            Utils.Logger.LogWarning($"==Valve {interactable.gameObject.name} changed to {newState}");
-            bool allOff = true;
+            if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"==Valve {interactable.gameObject.name} changed to {newState}");
+            EvaluateInteractableStates();
+        }
+
+        private void EvaluateInteractableStates(bool isOnInit = false)
+        {
+            if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"is on init? {isOnInit}");
+            Dictionary<GasZone, float> gasZones = new Dictionary<GasZone, float>();
+            bool allInDesiredState = true;
             _completedSteps = 0;
-            foreach (InteractionZone zone in _interactionZones)
+            foreach (InteractionZone interactable in _interactionZones)
             {
-                //if state is equal to desired state, _completedSteps += 1
-                //the interactive subzones will need to be able to get thsi value for cases of buttons that can only be toggled if preivous steps are completed
-                if (zone.State == EInteractableState.On) allOff = false;
-                Utils.Logger.LogWarning($"Valve {interactable.gameObject.name} is currently {newState}");
+                bool isInDesiredState = interactable.State == interactable.InteractableData.DesiredEndState;
+                if (!isInDesiredState)
+                {
+                    if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"Valve {interactable.gameObject.name} is NOT desired state");
+                    allInDesiredState = false;
+                }
+                else
+                {
+                    if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"Valve {interactable.gameObject.name} is in desired state");
+                    _completedSteps++;
+                }
+
+                foreach (var zone in interactable.HazardZones)
+                {
+                    GasZone gas = zone as GasZone;
+                    if (gas != null)
+                    {
+                        if (!gasZones.ContainsKey(gas))
+                        {
+                            gasZones.Add(gas, interactable.InteractableData.FullCompletionModifer);
+                        }
+        
+                        if (isInDesiredState) 
+                        {
+                            gas.ZoneStrengthTargetModi = interactable.InteractableData.PartialCompletionModifier;
+                        }
+                        else
+                        {
+                            gas.ZoneStrengthTargetModi = 1f;
+                        }
+
+                        if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"Valve {interactable.gameObject.name} is currently {interactable.State}, strength for {gas.gameObject.name} is {gas.ZoneStrengthTargetModi}");
+                    }
+                }
             }
 
-            if (allOff)
+            if (allInDesiredState)
             {
-                Utils.Logger.LogWarning($"turning off the gas");
-                foreach (var hazard in _hazardZones)
+                if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"All valves in desired state ");
+                foreach (var gas in gasZones)
                 {
-                    GasZone gas = hazard as GasZone;
-                    if (gas != null)
-                    {
-                        Utils.Logger.LogWarning($"{gas.name} strength set to 0");
-                        gas.ZoneStrengthTargetModi = 0f;
-                    }
+                    gas.Key.ZoneStrengthTargetModi = gas.Value;
+                    if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"zone {gas.Key.gameObject.name} strength is {gas.Key.ZoneStrengthTargetModi}");
                 }
-                _isTurnedOff = true;
-            }
-            else 
-            {
-                Utils.Logger.LogWarning($"turning the gas on");
-                foreach (var hazard in _hazardZones)
-                {
-                    GasZone gas = hazard as GasZone;
-                    if (gas != null)
-                    {
-                        Utils.Logger.LogWarning($"{gas.name} strength set to 1");
-                        gas.ZoneStrengthTargetModi = 1f;
-                        _isTurnedOff = true;
-                    }
-                }
-                _isTurnedOff = false;
             }
         }
     }
@@ -123,6 +119,7 @@ namespace RealismMod
     public class InteractionZone : InteractableObject, IZone 
     {
         public const float VALVE_AUDIO_VOL = 0.75f;
+        public const float LEAK_AUDIO_VOL = 0.25f;
         public EZoneType ZoneType { get; }
         public float ZoneStrength { get; set; }
         public bool BlocksNav { get; set; }
@@ -132,7 +129,7 @@ namespace RealismMod
         public string Name { get; set; }
         public List<GameObject> ActiveDevices { get; set; }
 
-        public InteractableSubZone Interactable { get; set; }
+        public InteractableSubZone InteractableData { get; set; }
         public delegate void OnStateChanged(InteractionZone interacatble, EInteractableState newState);
         public event OnStateChanged OnInteractableStateChanged;
 
@@ -151,17 +148,37 @@ namespace RealismMod
         }
         public List<GameObject> InteractableGameObjects{ get; set; }
         public List<ActionsTypesClass> InteractableActions = new List<ActionsTypesClass>();
+        public List<IZone> HazardZones = new List<IZone>();
 
         private AudioSource _valveAudioSource;
+        private AudioSource _gasLeakAudioSource;
+        private AudioSource _valveStuckSource;
         private GameObject _targetGameObject;
+        private InteractableGroupComponent _groupParent;
         private bool _isRotating = false;
+        private bool _isDoingStuckRotation = false;
+
+        private float _targetLoopVolume = LEAK_AUDIO_VOL;
 
         void Start()
         {
-            _state = Interactable.StartingState;
+            _state = InteractableData.StartingState;
+            _groupParent = GetComponentInParent<InteractableGroupComponent>();
             SetUpValveAudio();
+            SetUpValveStuckAudio();
+            SetUpLeakAudio();
             GetChildObjects();
+            GetHazardZones();
             InitActions();
+        }
+
+        void Update() 
+        {
+            _targetLoopVolume = State != this.InteractableData.DesiredEndState ? LEAK_AUDIO_VOL : 0f;
+            if (_gasLeakAudioSource.volume != _targetLoopVolume)
+            {
+                _gasLeakAudioSource.volume = Mathf.MoveTowards(_gasLeakAudioSource.volume, _targetLoopVolume, 0.1f * Time.deltaTime);
+            }
         }
 
         private void GetChildObjects() 
@@ -169,15 +186,46 @@ namespace RealismMod
             var box = this.gameObject.GetComponentInParent<BoxCollider>();
             Bounds bounds = box.bounds;
             Collider[] colliders = Physics.OverlapBox(bounds.center, bounds.extents, Quaternion.identity);
-            Utils.Logger.LogWarning($"Found {colliders.Length} objects in the box collider bounds:");
+            if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"Found {colliders.Length} objects in the box collider bounds:");
             foreach (Collider col in colliders)
             {
-                if (col.gameObject.name == Interactable.TargeObject)
+                if (col.gameObject.name == InteractableData.TargeObject)
                 {
                     _targetGameObject = col.gameObject.transform.parent.gameObject;
-                    Utils.Logger.LogWarning("===match");
+                    if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning("===match");
                 }
             }
+        }
+
+        private void GetHazardZones() 
+        {
+            foreach (var targetName in InteractableData.ZoneNames)
+            {
+                GameObject zone = GameObject.Find(targetName);
+                if (zone != null)
+                {
+                    if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"found hazard zone GO {targetName}");
+                    IZone hazard = zone.GetComponent<IZone>();
+                    if (hazard != null)
+                    {
+                        if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"found hazard component");
+                        HazardZones.Add(hazard);
+                    }
+                }
+            }
+        }
+
+        private void SetUpValveStuckAudio()
+        {
+            _valveStuckSource = this.gameObject.AddComponent<AudioSource>();
+            _valveStuckSource.clip = Plugin.InteractableClips["valve_stuck.wav"];
+            _valveStuckSource.volume = VALVE_AUDIO_VOL;
+            _valveStuckSource.loop = false;
+            _valveStuckSource.playOnAwake = false;
+            _valveStuckSource.spatialBlend = 1.0f;
+            _valveStuckSource.minDistance = 1.5f;
+            _valveStuckSource.maxDistance = 5f;
+            _valveStuckSource.rolloffMode = AudioRolloffMode.Logarithmic;
         }
 
         private void SetUpValveAudio()
@@ -191,6 +239,20 @@ namespace RealismMod
             _valveAudioSource.minDistance = 1.5f;
             _valveAudioSource.maxDistance = 5f;
             _valveAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        }
+
+        private void SetUpLeakAudio()
+        {
+            _gasLeakAudioSource = this.gameObject.AddComponent<AudioSource>();
+            _gasLeakAudioSource.clip = Plugin.InteractableClips["gas_leak.wav"];
+            _gasLeakAudioSource.volume = LEAK_AUDIO_VOL;
+            _gasLeakAudioSource.loop = true;
+            _gasLeakAudioSource.playOnAwake = false;
+            _gasLeakAudioSource.spatialBlend = 1.0f;
+            _gasLeakAudioSource.minDistance = 1.5f;
+            _gasLeakAudioSource.maxDistance = 5f;
+            _gasLeakAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+            _gasLeakAudioSource.Play();
         }
 
         IEnumerator AdjustVolume(float targetVolume, float speed, AudioSource audioSource)
@@ -227,27 +289,51 @@ namespace RealismMod
             _valveAudioSource.Stop();
         }
 
-        //todo: figure out how long this lasts and don't allow playback if elapsedtime is greater than X
+        private void Rotate(ref float elapsedTime, float duration, float maxSpeed) 
+        {
+            float t = elapsedTime / duration;
+            float speedModifier = Mathf.Sin(t * Mathf.PI);
+            float currentSpeed = maxSpeed * speedModifier;
+            _targetGameObject.transform.Rotate(0, 0, currentSpeed * Time.deltaTime);
+            elapsedTime += Time.deltaTime;
+        }
+
         IEnumerator RotateValveOverTime(float maxSpeed, float duration)
         {
-            if (_isRotating) yield break;
-
+            if (_isRotating || _isDoingStuckRotation) yield break;
             _isRotating = true;
             float elapsedTime = 0f;
             StartCoroutine(PlayRandomValveClipLoop());
             StartCoroutine(AdjustVolume(VALVE_AUDIO_VOL, 1f, _valveAudioSource));
             while (elapsedTime < duration)
             {
-                float t = elapsedTime / duration;
-                float speedModifier = Mathf.Sin(t * Mathf.PI); 
-                float currentSpeed = maxSpeed * speedModifier;
-               _targetGameObject.transform.Rotate(0, 0, currentSpeed * Time.deltaTime);
-                elapsedTime += Time.deltaTime;
-                yield return null; 
+                Rotate(ref elapsedTime, duration, maxSpeed);
+                yield return null;
             }
             StartCoroutine(AdjustVolume(0f, 1f, _valveAudioSource));
             yield return StartCoroutine(StopValveLoop());
             _isRotating = false;
+        }
+
+
+        IEnumerator RotateStuck(float maxSpeed, float duration)
+        {
+            if (_isRotating || _isDoingStuckRotation) yield break;
+            _isDoingStuckRotation = true;
+            _valveStuckSource.Play();
+            float elapsedTime = 0f;
+            while (elapsedTime < duration)
+            {
+                Rotate(ref elapsedTime, duration, maxSpeed);
+                yield return null;
+            }
+            elapsedTime = 0f;
+            while (elapsedTime < duration)
+            {
+                Rotate(ref elapsedTime, duration, -maxSpeed);
+                yield return null;
+            }
+            _isDoingStuckRotation = false;
         }
 
         void InitActions()
@@ -259,22 +345,39 @@ namespace RealismMod
                 {
                     new ActionsTypesClass
                     {
-                        Name = "Turn On",
+                        Name = "Turn Clockwise",
                         Action = TurnON
                     },
                     new ActionsTypesClass
                     {
-                        Name = "Turn Off",
+                        Name = "Turn Anticlockwise",
                         Action = TurnOff
                     }
                 }
              );
         }
 
+        public void Log() 
+        {
+            Utils.Logger.LogWarning($"{gameObject.name} state is {State}");
+        }
+
+        private bool CanTurn(EInteractableState nextState) 
+        {
+            bool completed = _groupParent.ComplatedSteps >= InteractableData.CompletionStep;
+            bool isSameState = State == nextState;
+            if (!completed || isSameState) 
+            {
+                float direction = nextState == EInteractableState.On ? 100f : -100f;
+                StartCoroutine(RotateStuck(direction, 0.25f));
+            }
+            return completed && !isSameState;
+        }
+
         //turn SFX on/off, trigger action
         public void TurnON() 
         {
-            if (State == EInteractableState.On || _isRotating) return;
+            if (_isRotating || !CanTurn(EInteractableState.On)) return;
             StopAllCoroutines();
             StartCoroutine(RotateValveOverTime(300f, 5f));
             State = EInteractableState.On;
@@ -282,7 +385,7 @@ namespace RealismMod
 
         public void TurnOff()
         {
-            if (State == EInteractableState.Off || _isRotating) return;
+            if (_isRotating || !CanTurn(EInteractableState.Off)) return;
             StopAllCoroutines();
             StartCoroutine(RotateValveOverTime(-300f, 5f));
             State = EInteractableState.Off;
@@ -299,7 +402,7 @@ namespace RealismMod
         public bool HasBeenAnalysed { get; set; } = false;
         public string Name { get; set; }
         public List<GameObject> ActiveDevices { get; set; }
-        public InteractableSubZone Interactable { get; set; }
+        public InteractableSubZone InteractableData { get; set; }
 
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private BoxCollider _zoneCollider;
@@ -376,7 +479,7 @@ namespace RealismMod
         public bool HasBeenAnalysed { get; set; } = false;
         public string Name { get; set; }
         public List<GameObject> ActiveDevices { get; set; }
-        public InteractableSubZone Interactable { get; set; }
+        public InteractableSubZone InteractableData { get; set; }
 
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private Collider _zoneCollider;
@@ -488,7 +591,7 @@ namespace RealismMod
                 _tick = 0f;
             }
 
-            _strengthModi = Mathf.Lerp(_strengthModi, ZoneStrengthTargetModi, 0.0005f);
+            _strengthModi = Mathf.Lerp(_strengthModi, ZoneStrengthTargetModi, ZoneConstants.ZONE_LERP_SPEED * Time.deltaTime);
         }
 
         float CalculateGasStrengthBox(Vector3 playerPosition, bool getStaticValue = false)
@@ -524,7 +627,7 @@ namespace RealismMod
         public bool HasBeenAnalysed { get; set; } = false;
         public string Name { get; set; }
         public List<GameObject> ActiveDevices { get; set; }
-        public InteractableSubZone Interactable { get; set; }
+        public InteractableSubZone InteractableData { get; set; }
 
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private Collider _zoneCollider;
@@ -646,7 +749,7 @@ namespace RealismMod
         public bool HasBeenAnalysed { get; set; } = false;
         public string Name { get; set; }
         public List<GameObject> ActiveDevices { get; set; }
-        public InteractableSubZone Interactable { get; set; }
+        public InteractableSubZone InteractableData { get; set; }
 
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private BoxCollider _zoneCollider;

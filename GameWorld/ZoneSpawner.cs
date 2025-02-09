@@ -216,7 +216,7 @@ namespace RealismMod
 
             if (zoneType == EZoneType.Interactable) 
             {
-                hazard.Interactable = subZone.Interactable;
+                hazard.InteractableData = subZone.Interactable;
             }
 
             if (!isBufferZone && subZone.UseVisual && isGasZone && PluginConfig.ShowGasEffects.Value) AddGasVisual(subZone, hazardZone, zoneType, position, rotation, size);
