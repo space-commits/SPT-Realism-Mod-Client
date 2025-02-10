@@ -98,6 +98,7 @@ namespace RealismMod
             }
             if (command == ECommand.ToggleBipods) 
             {
+                if (StanceController.CurrentStance != EStance.None) return false;
                 StanceController.IsMounting = false;
             }
             //cancel stances

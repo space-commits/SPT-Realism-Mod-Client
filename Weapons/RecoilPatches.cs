@@ -610,7 +610,7 @@ namespace RealismMod
                 StanceController.StanceShotTime = 0f;
                 ShootController.IsFiring = true;
                 ShootController.IsFiringDeafen = true;
-                ShootController.IsFiringWiggle = true;
+                ShootController.DoFiringWiggle = true;
                 ShootController.IsFiringMovement = true;
                 StanceController.IsFiringFromStance = true;
 

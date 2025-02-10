@@ -521,7 +521,6 @@ namespace RealismMod
             {
                 if (onInit)
                 {
-                    Utils.Logger.LogWarning($"fog found {fog.transform.parent.name}");
                     float strengthFactor = Mathf.Pow((1f + CalculateGasStrengthBox(Vector3.zero, true)), 0.1f);
                     fog.ParticleRate *= strengthFactor;
                     fog.OpacityModi *= strengthFactor;

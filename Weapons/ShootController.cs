@@ -15,7 +15,7 @@ namespace RealismMod
         public static bool IsFiring = false;
         public static bool IsFiringDeafen = false;
         public static bool IsFiringMovement = false;
-        public static bool IsFiringWiggle = false;
+        public static bool DoFiringWiggle = false;
         public static int ShotCount = 0;
         public static int PrevShotCount = ShotCount;
         public static float FiringTimer = 0.0f;
@@ -56,7 +56,7 @@ namespace RealismMod
             {
                 IsFiring = true;
                 IsFiringDeafen = true;
-                IsFiringWiggle = true;
+                DoFiringWiggle = true;
                 IsFiringMovement = true;
                 StanceController.IsFiringFromStance = true;
                 DeafenController.IncreaseDeafeningShooting();
@@ -92,7 +92,7 @@ namespace RealismMod
 
             if (WiggleShotTimer >= 0.12f)
             {
-                IsFiringWiggle = false;
+                DoFiringWiggle = false;
                 WiggleShotTimer = 0f;
             }
 
@@ -207,9 +207,9 @@ namespace RealismMod
         {
             float cantedRecoilSpeed = Mathf.Clamp(BaseTotalConvergence * 0.95f, 9f, 16f);
 
-            if (IsFiringWiggle)
+            if (DoFiringWiggle)
             {
-                float cantedRecoilAmount = FactoredTotalHRecoil / 32f;
+                float cantedRecoilAmount = FactoredTotalHRecoil / 30f;
                 float totalCantedRecoil = Mathf.Lerp(-cantedRecoilAmount, cantedRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed * 1.05f, 1.0f));
                 float additionalRecoilAmount = FactoredTotalDispersion / 16f;
                 float totalSideRecoil = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f)) * 0.05f;

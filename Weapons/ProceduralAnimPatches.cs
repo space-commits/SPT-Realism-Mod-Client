@@ -68,8 +68,9 @@ namespace RealismMod
                 {
                     return false;
                 }
+                Vector3 current = __instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Current;
                 bool autoFireOn;
-                if (((autoFireOn = (__instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect as NewRotationRecoilProcess).AutoFireOn) & __instance.IsAiming))
+                if (((autoFireOn = (__instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect as NewRotationRecoilProcess).AutoFireOn) & __instance.IsAiming) && current != Vector3.zero)
                 {
                     if (!__instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.StableOn)
                     {
@@ -84,11 +85,12 @@ namespace RealismMod
                         _cameraRecoilRotateField.SetValue(__instance, newRecoilRotation);
                         return false;
                     }
+                    Quaternion previousCameraTargetRotation = _previousCameraTargetRotation;
+                    previousCameraTargetRotation.z = __instance.HandsContainer.CameraTransform.localRotation.z;
                     _camRecoilLerpTempSpeed = Mathf.Clamp(_camRecoilLerpTempSpeed + __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y) * 2f;
-                    Quaternion newCameraRotation = Quaternion.Lerp(_currentRecoilCameraRotate, _previousCameraTargetRotation, _camRecoilLerpTempSpeed);
+                    Quaternion newCameraRotation = Quaternion.Lerp(_currentRecoilCameraRotate, previousCameraTargetRotation, _camRecoilLerpTempSpeed);
                     __instance.HandsContainer.CameraTransform.localRotation = newCameraRotation;
                     _cameraRecoilRotateField.SetValue(__instance, newCameraRotation);
-
                     return false;
                 }
                 else
