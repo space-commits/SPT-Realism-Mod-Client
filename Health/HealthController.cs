@@ -999,7 +999,7 @@ namespace RealismMod
         //replace all this logic with a schedular class to control execution timing
         public void HealthEffecTick()
         {
-            Player player = Singleton<GameWorld>.Instance.MainPlayer;
+            Player player = Utils.GetYourPlayer();
             PlayerValues.ImmuneSkillWeak = player.Skills.ImmunityPainKiller.Value;
             PlayerValues.ImmuneSkillStrong = player.Skills.ImmunityMiscEffects.Value;
             PlayerValues.StressResistanceFactor = player.Skills.StressPain.Value;
@@ -1902,6 +1902,12 @@ namespace RealismMod
             hc.ChangeHydration(-ResourcePerTick * dt * PluginConfig.HydrationRateMulti.Value);
         }
 
+
+        private float CalculateHPPenalty(float basePercent, float divisor)
+        {
+            return 1f - ((1f - basePercent) / divisor);
+        }
+
         public void PlayerInjuryStateCheck(Player player)
         {
             bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
@@ -1965,14 +1971,14 @@ namespace RealismMod
                 totalCurrentHp += currentHp;
 
                 float percentHp = currentHp / maxHp;
-                float percentHpStamRegen = 1f - ((1f - percentHp) / (isBody ? 10f : 5f));
-                float percentHpWalk = 1f - ((1f - percentHp) / (isBody ? 15f : 7.5f));
-                float percentHpSprint = 1f - ((1f - percentHp) / (isBody ? 8f : 4f));
-                float percentHpAimMove = 1f - ((1f - percentHp) / (isArm ? 20f : 14f));
-                float percentHpADS = 1f - ((1f - percentHp) / (isRightArm ? 1f : 2f));
-                float percentHpStance = 1f - ((1f - percentHp) / (isRightArm ? 1.5f : 3f));
-                float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2f : isRightArm ? 3f : 4f));
-                float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
+                float percentHpStamRegen = CalculateHPPenalty(percentHp, isBody ? 10f : 5f);
+                float percentHpWalk = CalculateHPPenalty(percentHp, isBody ? 15f : 7.5f);
+                float percentHpSprint = CalculateHPPenalty(percentHp, isBody ? 8f : 4f);
+                float percentHpAimMove = CalculateHPPenalty(percentHp, isArm ? 20f : 14f);
+                float percentHpADS = CalculateHPPenalty(percentHp, isLeftArm ? 2.5f : (isRightArm ? 1.5f : 3f));
+                float percentHpStance = CalculateHPPenalty(percentHp, isLeftArm ? 2.5f : (isRightArm ? 1.5f : 3.5f));
+                float percentHpReload = CalculateHPPenalty(percentHp, isLeftArm ? 3f : (isRightArm ? 4f : 5f));
+                float percentHpRecoil = CalculateHPPenalty(percentHp, isLeftArm ? 10f : 20f);
 
                 if (currentHp <= 0f) _painInjuryStrength += ZeroedPainFactor;
                 else if (percentHp <= HpLossPainThreshold) _painInjuryStrength += HpLossPainFactor ;
@@ -2025,8 +2031,8 @@ namespace RealismMod
             painFactor = _hasOverdosedStim ? 90f + painFactor : painFactor;
             float painKillerFactor = Mathf.Clamp(1f - (painFactor / 1000f), 0.85f, 1f);
             float painKillerFactorInverse = Mathf.Clamp(1f + (painFactor / 1000f), 1f, 1.15f);
-            float skillFactor = (1f + (player.Skills.HealthEnergy.Value / 4));
-            float skillFactorInverse = (1f - (player.Skills.HealthEnergy.Value / 4));
+            float skillFactor = (1f + (player.Skills.HealthEnergy.Value / 2));
+            float skillFactorInverse = (1f - (player.Skills.HealthEnergy.Value / 2));
 
             //gas
             float coofFactor = IsCoughingInGas ? 100f : 0f;
