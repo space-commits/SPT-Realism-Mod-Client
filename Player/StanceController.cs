@@ -249,6 +249,18 @@ namespace RealismMod
         public static bool HaveResetStamDrain = false;
         public static bool CanResetAimDrain = false;
 
+        //extra rotaitons
+        private static Vector3 _posePosOffest = Vector3.zero;
+        private static Vector3 _poseRotOffest = Vector3.zero;
+        private static Vector3 _patrolPos = Vector3.zero;
+        private static Vector3 _patrolRot = Vector3.zero;
+
+        //patrol
+        private static Vector3 _riflePatrolPos = new Vector3(0.2f, 0.025f, 0.1f);
+        private static Vector3 _riflePatrolRot = new Vector3(0.05f, -0.05f, -0.5f);
+        private static Vector3 _pistolPatrolPos = new Vector3(0.05f, 0f, 0f);
+        private static Vector3 _pistolPatrolRot = new Vector3(0.1f, -0.1f, -0.1f);
+
         //mounting
         private static Quaternion _makeQuaternionDelta(Quaternion from, Quaternion to) => to * Quaternion.Inverse(from); //yeah I don't know what this is either
         private static float _mountAimSmoothed = 0f;
@@ -1653,6 +1665,72 @@ namespace RealismMod
             }
             player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
             player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
+        }
+
+        public static void DoPatrolStance(ProceduralWeaponAnimation pwa, Player player)
+        {
+            Vector3 patrolPos = StanceController.CurrentStance != EStance.PatrolStance ? Vector3.zero : WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol ? _pistolPatrolPos : _riflePatrolPos;
+            _patrolPos = Vector3.Lerp(_patrolPos, patrolPos, 5.5f * Time.deltaTime);
+            pwa.HandsContainer.WeaponRoot.localPosition += _patrolPos;
+
+            Vector3 patrolRot = StanceController.CurrentStance != EStance.PatrolStance ? Vector3.zero : WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol ? _pistolPatrolRot : _riflePatrolRot;
+            _patrolRot = Vector3.Lerp(_patrolRot, patrolRot, 5.5f * Time.deltaTime);
+
+            Quaternion newRot = Quaternion.identity;
+            newRot.x = _patrolRot.x;
+            newRot.y = _patrolRot.y;
+            newRot.z = _patrolRot.z;
+            pwa.HandsContainer.WeaponRoot.localRotation *= newRot;
+
+            if (Vector3.Distance(_patrolPos, Vector3.zero) <= 0.05f) StanceController.FinishedUnPatrolStancing = true;
+            else
+            {
+                StanceController.FinishedUnPatrolStancing = false;
+            }
+        }
+
+        public static void DoExtraPosAndRot(ProceduralWeaponAnimation pwa, Player player)
+        {
+            //position
+            float stockOffset = !WeaponStats.IsPistol && !WeaponStats.HasShoulderContact ? -0.04f : 0f;
+            float stockPosOffset = WeaponStats.StockPosition * 0.01f;
+            float posOffsetMulti = WeaponStats.HasShoulderContact ? -0.04f : 0.04f;
+            float posePosOffset = (1f - player.MovementContext.PoseLevel) * posOffsetMulti;
+
+            float targetPosXOffset = pwa.IsAiming ? 0f : 0f;
+            float targetPosYOffset = pwa.IsAiming ? 0f : 0f;
+            float targetPosZOffset = pwa.IsAiming ? 0f : Mathf.Clamp(posePosOffset + stockOffset + stockPosOffset, -0.05f, 0.05f);
+            Vector3 targetPos = new Vector3(targetPosXOffset, targetPosYOffset, targetPosZOffset);
+
+            _posePosOffest = Vector3.Lerp(_posePosOffest, targetPos, 5f * Time.deltaTime);
+            pwa.HandsContainer.WeaponRoot.localPosition += _posePosOffest;
+
+            //rotation
+            bool isMountedWithBipod = WeaponStats.BipodIsDeployed && StanceController.IsMounting;
+            bool doCantedOffset = Mathf.Abs(pwa.CurrentScope.Rotation) >= EFTHardSettings.Instance.SCOPE_ROTATION_THRESHOLD && StanceController.IsAiming;
+            bool doMaskOffset = !doCantedOffset && !isMountedWithBipod && (GearController.HasGasMask || GearController.FSIsActive) && !WeaponStats.WeaponCanFSADS && pwa.IsAiming && WeaponStats.HasShoulderContact && !WeaponStats.IsStocklessPistol && !WeaponStats.IsMachinePistol;
+            bool doLongMagOffset = WeaponStats.HasLongMag && player.IsInPronePose && !isMountedWithBipod;
+            float cantedOffsetBase = -0.41f;
+            float magOffset = doCantedOffset ? 0f : doLongMagOffset && !pwa.IsAiming ? -0.35f : doLongMagOffset && pwa.IsAiming ? -0.12f : 0f;
+            float ergoOffset = WeaponStats.ErgoFactor * -0.001f;
+            float poseRotOffset = (1f - player.MovementContext.PoseLevel) * -0.03f;
+            poseRotOffset += player.IsInPronePose ? -0.03f : 0f;
+            float maskFactor = doMaskOffset ? -0.025f + ergoOffset : 0f;
+            float baseRotOffset = pwa.IsAiming || StanceController.IsMounting || StanceController.IsBracing ? 0f : poseRotOffset + ergoOffset;
+            float cantedSightOffset = doCantedOffset ? cantedOffsetBase : 0f;
+
+            float rotX = 0f;
+            float rotY = Mathf.Clamp(baseRotOffset + maskFactor + magOffset, -0.5f, 0f) + cantedSightOffset;
+            float rotZ = 0f;
+            Vector3 targetRot = new Vector3(rotX, rotY, rotZ);
+
+            _poseRotOffest = Vector3.Lerp(_poseRotOffest, targetRot, 5f * Time.deltaTime);
+
+            Quaternion newRot = Quaternion.identity;
+            newRot.x = _poseRotOffest.x;
+            newRot.y = _poseRotOffest.y;
+            newRot.z = _poseRotOffest.z;
+            pwa.HandsContainer.WeaponRoot.localRotation *= newRot;
         }
 
         ///

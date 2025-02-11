@@ -469,10 +469,10 @@ namespace RealismMod
             if (toxinDebuffs.Count() > 0) 
             {
                 var debuff = toxinDebuffs.First();
-                if (PluginConfig.EnableGeneralLogging.Value) Logger.LogWarning("has toxin debuff " + debuff.Chance);
+                if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("has toxin debuff " + debuff.Chance);
                 if (debuff.Chance > 0 && UnityEngine.Random.Range(0, 100) < debuff.Chance * 100)
                 {
-                    if (PluginConfig.EnableGeneralLogging.Value) Logger.LogWarning("applying toxin debuff");
+                    if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("applying toxin debuff");
                     float energyDrain = UnityEngine.Random.Range(debuff.Chance * 250, debuff.Chance * 500);
                     energyDrain = Mathf.Clamp(energyDrain, 2.5f, 90f);
                     float hydrationDrain = UnityEngine.Random.Range(debuff.Chance * 250, debuff.Chance * 500);
@@ -487,10 +487,10 @@ namespace RealismMod
 
             foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings)
             {
-                if (PluginConfig.EnableGeneralLogging.Value) Logger.LogWarning("buff " + buff.BuffName + buff.BuffType);
+                if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("buff " + buff.BuffName + buff.BuffType);
                 if (buff.BuffType == EStimulatorBuffType.EnergyRate)
                 {
-                    if (PluginConfig.EnableGeneralLogging.Value) Logger.LogWarning("has energy buff " + buff.Value);
+                    if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("has energy buff " + buff.Value);
                     if (buff.Value > 0)
                     {
                         hc.ChangeEnergy(buff.Value * buff.Duration);
@@ -499,7 +499,7 @@ namespace RealismMod
 
                 if (buff.BuffType == EStimulatorBuffType.HydrationRate)
                 {
-                    if (PluginConfig.EnableGeneralLogging.Value) Logger.LogWarning("has hydration buff " + buff.Value);
+                    if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("has hydration buff " + buff.Value);
                     if (buff.Value > 0)
                     {
                         hc.ChangeHydration(buff.Value * buff.Duration);
@@ -514,15 +514,15 @@ namespace RealismMod
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
             var itemStats = Stats.GetDataObj<Consumable>(Stats.ConsumableStats, item.TemplateId);
-            if (PluginConfig.EnableGeneralLogging.Value) Logger.LogWarning("Applying out of raid: " + item.LocalizedName());
+            if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("Applying out of raid: " + item.LocalizedName());
 
             if (Plugin.ServerConfig.food_changes)
             {
-                if (PluginConfig.EnableGeneralLogging.Value) Logger.LogWarning("food changes ");
+                if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("food changes ");
                 FoodDrinkItemClass foodClass = item as FoodDrinkItemClass;
                 if (foodClass != null)
                 {
-                    if (PluginConfig.EnableGeneralLogging.Value) Logger.LogWarning("is food");
+                    if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("is food");
                     DoFoodItem(__instance, foodClass);
                     return;
                 }
@@ -569,7 +569,7 @@ namespace RealismMod
                 bool canUse = true;
                 if (((MedsItemClass = (item as MedsItemClass)) != null))
                 {
-                    if (PluginConfig.EnableGeneralLogging.Value)
+                    if (PluginConfig.EnableMedicalLogging.Value)
                     {
                         Logger.LogWarning("ApplyItem Med");
                     }
@@ -577,7 +577,7 @@ namespace RealismMod
                 }
                 if ((foodClass = (item as FoodDrinkItemClass)) != null)
                 {
-                    if (PluginConfig.EnableGeneralLogging.Value)
+                    if (PluginConfig.EnableMedicalLogging.Value)
                     {
                         Logger.LogWarning("ApplyItem Food");
                     }
@@ -614,7 +614,7 @@ namespace RealismMod
                 {
                     bool canUse = true;
                     Plugin.RealHealthController.CanConsume(__instance, boundItem, ref canUse);
-                    if (PluginConfig.EnableGeneralLogging.Value) Logger.LogWarning("quick slot, can use = " + canUse);
+                    if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("quick slot, can use = " + canUse);
                     if (!canUse) callback(null);
                     return canUse;
                 }
@@ -725,7 +725,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix()
         {
-            if (PluginConfig.EnableGeneralLogging.Value)
+            if (PluginConfig.EnableMedicalLogging.Value)
             {
                 Logger.LogWarning("Cancelling Meds");
             }
@@ -777,7 +777,7 @@ namespace RealismMod
             var player = (Player)_playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                if (PluginConfig.EnableGeneralLogging.Value)
+                if (PluginConfig.EnableMedicalLogging.Value)
                 {
                     Logger.LogWarning("=========");
                     Logger.LogWarning("part = " + bodyPart);

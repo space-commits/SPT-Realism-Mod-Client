@@ -25,6 +25,12 @@ using System.Threading.Tasks;
 using static RootMotion.FinalIK.GenericPoser;
 using Audio.AmbientSubsystem;
 using static BotsPresets;
+using EFT.UI.BattleTimer;
+using TMPro;
+using System.Text;
+using System.Xml.Linq;
+using static RootMotion.FinalIK.IKSolver;
+using EFT.InputSystem;
 
 namespace RealismMod
 {
@@ -85,6 +91,39 @@ namespace RealismMod
               return true;
           }
       }*/
+
+
+    public class GamePlayerPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GamePlayerOwner).GetMethod("LateUpdate");
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(GamePlayerOwner __instance)
+        {
+            if (GameWorldController.GamePlayerOwner == null) GameWorldController.GamePlayerOwner = __instance;
+        }
+    }
+    public class ExfilInitPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ExfiltrationControllerClass).GetMethod("InitAllExfiltrationPoints");
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(ExfiltrationControllerClass __instance)
+        {
+            GameWorldController.ExfilsInLocation.Clear();
+            foreach (var exfil in __instance.ExfiltrationPoints) 
+            {
+                if(PluginConfig.ZoneDebug.Value) Logger.LogWarning($"exfil {exfil.name}, id {exfil.Id}, go {exfil.gameObject.tag}, name {exfil.Settings.Name},  id {exfil.Settings.Id}");
+                GameWorldController.ExfilsInLocation.Add(exfil);
+            }
+        }
+    }
 
     //attempt to prevent stutter when game needlessly generates new bot waves
     public class SpawnUpdatePatch : ModulePatch

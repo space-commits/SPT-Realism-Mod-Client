@@ -38,7 +38,6 @@ namespace RealismMod
     public enum EInteractableState
     {
         None,
-        Random,
         On,
         Off
     }
@@ -345,12 +344,11 @@ namespace RealismMod
         public string[] DisabledBy { get; set; }
     }
 
-
     public class InteractableGroup
     {
         public string[] EnabledBy { get; set; }
         public string[] DisabledBy { get; set; }
-        public string[] ExtractsToBlock { get; set; }
+        public string[] ExfilsToBlock { get; set; }
     }
 
     public class InteractableSubZone
@@ -364,6 +362,7 @@ namespace RealismMod
         public float PartialCompletionModifier { get; set; } //modifer for when the primary interactable is triggered
         public float FullCompletionModifer { get; set; } = 0f;
         public string[] ZoneNames { get; set; }
+        public bool Randomize { get; set; }
 
     }
 

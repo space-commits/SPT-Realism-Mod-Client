@@ -25,8 +25,11 @@ namespace RealismMod
         public static float CurrentGasEventStrength { get; private set; } = 0;
         public static float CurrentGasEventStrengthBot { get; private set; } = 0;
         public static List<LampController> Lights { get; set; } = new List<LampController>();
+        public static List<ExfiltrationPoint> ExfilsInLocation { get; set; } = new List<ExfiltrationPoint>();
         public static bool IsRightDateForExp { get; private set; }
         public static float TimeInRaid { get; set; }
+        public static GamePlayerOwner GamePlayerOwner { get; set; }
+
 
         public static bool DoMapGasEvent
         {
@@ -57,6 +60,7 @@ namespace RealismMod
         public static void ClearGameObjectLists() 
         {
             Lights.Clear(); 
+            ExfilsInLocation.Clear();
         }
 
         public static void CalculateGasEventStrength()

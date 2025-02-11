@@ -196,7 +196,6 @@ namespace RealismMod
         private static bool _resetSwayAfterFiring = false;
         private static float _animationWeight;
 
-
         private static bool SkipSprintPenalty
         {
             get
@@ -485,18 +484,16 @@ namespace RealismMod
             player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerValues.SprintHipfirePenalty, 0.1f, 0.5f);
         }
 
-
         private static int[] _doorHashes = { 1682425115, 2067175453, 235030625, 1710112953 };
 
         private static void SmoothenAnimations(Player player) 
         {
-
             int currentHash = player._animators[0].GetCurrentAnimatorStateInfo(20).nameHash;
             bool doorActive = _doorHashes.Contains(currentHash);
             if (player.IsInventoryOpened || doorActive)
             {
-                float target = doorActive ? 0.95f : 0.1f;
-                _animationWeight = Mathf.Lerp(_animationWeight, target, 1.1f * Time.deltaTime);
+                float target = doorActive ? 0.9f : 0.1f;
+                _animationWeight = Mathf.Lerp(_animationWeight, target, 2f * Time.deltaTime);
                 player._animators[0].SetLayerWeight(20, _animationWeight);
             }
             else
@@ -518,7 +515,7 @@ namespace RealismMod
         [PatchPostfix] 
         private static void PatchPostfix(Player __instance)
         {
-            //if (PluginConfig.EnableAnimationFixes.Value) SmoothenAnimations(__instance);
+            if (PluginConfig.EnableAnimationFixes.Value) SmoothenAnimations(__instance);
             if (Plugin.ServerConfig.headset_changes)
             {
                 SurfaceSet currentSet = (SurfaceSet)surfaceField.GetValue(__instance);

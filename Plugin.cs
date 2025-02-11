@@ -152,7 +152,6 @@ namespace RealismMod
                     ServerConfig = UpdateInfoFromServer<RealismConfig>("/RealismMod/GetConfig");
                     ModInfo = UpdateInfoFromServer<RealismEventInfo>("/RealismMod/GetInfo");
                     ModDir = UpdateInfoFromServer<RealismDir>("/RealismMod/GetDirectory");
-                    Utils.Logger.LogWarning("directory " + ModDir.ServerBaseDirectory);
                     break;
                 case EUpdateType.ModInfo:
                     ModInfo = UpdateInfoFromServer<RealismEventInfo>("/RealismMod/GetInfo");
@@ -379,7 +378,6 @@ namespace RealismMod
         private void LoadBundles() 
         {
             _baseBundleFilepath = Path.Combine(Environment.CurrentDirectory, "BepInEx\\plugins\\Realism\\bundles\\");
-
             Assets.GooBarrelBundle = LoadAndInitializePrefabs("hazard_assets\\yellow_barrel.bundle");
             Assets.BlueBoxBundle = LoadAndInitializePrefabs("hazard_assets\\bluebox.bundle");
             Assets.RedForkLiftBundle = LoadAndInitializePrefabs("hazard_assets\\redforklift.bundle");
@@ -621,12 +619,13 @@ namespace RealismMod
             if (ServerConfig.enable_hazard_zones) HazardTracker.OutOfRaidUpdate();
             if (PluginConfig.ZoneDebug.Value) ZoneDebugUpdate();
 
+
+            if (ServerConfig.med_changes) RealHealthController.ControllerUpdate();
+
             Utils.CheckIsReady();
             if (Utils.PlayerIsReady)
             {
                 GameWorldController.GameWorldUpdate();
-
-                if (ServerConfig.med_changes) RealHealthController.ControllerUpdate();
 
                 if (!Plugin.HasReloadedAudio)
                 {
@@ -671,6 +670,8 @@ namespace RealismMod
             new OnGameStartPatch().Enable();
             new OnGameEndPatch().Enable();
             new QuestCompletePatch().Enable();
+            new ExfilInitPatch().Enable();
+            new GamePlayerPatch().Enable();
 
             //stats used by multiple features
             new RigConstructorPatch().Enable();

@@ -299,6 +299,7 @@ namespace RealismMod
         public static ConfigEntry<bool> ZoneDebug { get; set; }
         public static ConfigEntry<String> TargetZone { get; set; }
         public static ConfigEntry<bool> EnableGeneralLogging { get; set; }
+        public static ConfigEntry<bool> EnableMedicalLogging { get; set; }
         public static ConfigEntry<bool> EnableReloadLogging { get; set; }
         public static ConfigEntry<bool> EnablePWALogging { get; set; }
         public static ConfigEntry<bool> EnableRecoilLogging { get; set; }
@@ -360,6 +361,7 @@ namespace RealismMod
             DevMode = config.Bind<bool>(testing, "Enable Dev Mode", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 29, IsAdvanced = true, Browsable = true }));
             EnableBallisticsLogging = config.Bind<bool>(testing, "Enable Ballistics Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 20, IsAdvanced = true, Browsable = true }));
             EnableGeneralLogging = config.Bind<bool>(testing, "Enable General Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true, Browsable = true }));
+            EnableMedicalLogging = config.Bind<bool>(testing, "Enable Medical Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true, Browsable = true }));
             EnableReloadLogging = config.Bind<bool>(testing, "Enable Reload Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true, Browsable = true }));
             EnablePWALogging = config.Bind<bool>(testing, "Enable PWA Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true, Browsable = true }));
             EnableRecoilLogging = config.Bind<bool>(testing, "Enable Recoil Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true, Browsable = true }));

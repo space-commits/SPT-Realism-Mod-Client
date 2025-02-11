@@ -11,6 +11,10 @@ using KeyInteractionResultClass = GClass3344;
 using SPT.Common.Utils;
 using static CW2.Animations.PhysicsSimulator.UnityValueDevice;
 using UnityEngine.Rendering.PostProcessing;
+using EFT.InputSystem;
+using EFT.UI.BattleTimer;
+using EFT.UI;
+using HarmonyLib;
 
 namespace RealismMod
 {
@@ -38,7 +42,9 @@ namespace RealismMod
         public int ComplatedSteps { get { return _completedSteps; } }
 
         private List<InteractionZone> _interactionZones = new List<InteractionZone>();
+        private List<ExfiltrationPoint> _exfils = new List<ExfiltrationPoint>();
         private int _completedSteps = 0;
+        private bool _allValvesInCorrectState = false;
 
         void Start()
         {
@@ -50,6 +56,62 @@ namespace RealismMod
             }
 
             EvaluateInteractableStates(true);
+        }
+
+        private void BlockExtracts() 
+        {
+            if (_exfils.Count == 0)
+            {
+                _exfils = GameWorldController.ExfilsInLocation.Where(exfil => GroupData.ExfilsToBlock.Any(name => exfil.Settings.Name == name)).ToList();
+                if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning("extract count" + _exfils.Count());
+                foreach (var exfil in _exfils)
+                {
+                    if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning("extract " + exfil.Settings.Name);
+                }
+            }
+            ToggleExtractAvailaibility(false);
+        }
+
+        private void ToggleExtractAvailaibility(bool enable)
+        {
+            foreach (var exfil in _exfils)
+            {
+                if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"{exfil.Settings.Name} set to {enable}");
+                BoxCollider[] coliders = exfil.GetComponentsInChildren<BoxCollider>();
+                foreach (var col in coliders)
+                {
+                    col.enabled = enable;
+                }
+            }
+            UpdateExtractPanel();
+        }
+
+        private void UpdateExtractPanel()
+        {
+            if (GameWorldController.GamePlayerOwner == null) return;
+            ExtractionTimersPanel extractPanel = (ExtractionTimersPanel)AccessTools.Field(typeof(GamePlayerOwner), "_timerPanel").GetValue(GameWorldController.GamePlayerOwner);
+            Dictionary<string, ExitTimerPanel> exitPanels = (Dictionary<string, ExitTimerPanel>)AccessTools.Field(typeof(ExtractionTimersPanel), "dictionary_0").GetValue(extractPanel);
+            foreach (var exfil in _exfils)
+            {
+                Utils.Logger.LogWarning("exfil to block  " + exfil.Settings.Name);
+            }
+            foreach (var exitPanel in exitPanels)
+            {
+                ExfiltrationPoint exfil = (ExfiltrationPoint)AccessTools.Field(typeof(EFT.UI.BattleTimer.ExitTimerPanel), "_point").GetValue(exitPanel.Value);
+                CustomTextMeshProUGUI pantelText = (CustomTextMeshProUGUI)AccessTools.Field(typeof(EFT.UI.BattleTimer.ExitTimerPanel), "_pointName").GetValue(exitPanel.Value);
+                Color defaultColor = (Color)AccessTools.Field(typeof(EFT.UI.BattleTimer.ExitTimerPanel), "_defaultTimerColor").GetValue(exitPanel.Value);
+
+                Utils.Logger.LogWarning("exfil paenl  " + exfil.Settings.Name);
+
+                if (!_exfils.Any(e => e.Settings.Name == exfil.Settings.Name)) continue;
+                Utils.Logger.LogWarning("match found");
+                Utils.Logger.LogWarning("_allValvesInCorrectState " + _allValvesInCorrectState);
+                pantelText.text = exfil.Settings.Name.Localized(null);
+                if (!_allValvesInCorrectState) pantelText.text += " BLOCKED BY GAS";
+                pantelText.color = _allValvesInCorrectState ? defaultColor : Color.red;
+
+                
+            }
         }
 
         private void HandleValveStateChanged(InteractionZone interactable, EInteractableState newState)
@@ -101,7 +163,7 @@ namespace RealismMod
                     }
                 }
             }
-
+            _allValvesInCorrectState = allInDesiredState;
             if (allInDesiredState)
             {
                 if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"All valves in desired state ");
@@ -110,6 +172,11 @@ namespace RealismMod
                     gas.Key.ZoneStrengthTargetModi = gas.Value;
                     if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"zone {gas.Key.gameObject.name} strength is {gas.Key.ZoneStrengthTargetModi}");
                 }
+                ToggleExtractAvailaibility(true);
+            }
+            else 
+            {
+                BlockExtracts();
             }
         }
     }
@@ -162,7 +229,8 @@ namespace RealismMod
 
         void Start()
         {
-            _state = InteractableData.StartingState;
+            if (InteractableData.Randomize) _state = UnityEngine.Random.Range(0, 100) >= 50 ? EInteractableState.On : EInteractableState.Off;
+            else _state = InteractableData.StartingState;
             _groupParent = GetComponentInParent<InteractableGroupComponent>();
             SetUpValveAudio();
             SetUpValveStuckAudio();
@@ -280,7 +348,7 @@ namespace RealismMod
             }
         }
 
-        private IEnumerator StopValveLoop()
+        private IEnumerator StopValveAudioLoop()
         {
             if (_valveAudioSource.isPlaying)
             {
@@ -311,7 +379,7 @@ namespace RealismMod
                 yield return null;
             }
             StartCoroutine(AdjustVolume(0f, 1f, _valveAudioSource));
-            yield return StartCoroutine(StopValveLoop());
+            yield return StartCoroutine(StopValveAudioLoop());
             _isRotating = false;
         }
 
@@ -377,7 +445,7 @@ namespace RealismMod
         //turn SFX on/off, trigger action
         public void TurnON() 
         {
-            if (_isRotating || !CanTurn(EInteractableState.On)) return;
+            if (_isRotating || _isDoingStuckRotation || !CanTurn(EInteractableState.On)) return;
             StopAllCoroutines();
             StartCoroutine(RotateValveOverTime(300f, 5f));
             State = EInteractableState.On;
@@ -385,7 +453,7 @@ namespace RealismMod
 
         public void TurnOff()
         {
-            if (_isRotating || !CanTurn(EInteractableState.Off)) return;
+            if (_isRotating || _isDoingStuckRotation || !CanTurn(EInteractableState.Off)) return;
             StopAllCoroutines();
             StartCoroutine(RotateValveOverTime(-300f, 5f));
             State = EInteractableState.Off;

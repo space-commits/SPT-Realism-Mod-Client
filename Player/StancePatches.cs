@@ -1334,16 +1334,7 @@ namespace RealismMod
         private static Vector3 _mountWeapPosition = Vector3.zero;
         private static Vector3 _currentRecoil = Vector3.zero;
         private static Vector3 _targetRecoil = Vector3.zero;
-        private static Vector3 _posePosOffest = Vector3.zero;
-        private static Vector3 _poseRotOffest = Vector3.zero;
-        private static Vector3 _patrolPos = Vector3.zero;
-        private static Vector3 _patrolRot = Vector3.zero;
-
-        private static Vector3 _riflePatrolPos = new Vector3(0.2f, 0.025f, 0.1f);
-        private static Vector3 _riflePatrolRot = new Vector3(0.05f, -0.05f, -0.5f);
-        private static Vector3 _pistolPatrolPos = new Vector3(0.05f, 0f, 0f);
-        private static Vector3 _pistolPatrolRot = new Vector3(0.1f, -0.1f, -0.1f);
-
+   
         private static float _stanceRotationSpeed = 1f;
 
         protected override MethodBase GetTargetMethod()
@@ -1360,73 +1351,7 @@ namespace RealismMod
 
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("ApplyComplexRotation", BindingFlags.Instance | BindingFlags.Public);
         }
-
-        private static void DoPatrolStance(ProceduralWeaponAnimation pwa, Player player) 
-        {
-            Vector3 patrolPos = StanceController.CurrentStance != EStance.PatrolStance ? Vector3.zero : WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol ? _pistolPatrolPos : _riflePatrolPos;
-            _patrolPos = Vector3.Lerp(_patrolPos, patrolPos, 6f * Time.deltaTime);
-            pwa.HandsContainer.WeaponRoot.localPosition += _patrolPos;
-
-            Vector3 patrolRot = StanceController.CurrentStance != EStance.PatrolStance ? Vector3.zero : WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol ? _pistolPatrolRot : _riflePatrolRot;
-            _patrolRot = Vector3.Lerp(_patrolRot, patrolRot, 6f * Time.deltaTime);
-
-            Quaternion newRot = Quaternion.identity;
-            newRot.x = _patrolRot.x;
-            newRot.y = _patrolRot.y;
-            newRot.z = _patrolRot.z;
-            pwa.HandsContainer.WeaponRoot.localRotation *= newRot;
-
-            if (Vector3.Distance(_patrolPos, Vector3.zero) <= 0.05f) StanceController.FinishedUnPatrolStancing = true;
-            else 
-            {
-                StanceController.FinishedUnPatrolStancing = false;
-            }
-        }
-
-        private static void DoExtraPosAndRot(ProceduralWeaponAnimation pwa, Player player) 
-        {
-            //position
-            float stockOffset = !WeaponStats.IsPistol && !WeaponStats.HasShoulderContact ? -0.04f : 0f;
-            float stockPosOffset = WeaponStats.StockPosition * 0.01f;
-            float posOffsetMulti = WeaponStats.HasShoulderContact ? -0.04f : 0.04f;
-            float posePosOffset = (1f - player.MovementContext.PoseLevel) * posOffsetMulti;
-
-            float targetPosXOffset = pwa.IsAiming ? 0f : 0f;
-            float targetPosYOffset = pwa.IsAiming ? 0f : 0f;
-            float targetPosZOffset = pwa.IsAiming ? 0f : Mathf.Clamp(posePosOffset + stockOffset + stockPosOffset, -0.05f, 0.05f);
-            Vector3 targetPos = new Vector3(targetPosXOffset, targetPosYOffset, targetPosZOffset);
-
-            _posePosOffest = Vector3.Lerp(_posePosOffest, targetPos, 5f * Time.deltaTime);
-            pwa.HandsContainer.WeaponRoot.localPosition += _posePosOffest;
-
-            //rotation
-            bool isMountedWithBipod = WeaponStats.BipodIsDeployed && StanceController.IsMounting;
-            bool doCantedOffset = Mathf.Abs(pwa.CurrentScope.Rotation) >= EFTHardSettings.Instance.SCOPE_ROTATION_THRESHOLD && StanceController.IsAiming;
-            bool doMaskOffset = !doCantedOffset && !isMountedWithBipod && (GearController.HasGasMask || GearController.FSIsActive) && pwa.IsAiming && WeaponStats.HasShoulderContact && !WeaponStats.IsStocklessPistol && !WeaponStats.IsMachinePistol;
-            bool doLongMagOffset = WeaponStats.HasLongMag && player.IsInPronePose && !isMountedWithBipod;
-            float cantedOffsetBase = -0.41f;
-            float magOffset = doCantedOffset ? 0f : doLongMagOffset && !pwa.IsAiming ? -0.35f : doLongMagOffset && pwa.IsAiming ? -0.12f : 0f;
-            float ergoOffset = WeaponStats.ErgoFactor * -0.001f;
-            float poseRotOffset = (1f - player.MovementContext.PoseLevel) * -0.03f;
-            poseRotOffset += player.IsInPronePose ? -0.03f : 0f;
-            float maskFactor = doMaskOffset? -0.025f + ergoOffset : 0f;
-            float baseRotOffset = pwa.IsAiming || StanceController.IsMounting || StanceController.IsBracing ? 0f : poseRotOffset + ergoOffset;
-            float cantedSightOffset = doCantedOffset ? cantedOffsetBase : 0f;
-
-            float rotX = 0f;
-            float rotY = Mathf.Clamp(baseRotOffset + maskFactor + magOffset, -0.5f, 0f) + cantedSightOffset;
-            float rotZ = 0f;
-            Vector3 targetRot = new Vector3(rotX, rotY, rotZ);
-
-            _poseRotOffest = Vector3.Lerp(_poseRotOffest, targetRot, 5f * Time.deltaTime);
-
-            Quaternion newRot = Quaternion.identity;
-            newRot.x = _poseRotOffest.x;
-            newRot.y = _poseRotOffest.y;
-            newRot.z = _poseRotOffest.z;
-            pwa.HandsContainer.WeaponRoot.localRotation *= newRot;
-        }
-
+  
         [PatchPostfix]
         private static void Postfix(EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
         {
@@ -1533,8 +1458,8 @@ namespace RealismMod
                     StanceController.DoRifleStances(player, fc, false, __instance, ref _stanceRotation, dt, ref _isResettingShortStock, ref _hasResetShortStock, ref _hasResetLowReady, ref _hasResetActiveAim, ref _hasResetHighReady, ref _isResettingHighReady, ref _isResettingLowReady, ref _isResettingActiveAim, ref _stanceRotationSpeed, ref _hasResetMelee, ref _isResettingMelee, ref _didHalfMeleeAnim);
                 }
 
-                if (PluginConfig.EnableExtraProcEffects.Value) DoExtraPosAndRot(__instance, player);
-                DoPatrolStance(__instance, player);
+                if (PluginConfig.EnableExtraProcEffects.Value) StanceController.DoExtraPosAndRot(__instance, player);
+                StanceController.DoPatrolStance(__instance, player);
 
                 StanceController.HasResetActiveAim = _hasResetActiveAim;
                 StanceController.HasResetHighReady = _hasResetHighReady;

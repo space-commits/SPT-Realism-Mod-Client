@@ -9,9 +9,29 @@ using System.Reflection;
 using UnityEngine;
 using SkillMovementStruct = EFT.SkillManager.GStruct235;
 using ValueHandler = GClass796;
+using static EFT.Player;
 
 namespace RealismMod
 {
+    public class SprintPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(PlayerAnimator).GetMethod("EnableSprint", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(PlayerAnimator __instance)
+        {
+            Player player = Utils.GetYourPlayer();
+            if (player == null) return true;
+            if (player.MovementContext.PlayerAnimator == __instance)
+            {
+                return false;
+            }
+            return true;
+        }
+    }
 
     public class StaminaRegenRatePatch : ModulePatch
     {
@@ -84,7 +104,6 @@ namespace RealismMod
         {
             return typeof(Player).GetMethod("method_64", BindingFlags.Instance | BindingFlags.Public);
         }
-
 
         [PatchPostfix]
         private static void PatchPostfix(Player __instance, ref ValueTuple<bool, BaseBallistic.ESurfaceSound> __result)

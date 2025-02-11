@@ -209,7 +209,7 @@ namespace RealismMod
 
             if (DoFiringWiggle)
             {
-                float cantedRecoilAmount = FactoredTotalHRecoil / 30f;
+                float cantedRecoilAmount = FactoredTotalHRecoil / 31f;
                 float totalCantedRecoil = Mathf.Lerp(-cantedRecoilAmount, cantedRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed * 1.05f, 1.0f));
                 float additionalRecoilAmount = FactoredTotalDispersion / 16f;
                 float totalSideRecoil = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f)) * 0.05f;

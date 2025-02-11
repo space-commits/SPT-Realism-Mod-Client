@@ -172,6 +172,15 @@ namespace RealismMod
             }
         }
 
+
+        public float SurgeryPainFactor
+        {
+            get
+            {
+                return 15f * (1f - PlayerValues.StressResistanceFactor);
+            }
+        }
+
         public float FracturePainFactor
         {
             get
@@ -260,11 +269,19 @@ namespace RealismMod
             }
         }
 
+        public bool HasOverdosedOnStim
+        {
+            get
+            {
+                return _hasOverdosedStim;
+            }
+        }
+
         public bool HasOverdosed
         {
             get
             {
-                return PainReliefStrength > PKOverdoseThreshold || _hasOverdosedStim;
+                return PainReliefStrength > PKOverdoseThreshold || HasOverdosedOnStim;
             }
         }
 
@@ -311,7 +328,16 @@ namespace RealismMod
 
         private float _baseMaxHPRestore = 86f;
 
-        public float PainStrength = 0f;
+        public float PainSurgeryStrength { get; set; } = 0f;
+        private float _painInjuryStrength = 0f;
+        public float PainStrength 
+        {
+            get 
+            {
+                return _painInjuryStrength + PainSurgeryStrength;
+            }           
+        }
+
         public float PainEffectThreshold = 10f;
         public float PainReliefStrength = 0f;
         public float PainTunnelStrength = 0f;
@@ -430,6 +456,22 @@ namespace RealismMod
                 }
             }
            ScreenEffectsController.EffectsUpdate();
+        }
+
+
+        public void ResetAllEffects()
+        {
+            _activeStimOverdoses.Clear();
+            _activeHealthEffects.Clear();
+            _painInjuryStrength = 0f;
+            PainSurgeryStrength = 0f;
+            PainReliefStrength = 0f;
+            PainTunnelStrength = 0f;
+            ReliefDuration = 0;
+            _hasOverdosedStim = false;
+            _leftArmRuined = false;
+            _rightArmRuined = false;
+            ResetHealhPenalties();
         }
 
         //To prevent null ref exceptions while using Fika, Realism's custom effects must be added to a dicitionary of existing EFT effects
@@ -609,7 +651,6 @@ namespace RealismMod
             return true;
         }
 
-
         public void RemoveCustomEffectOfType(Type effect, EBodyPart bodyPart)
         {
             for (int i = _activeHealthEffects.Count - 1; i >= 0; i--)
@@ -674,20 +715,6 @@ namespace RealismMod
             _activeHealthEffects.RemoveAll(a => a.EffectType == effectType);
         }
 
-        public void ResetAllEffects()
-        {
-            _activeStimOverdoses.Clear();
-            _activeHealthEffects.Clear();
-            PainStrength = 0f;
-            PainReliefStrength = 0f;
-            PainTunnelStrength = 0f;
-            ReliefDuration = 0;
-            _hasOverdosedStim = false;
-            _leftArmRuined = false;
-            _rightArmRuined = false;
-            ResetHealhPenalties();
-        }
-
         public void ResetBleedDamageRecord(Player player)
         {
             bool hasHeavyBleed = false;
@@ -740,7 +767,6 @@ namespace RealismMod
             }
             return false;
         }
-
 
         private void AddStimDebuffs(Player player, string debuffId)
         {
@@ -929,7 +955,7 @@ namespace RealismMod
                     {
                         if (!_haveNotifiedPKOverdose)
                         {
-                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("You Have Overdosed", EFT.Communications.ENotificationDurationType.Long);
+                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Pain Medication", EFT.Communications.ENotificationDurationType.Long);
                             _haveNotifiedPKOverdose = true;
                         }
                         AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 1f, PAIN_RELIEF_INTERVAL, 5f, 0.35f);
@@ -1914,7 +1940,7 @@ namespace RealismMod
             float totalMaxHp = 0f;
             float totalCurrentHp = 0f;
 
-            PainStrength = 0f;
+            _painInjuryStrength = 0f;
 
             Type fractureType;
             MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
@@ -1925,7 +1951,7 @@ namespace RealismMod
                 bool hasFracture = fractureType != null && effects.Any(e => e.Type == fractureType);
                 float stressResist = 1f - PlayerValues.StressResistanceFactor;
 
-                if (hasFracture) PainStrength += FracturePainFactor;
+                if (hasFracture) _painInjuryStrength += FracturePainFactor;
 
                 bool isLeftArm = part == EBodyPart.LeftArm;
                 bool isRightArm = part == EBodyPart.RightArm;
@@ -1948,8 +1974,8 @@ namespace RealismMod
                 float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2f : isRightArm ? 3f : 4f));
                 float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
 
-                if (currentHp <= 0f) PainStrength += ZeroedPainFactor;
-                else if (percentHp <= HpLossPainThreshold) PainStrength += HpLossPainFactor ;
+                if (currentHp <= 0f) _painInjuryStrength += ZeroedPainFactor;
+                else if (percentHp <= HpLossPainThreshold) _painInjuryStrength += HpLossPainFactor ;
 
                 if (isLeg || isBody)
                 {
@@ -1995,7 +2021,7 @@ namespace RealismMod
             float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f));
             float percentHydroLimitErgo = (1f + ((1f - percentHydro) / 4f));
 
-            float painFactor = Mathf.Max(PainStrength - PainReliefStrength, 0f);
+            float painFactor = Mathf.Max(_painInjuryStrength - PainReliefStrength, 0f);
             painFactor = _hasOverdosedStim ? 90f + painFactor : painFactor;
             float painKillerFactor = Mathf.Clamp(1f - (painFactor / 1000f), 0.85f, 1f);
             float painKillerFactorInverse = Mathf.Clamp(1f + (painFactor / 1000f), 1f, 1.15f);

@@ -111,7 +111,8 @@ namespace RealismMod
         public EHealthEffectType EffectType { get; }
         public float HpRegenLimitFactor { get; }
         private bool hasRemovedTrnqt = false;
-        private bool haveNotified = false;
+        private bool ranOnce = false;
+        private float _painFactor = 0f;
 
         public SurgeryEffect(float hpTick, int? dur, EBodyPart part, Player player, int delay, float limitFactor, RealismHealthController realHealthController)
         {
@@ -125,6 +126,7 @@ namespace RealismMod
             HpRegenLimitFactor = limitFactor;
             EffectType = EHealthEffectType.Surgery;
             RealHealthController = realHealthController;
+            _painFactor = RealHealthController.SurgeryPainFactor;
         }
 
         public void Tick()
@@ -133,10 +135,11 @@ namespace RealismMod
             {
                 TimeExisted++;
 
-                if (!haveNotified)
+                if (!ranOnce)
                 {
                     if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgery Kit Applied On " + BodyPart + ", Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-                    haveNotified = true;
+                    RealHealthController.PainSurgeryStrength += _painFactor;
+                    ranOnce = true;
                 }
 
                 if (!hasRemovedTrnqt)
@@ -160,6 +163,7 @@ namespace RealismMod
                 {
                     if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgical Kit Health Regeneration On " + BodyPart + " Has Expired", EFT.Communications.ENotificationDurationType.Long);
                     Duration = 0;
+                    RealHealthController.PainSurgeryStrength -= _painFactor;
                     return;
                 }
             }
