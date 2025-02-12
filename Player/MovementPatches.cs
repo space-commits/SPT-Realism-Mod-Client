@@ -13,7 +13,7 @@ using static EFT.Player;
 
 namespace RealismMod
 {
-    public class SprintPatch : ModulePatch
+/*    public class SprintPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -32,7 +32,7 @@ namespace RealismMod
             return true;
         }
     }
-
+*/
     public class StaminaRegenRatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

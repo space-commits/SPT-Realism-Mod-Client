@@ -30,7 +30,6 @@ namespace RealismMod
         public static float TimeInRaid { get; set; }
         public static GamePlayerOwner GamePlayerOwner { get; set; }
 
-
         public static bool DoMapGasEvent
         {
             get
@@ -57,10 +56,13 @@ namespace RealismMod
             }
         }
 
-        public static void ClearGameObjectLists() 
+        public static void Reset() 
         {
             Lights.Clear(); 
             ExfilsInLocation.Clear();
+            GameStarted = false;
+            RanEarliestGameCheck = false;
+            TimeInRaid = 0f;
         }
 
         public static void CalculateGasEventStrength()

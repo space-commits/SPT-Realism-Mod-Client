@@ -31,6 +31,7 @@ using System.Text;
 using System.Xml.Linq;
 using static RootMotion.FinalIK.IKSolver;
 using EFT.InputSystem;
+using static RealismMod.DebugGizmos;
 
 namespace RealismMod
 {
@@ -93,6 +94,27 @@ namespace RealismMod
       }*/
 
 
+  /*  public class ActivateBossesByWavePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(BotsController).GetMethod(
+                nameof(BotsController.ActivateBotsByWave),
+                BindingFlags.Public | BindingFlags.Instance,
+                null,
+                new Type[] { typeof(BossLocationSpawn) },
+                null);
+        }
+
+        [PatchPrefix]
+        protected static bool PatchPrefix()
+        {
+            
+            return false;
+        }
+
+    }*/
+
     public class GamePlayerPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -106,6 +128,7 @@ namespace RealismMod
             if (GameWorldController.GamePlayerOwner == null) GameWorldController.GamePlayerOwner = __instance;
         }
     }
+
     public class ExfilInitPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -119,7 +142,7 @@ namespace RealismMod
             GameWorldController.ExfilsInLocation.Clear();
             foreach (var exfil in __instance.ExfiltrationPoints) 
             {
-                if(PluginConfig.ZoneDebug.Value) Logger.LogWarning($"exfil {exfil.name}, id {exfil.Id}, go {exfil.gameObject.tag}, name {exfil.Settings.Name},  id {exfil.Settings.Id}");
+                if (PluginConfig.ZoneDebug.Value) Logger.LogWarning($"exfil {exfil.name}, id {exfil.Id}, go {exfil.gameObject.tag}, name {exfil.Settings.Name},  id {exfil.Settings.Id}");
                 GameWorldController.ExfilsInLocation.Add(exfil);
             }
         }
@@ -260,13 +283,18 @@ namespace RealismMod
 
         private static void HandleZombies(BossLocationSpawn __instance, ref bool disabledZombieSpawn, bool isZombie)
         {
-            bool disableZombie = !Plugin.ServerConfig.realistic_zombies || (Plugin.ServerConfig.realistic_zombies && !Plugin.ModInfo.DoGasEvent);
-            if (isZombie && disableZombie)
+            bool doZombies = Plugin.ServerConfig.realistic_zombies && Plugin.ModInfo.DoGasEvent;
+            if (isZombie && !doZombies)
             {
                 __instance.BossChance = 0f;
                 __instance.ShallSpawn = false;
                 disabledZombieSpawn = true;
             }
+        }
+
+        private static bool IsForbiddenSpawnZone(string[] zones) 
+        {
+            return _forbiddenZones.Intersect(zones).Any();
         }
         
         [PatchPostfix]
@@ -274,11 +302,11 @@ namespace RealismMod
         {
             GameWorldController.RunEarlyGameCheck();
             bool isZombie = __instance.BossType.ToString().ToLower().Contains("infected");
-            bool disabledZombieSpawn = false;
-            HandleZombies(__instance, ref disabledZombieSpawn, isZombie);
+            bool disableZombieSpawn = false;
+            HandleZombies(__instance, ref disableZombieSpawn, isZombie);
 
             var zones = __instance.BossZone.Split(new char[] { ',' });
-            if (disabledZombieSpawn || _forbiddenZones.Intersect(zones).Any()) return;
+            if (disableZombieSpawn || (IsForbiddenSpawnZone(zones) && !isZombie)) return;
 
             bool increaseSectantChance = __instance.BossType == WildSpawnType.sectantPriest && Plugin.ModInfo.DoGasEvent && !Plugin.ModInfo.DoExtraRaiders;
             bool increaseRaiderChance = __instance.BossType == WildSpawnType.pmcBot && Plugin.ModInfo.DoExtraRaiders;
@@ -566,7 +594,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.2f, minDelayBeforePlayback: 60f); //spooky short playback
-                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.3f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
+                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.2f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
                 }
 
                 if (GameWorldController.DoMapRads)
@@ -610,12 +638,8 @@ namespace RealismMod
                 HazardTracker.UpdateHazardValues(ProfileData.CurrentProfileId);
                 HazardTracker.SaveHazardValues();
                 HazardTracker.GetHazardValues(ProfileData.PMCProfileId); //update to use PMC id and not potentially scav id
-                GameWorldController.ClearGameObjectLists();   
             }
-
-            GameWorldController.GameStarted = false;
-            GameWorldController.RanEarliestGameCheck = false;
-            GameWorldController.TimeInRaid = 0f;
+            GameWorldController.Reset();
         }
     }
 }

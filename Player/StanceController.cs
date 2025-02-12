@@ -352,7 +352,7 @@ namespace RealismMod
             }
             else
             {
-                baseRestoreRate = 4f;
+                baseRestoreRate = 1f;
             }
             float formfactor = WeaponStats.IsBullpup ? 1.05f : 1f;
             return (1f - ((WeaponStats.ErgoFactor * formfactor) / 100f)) * baseRestoreRate * PlayerValues.HealthStamRegenFactor;
@@ -382,9 +382,11 @@ namespace RealismMod
                 baseDrainRate = 0.1f;
             }
             float formfactor = WeaponStats.IsBullpup ? 0.4f : 1f;
-            return WeaponStats.ErgoFactor * formfactor * baseDrainRate * ((1f - PlayerValues.HealthStamRegenFactor) + 1f) * (1f - (PlayerValues.StrengthSkillAimBuff));
+            return WeaponStats.ErgoFactor * formfactor * baseDrainRate * ((1f - PlayerValues.HealthStamRegenFactor) + 1f) * (1f - (PlayerValues.StrengthSkillAimBuff)) * PluginConfig.IdleStamDrainModi.Value;
         }
 
+
+        //this method makes baby Jesus cry
         public static void SetStanceStamina(Player player)
         {
             bool isUsingStationaryWeapon = player.MovementContext.CurrentState.Name == EPlayerState.Stationary;
@@ -397,7 +399,7 @@ namespace RealismMod
             bool doDrain = ((shouldInterruptRegen || !isInRegenableStance || shouldDoIdleDrain) && !isInRegenableState && !doNeutral) || (IsDoingTacSprint && PluginConfig.EnableIdleStamDrain.Value);
             EStance stance = CurrentStance;
 
-            if (IsAiming != _wasAiming || _regenStam != doRegen || _drainStam != doDrain || _neutral != doNeutral || _lastRecordedStanceStamina != CurrentStance || IsMounting != _wasMounting || IsBracing != _wasBracing)
+            if (HaveResetStamDrain || DidWeaponSwap || IsAiming != _wasAiming || _regenStam != doRegen || _drainStam != doDrain || _neutral != doNeutral || _lastRecordedStanceStamina != CurrentStance || IsMounting != _wasMounting || IsBracing != _wasBracing)
             {
                 if (doDrain)
                 {
@@ -411,7 +413,6 @@ namespace RealismMod
                 {
                     player.Physical.Aim(1f);
                 }
-
                 HaveResetStamDrain = false;
             }
 
@@ -440,11 +441,8 @@ namespace RealismMod
             _lastRecordedStanceStamina = CurrentStance;
         }
 
-        public static void UnarmedStanceStamina(Player player)
+        public static void ResetStanceStamina() 
         {
-            player.Physical.Aim(0f);
-            player.Physical.HandsStamina.Multiplier = 1f;
-            HaveResetStamDrain = true;
             _regenStam = false;
             _drainStam = false;
             _neutral = false;
@@ -452,6 +450,13 @@ namespace RealismMod
             _wasMounting = false;
             _wasAiming = false;
             _lastRecordedStanceStamina = EStance.None;
+        }
+
+        public static void UnarmedStanceStamina(Player player)
+        {
+            player.Physical.Aim(0f);
+            player.Physical.HandsStamina.Multiplier = 1f;
+            ResetStanceStamina();
         }
 
         public static bool IsIdle()
@@ -774,19 +779,12 @@ namespace RealismMod
                 }
 
 
-                if (IsFiringFromStance)
+                if (ShootController.IsFiring) //stnace specific firing check is too slow
                 {
-                    bool cancelCurrentStance =
-                        !(PluginConfig.RememberStanceFiring.Value && IsAiming) &&
-                        (CurrentStance == EStance.HighReady ||
-                        CurrentStance == EStance.LowReady ||
-                        CurrentStance == EStance.PatrolStance ||
-                        (IsAiming && CurrentStance != EStance.ActiveAiming));
-                    /*                   bool cancelStoredStance = 
-                                            StoredStance == EStance.HighReady || 
-                                            (StoredStance == EStance.LowReady && !Plugin.RealHealthController.HealthConditionForcedLowReady) ||
-                                            StoredStance == EStance.PatrolStance;*/
-                    if (cancelCurrentStance)
+                    bool rememberStance = PluginConfig.RememberStanceFiring.Value && IsAiming;
+                    bool keepStance = rememberStance || ((CurrentStance == EStance.ActiveAiming && !IsAiming) || CurrentStance == EStance.ShortStock);
+
+                    if (!keepStance)
                     {
                         CurrentStance = EStance.None;
                         StoredStance = EStance.None;
@@ -833,6 +831,7 @@ namespace RealismMod
                 StanceIndex = 0;
                 WasActiveAim = false;
                 DidWeaponSwap = false;
+                ResetStanceStamina();
             }
         }
 

@@ -98,7 +98,9 @@ namespace RealismMod
             foreach (var exitPanel in exitPanels)
             {
                 ExfiltrationPoint exfil = (ExfiltrationPoint)AccessTools.Field(typeof(EFT.UI.BattleTimer.ExitTimerPanel), "_point").GetValue(exitPanel.Value);
+#pragma warning disable CS0618
                 CustomTextMeshProUGUI pantelText = (CustomTextMeshProUGUI)AccessTools.Field(typeof(EFT.UI.BattleTimer.ExitTimerPanel), "_pointName").GetValue(exitPanel.Value);
+#pragma warning restore CS0618
                 Color defaultColor = (Color)AccessTools.Field(typeof(EFT.UI.BattleTimer.ExitTimerPanel), "_defaultTimerColor").GetValue(exitPanel.Value);
 
                 Utils.Logger.LogWarning("exfil paenl  " + exfil.Settings.Name);

@@ -433,7 +433,7 @@ namespace RealismMod
         {
             if (fc != null)
             {
-                ShootController.ShootUpdate(player);
+                ShootController.ShootUpdate(player, fc);
 
                 WeaponStats.BipodIsDeployed = fc.HasBipod && fc.BipodState;
                 WeaponStats.FireMode = fc.Item.SelectedFireMode;
@@ -493,12 +493,12 @@ namespace RealismMod
             if (player.IsInventoryOpened || doorActive)
             {
                 float target = doorActive ? 0.9f : 0.1f;
-                _animationWeight = Mathf.Lerp(_animationWeight, target, 2f * Time.deltaTime);
+                _animationWeight = Mathf.MoveTowards(_animationWeight, target, 1.9f * Time.deltaTime);
                 player._animators[0].SetLayerWeight(20, _animationWeight);
             }
             else
             {
-                _animationWeight = Mathf.MoveTowards(_animationWeight, 1f, 0.6f * Time.deltaTime);
+                _animationWeight = Mathf.MoveTowards(_animationWeight, 1f, 1f * Time.deltaTime);
                 player._animators[0].SetLayerWeight(20, _animationWeight);
             }
 

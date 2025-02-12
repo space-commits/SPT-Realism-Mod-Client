@@ -2031,8 +2031,9 @@ namespace RealismMod
             painFactor = _hasOverdosedStim ? 90f + painFactor : painFactor;
             float painKillerFactor = Mathf.Clamp(1f - (painFactor / 1000f), 0.85f, 1f);
             float painKillerFactorInverse = Mathf.Clamp(1f + (painFactor / 1000f), 1f, 1.15f);
-            float skillFactor = (1f + (player.Skills.HealthEnergy.Value / 2));
-            float skillFactorInverse = (1f - (player.Skills.HealthEnergy.Value / 2));
+            float skillFactorBase = player.Skills.HealthEnergy.Value / 4;
+            float skillFactorIncrease = 1f + skillFactorBase;
+            float skillFactorDecrease = 1f - skillFactorBase;
 
             //gas
             float coofFactor = IsCoughingInGas ? 100f : 0f;
@@ -2051,16 +2052,16 @@ namespace RealismMod
             float hazardFactor = toxicityFactor * radiationFactor * poisonDebuffFactor;
             float hazardFactorInverse = toxicityInverse * radiationInverse * poisonDebuffFactorInverse;
 
-            PlayerValues.AimMoveSpeedInjuryMulti = Mathf.Clamp(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor * skillFactor * hazardFactor, 0.6f * percentHydroLowerLimit, 1f);
-            PlayerValues.ADSInjuryMulti = Mathf.Clamp(adsInjuryMulti * percentEnergyADS * painKillerFactor * skillFactor * hazardFactor, 0.3f * percentHydroLowerLimit, 1f);
-            PlayerValues.StanceInjuryMulti = Mathf.Clamp(stanceInjuryMulti * percentEnergyStance * painKillerFactor * skillFactor * hazardFactor, 0.65f * percentHydroLowerLimit, 1f);
-            PlayerValues.ReloadInjuryMulti = Mathf.Clamp(reloadInjuryMulti * percentEnergyReload * painKillerFactor * skillFactor * hazardFactor, 0.75f * percentHydroLowerLimit, 1f);
-            PlayerValues.HealthSprintSpeedFactor = Mathf.Clamp(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor * hazardFactor, 0.4f * percentHydroLowerLimit, 1f);
-            PlayerValues.HealthSprintAccelFactor = Mathf.Clamp(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor * hazardFactor, 0.4f * percentHydroLowerLimit, 1f);
-            PlayerValues.HealthWalkSpeedFactor = Mathf.Clamp(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor * skillFactor * hazardFactor, 0.6f * percentHydroLowerLimit, 1f);
-            PlayerValues.HealthStamRegenFactor = Mathf.Clamp(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor * skillFactor * hazardFactor, 0.5f * percentHydroLowerLimit, 1f);
-            PlayerValues.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse * hazardFactorInverse, 1f, 1.3f * percentHydroLimitErgo);
-            PlayerValues.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse * hazardFactorInverse, 1f, 1.12f * percentHydroLimitRecoil);
+            PlayerValues.AimMoveSpeedInjuryMulti = Mathf.Clamp(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor * skillFactorIncrease * hazardFactor, 0.6f * percentHydroLowerLimit, 1f);
+            PlayerValues.ADSInjuryMulti = Mathf.Clamp(adsInjuryMulti * percentEnergyADS * painKillerFactor * skillFactorIncrease * hazardFactor, 0.3f * percentHydroLowerLimit, 1f);
+            PlayerValues.StanceInjuryMulti = Mathf.Clamp(stanceInjuryMulti * percentEnergyStance * painKillerFactor * skillFactorIncrease * hazardFactor, 0.65f * percentHydroLowerLimit, 1f);
+            PlayerValues.ReloadInjuryMulti = Mathf.Clamp(reloadInjuryMulti * percentEnergyReload * painKillerFactor * skillFactorIncrease * hazardFactor, 0.75f * percentHydroLowerLimit, 1f);
+            PlayerValues.HealthSprintSpeedFactor = Mathf.Clamp(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor * skillFactorIncrease * hazardFactor, 0.4f * percentHydroLowerLimit, 1f);
+            PlayerValues.HealthSprintAccelFactor = Mathf.Clamp(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor * skillFactorIncrease * hazardFactor, 0.4f * percentHydroLowerLimit, 1f);
+            PlayerValues.HealthWalkSpeedFactor = Mathf.Clamp(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor * skillFactorIncrease * hazardFactor, 0.6f * percentHydroLowerLimit, 1f);
+            PlayerValues.HealthStamRegenFactor = Mathf.Clamp(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor * skillFactorIncrease * hazardFactor, 0.5f * percentHydroLowerLimit, 1f);
+            PlayerValues.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorDecrease * hazardFactorInverse, 1f, 1.3f * percentHydroLimitErgo);
+            PlayerValues.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorDecrease * hazardFactorInverse, 1f, 1.12f * percentHydroLimitRecoil);
 
             if (PluginConfig.ResourceRateChanges.Value)
             {

@@ -600,20 +600,6 @@ namespace RealismMod
                     }
                 }
 
-                //update or reset firing state
-                ShootController.ShotCount++;
-                ShootController.FiringTimer = 0f;
-                ShootController.ShotCountTimer = 0f;
-                ShootController.DeafenShotTimer = 0f;
-                ShootController.WiggleShotTimer = 0f;
-                ShootController.MovementSpeedShotTimer = 0f;
-                StanceController.StanceShotTime = 0f;
-                ShootController.IsFiring = true;
-                ShootController.IsFiringDeafen = true;
-                ShootController.DoFiringWiggle = true;
-                ShootController.IsFiringMovement = true;
-                StanceController.IsFiringFromStance = true;
-
                 return false;
             }
             return true;
@@ -640,7 +626,7 @@ namespace RealismMod
 
             if (player != null && player.IsYourPlayer)
             {
-                ShootController.SetRecoilParams(__instance, firearmController.Weapon, player);
+                ShootController.ResetFiringState(__instance, firearmController.Weapon, player);
             }
         }
     }
