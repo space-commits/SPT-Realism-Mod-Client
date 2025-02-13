@@ -77,7 +77,7 @@ namespace RealismMod
         public static void ShootUpdate(Player player, FirearmController fc)
         {
             //bool fireButtonIsBeingHeld = Input.GetMouseButton(0);
-            bool isAutoFiring =  player.ProceduralWeaponAnimation.method_18() || fc.IsTriggerPressed;
+            bool isAutoFiring =  player.ProceduralWeaponAnimation.method_18(); // || fc.IsTriggerPressed is literally holding mb
 
             if (IsFiring || isAutoFiring) 
             {

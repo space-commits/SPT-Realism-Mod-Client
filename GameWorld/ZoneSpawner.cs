@@ -224,7 +224,7 @@ namespace RealismMod
             hazardZone.transform.SetParent(zoneGroup.transform, true);
 
             // visual representation for debugging
-            if (PluginConfig.ZoneDebug.Value && !isBufferZone && zoneType != EZoneType.Interactable)
+            if (PluginConfig.ZoneDebug.Value && !isBufferZone)
             {
                 GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 visualRepresentation.name = zoneName + "Visual";

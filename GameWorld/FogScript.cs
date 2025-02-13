@@ -27,9 +27,10 @@ public class FogScript : MonoBehaviour
     private float _alpha= 0.08f;
     private float _speed = 2.5f;
     private float _dynamicOpacityModi = 1f;
-    private MinMaxCurve _startSpeed = new ParticleSystem.MinMaxCurve(1, 1);
+    private MinMaxCurve _startSpeedCurve = new ParticleSystem.MinMaxCurve(1, 1);
+    private MinMaxCurve _lifeTimeCurve = new ParticleSystem.MinMaxCurve(20f, 30f);
 
-    void Awake()
+    void Start()
     {
         _ps = GetComponent<ParticleSystem>();
         _mainModule = _ps.main;
@@ -39,19 +40,19 @@ public class FogScript : MonoBehaviour
         _collisionModule.enabled = UsePhysics;
 
         _isLabs = GameWorldController.CurrentMap == "laboratory";
-        if (_isLabs) 
+        if (_isLabs)
         {
+            Scale = new Vector3(Scale.x * 1.1f, Scale.y, Scale.z * 1.1f);
             _maxParticles = 5000;
-            ParticleRate = 5000f; //ensure max particles
-            ParticleSize = new ParticleSystem.MinMaxCurve(16f, 24f);
-            _alpha = 0.12f;
-            _speed = 3f;
+            ParticleRate *= 6f; 
+            ParticleSize = new ParticleSystem.MinMaxCurve(18f, 30f);
+            _alpha *= 2.5f;
         }
     }
 
     void Update()
     {
-        if (_timeExisted <= 2.5f)
+        if (_timeExisted <= 4f)
         {
             _timeExisted += Time.deltaTime;
         }
@@ -60,10 +61,10 @@ public class FogScript : MonoBehaviour
         _shapeModule.scale = Scale; //0.85 
         _mainModule.maxParticles = _maxParticles; 
         _mainModule.gravityModifier = 0f; 
-        _mainModule.simulationSpeed = (_timeExisted <= 2f ? 1000 : _speed) * SpeedModi; 
-        _mainModule.startSpeed = _startSpeed; 
+        _mainModule.simulationSpeed = (_timeExisted <= 3f ? 1000 : _speed) * SpeedModi; 
+        _mainModule.startSpeed = _startSpeedCurve; 
         _mainModule.startSize = ParticleSize; 
-        _mainModule.startLifetime = new ParticleSystem.MinMaxCurve(20f, 30f); 
+        _mainModule.startLifetime = _lifeTimeCurve; 
         _emissionModule.rateOverTime = ParticleRate;
         _mainModule.startColor = new Color(1f, 1f, 1f, _alpha * OpacityModi * _dynamicOpacityModi);
     }

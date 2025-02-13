@@ -122,9 +122,9 @@ namespace RealismMod
             EvaluateInteractableStates();
         }
 
-        private void EvaluateInteractableStates(bool isOnInit = false)
+        private void EvaluateInteractableStates(bool isInit = false)
         {
-            if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"is on init? {isOnInit}");
+            if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"is init? {isInit}");
             Dictionary<GasZone, float> gasZones = new Dictionary<GasZone, float>();
             bool allInDesiredState = true;
             _completedSteps = 0;
@@ -189,6 +189,8 @@ namespace RealismMod
     {
         public const float VALVE_AUDIO_VOL = 0.75f;
         public const float LEAK_AUDIO_VOL = 0.25f;
+        public const float BUTTON_AUDIO_VOL = 0.2f;
+        public const float PANEL_LOOP_VOL = 0.5f;
         public EZoneType ZoneType { get; }
         public float ZoneStrength { get; set; }
         public bool BlocksNav { get; set; }
@@ -220,34 +222,54 @@ namespace RealismMod
         public List<IZone> HazardZones = new List<IZone>();
 
         private AudioSource _valveAudioSource;
-        private AudioSource _gasLeakAudioSource;
+        private AudioSource _loopAudioSource;
         private AudioSource _valveStuckSource;
+        private AudioSource _buttonSource;
+        private AudioSource _panelAudioSource;
         private GameObject _targetGameObject;
         private InteractableGroupComponent _groupParent;
         private bool _isRotating = false;
+        private bool _buttonIsPressing = false;
         private bool _isDoingStuckRotation = false;
 
-        private float _targetLoopVolume = LEAK_AUDIO_VOL;
+        private float _targetLoopVolume = 1f;
+        private float _baseLoopAudioVol = 1f;
+        private bool _playLoopOnDesiredState = false;
+        private string _onString = "On";
+        private string _offString = "Off";
+        private System.Action _onAction;
+        private System.Action _offAction;
 
         void Start()
         {
+            _onAction = InteractableData.InteractionType == EIneractableType.Valve ? TurnONValve : TurnOnButton;
+            _offAction = InteractableData.InteractionType == EIneractableType.Valve ? TurnOffValve : TurnOffButton;
+            _onString = InteractableData.InteractionType == EIneractableType.Valve ? "Turn Clockwise" : "Turn On";
+            _offString = InteractableData.InteractionType == EIneractableType.Valve ? "Turn AntiClockwise" : "Turn Off";
+            _playLoopOnDesiredState = InteractableData.InteractionType != EIneractableType.Valve;
             if (InteractableData.Randomize) _state = UnityEngine.Random.Range(0, 100) >= 50 ? EInteractableState.On : EInteractableState.Off;
             else _state = InteractableData.StartingState;
             _groupParent = GetComponentInParent<InteractableGroupComponent>();
-            SetUpValveAudio();
-            SetUpValveStuckAudio();
-            SetUpLeakAudio();
-            GetChildObjects();
+            SetUpAudio();
+            if (!string.IsNullOrWhiteSpace(InteractableData.TargeObject)) GetChildObjects();
             GetHazardZones();
             InitActions();
         }
 
         void Update() 
         {
-            _targetLoopVolume = State != this.InteractableData.DesiredEndState ? LEAK_AUDIO_VOL : 0f;
-            if (_gasLeakAudioSource.volume != _targetLoopVolume)
+            LoopAudio(_loopAudioSource, _baseLoopAudioVol, 0.2f);
+        }
+
+        private void LoopAudio(AudioSource audioSource, float baseVolume, float speed) 
+        {
+            if (audioSource == null) return;
+            bool isDesiredState = State == this.InteractableData.DesiredEndState;
+            bool shouldDoLoop = (!_playLoopOnDesiredState && !isDesiredState) || (_playLoopOnDesiredState && isDesiredState);
+            _targetLoopVolume = shouldDoLoop ? baseVolume : 0f;
+            if (audioSource.volume != _targetLoopVolume)
             {
-                _gasLeakAudioSource.volume = Mathf.MoveTowards(_gasLeakAudioSource.volume, _targetLoopVolume, 0.1f * Time.deltaTime);
+                audioSource.volume = Mathf.MoveTowards(audioSource.volume, _targetLoopVolume, speed * Time.deltaTime);
             }
         }
 
@@ -285,6 +307,29 @@ namespace RealismMod
             }
         }
 
+        private void SetUpAudio() 
+        {
+            SetUpValveAudio();
+            SetUpValveStuckAudio();
+            SetUpButtonAudio();
+            SetUpPanelLoopAudio();
+            SetUpLeakAudio();
+            _loopAudioSource.Play();
+        }
+
+        private void SetUpButtonAudio()
+        {
+            _buttonSource = this.gameObject.AddComponent<AudioSource>();
+            _buttonSource.clip = Plugin.InteractableClips["buttonpress.wav"];
+            _buttonSource.volume = BUTTON_AUDIO_VOL;
+            _buttonSource.loop = false;
+            _buttonSource.playOnAwake = false;
+            _buttonSource.spatialBlend = 1.0f;
+            _buttonSource.minDistance = 1.5f;
+            _buttonSource.maxDistance = 5f;
+            _buttonSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        }
+
         private void SetUpValveStuckAudio()
         {
             _valveStuckSource = this.gameObject.AddComponent<AudioSource>();
@@ -311,18 +356,31 @@ namespace RealismMod
             _valveAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
         }
 
+        private void SetUpPanelLoopAudio()
+        {
+            _panelAudioSource = this.gameObject.AddComponent<AudioSource>();
+            _panelAudioSource.clip = Plugin.InteractableClips["panel_hum_loop.wav"];
+            _panelAudioSource.volume = PANEL_LOOP_VOL;
+            _panelAudioSource.loop = true;
+            _panelAudioSource.playOnAwake = false;
+            _panelAudioSource.spatialBlend = 1.0f;
+            _panelAudioSource.minDistance = 1.5f;
+            _panelAudioSource.maxDistance = 15f;
+            _panelAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        }
+
         private void SetUpLeakAudio()
         {
-            _gasLeakAudioSource = this.gameObject.AddComponent<AudioSource>();
-            _gasLeakAudioSource.clip = Plugin.InteractableClips["gas_leak.wav"];
-            _gasLeakAudioSource.volume = LEAK_AUDIO_VOL;
-            _gasLeakAudioSource.loop = true;
-            _gasLeakAudioSource.playOnAwake = false;
-            _gasLeakAudioSource.spatialBlend = 1.0f;
-            _gasLeakAudioSource.minDistance = 1.5f;
-            _gasLeakAudioSource.maxDistance = 5f;
-            _gasLeakAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
-            _gasLeakAudioSource.Play();
+            _loopAudioSource = this.gameObject.AddComponent<AudioSource>();
+            _loopAudioSource.clip = InteractableData.InteractionType == EIneractableType.Valve ? Plugin.InteractableClips["gas_leak.wav"] : Plugin.InteractableClips["panel_hum_loop.wav"];
+            _loopAudioSource.volume = InteractableData.InteractionType == EIneractableType.Valve ? LEAK_AUDIO_VOL : PANEL_LOOP_VOL; 
+            _loopAudioSource.loop = true;
+            _loopAudioSource.playOnAwake = false;
+            _loopAudioSource.spatialBlend = 1.0f;
+            _loopAudioSource.minDistance = 1.5f;
+            _loopAudioSource.maxDistance = 5f;
+            _loopAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+            _loopAudioSource.Play();
         }
 
         IEnumerator AdjustVolume(float targetVolume, float speed, AudioSource audioSource)
@@ -350,6 +408,17 @@ namespace RealismMod
             }
         }
 
+        private IEnumerator PlayButtoPressAudio(bool turnOn, bool isBlocked, bool sameState)
+        {
+            if (_buttonIsPressing && !_buttonSource.isPlaying)
+            {
+                string file = turnOn ? "buttonpress.wav" : isBlocked ? "buttonpress_blocked.wav" : "buttonpress_do_nothing.wav";
+                _buttonSource.clip = Plugin.InteractableClips[file]; 
+                _buttonSource.Play();
+            }
+            yield return new WaitForSeconds(_buttonSource.clip.length + 1f);
+        }
+
         private IEnumerator StopValveAudioLoop()
         {
             if (_valveAudioSource.isPlaying)
@@ -359,7 +428,7 @@ namespace RealismMod
             _valveAudioSource.Stop();
         }
 
-        private void Rotate(ref float elapsedTime, float duration, float maxSpeed) 
+        private void RotateValve(ref float elapsedTime, float duration, float maxSpeed) 
         {
             float t = elapsedTime / duration;
             float speedModifier = Mathf.Sin(t * Mathf.PI);
@@ -368,23 +437,13 @@ namespace RealismMod
             elapsedTime += Time.deltaTime;
         }
 
-        IEnumerator RotateValveOverTime(float maxSpeed, float duration)
+        IEnumerator ToggleButton(bool turnOn, bool isBlocked, bool sameState)
         {
-            if (_isRotating || _isDoingStuckRotation) yield break;
-            _isRotating = true;
-            float elapsedTime = 0f;
-            StartCoroutine(PlayRandomValveClipLoop());
-            StartCoroutine(AdjustVolume(VALVE_AUDIO_VOL, 1f, _valveAudioSource));
-            while (elapsedTime < duration)
-            {
-                Rotate(ref elapsedTime, duration, maxSpeed);
-                yield return null;
-            }
-            StartCoroutine(AdjustVolume(0f, 1f, _valveAudioSource));
-            yield return StartCoroutine(StopValveAudioLoop());
-            _isRotating = false;
+            if (_buttonIsPressing) yield break;
+            _buttonIsPressing = true;
+            yield return StartCoroutine(PlayButtoPressAudio(turnOn, isBlocked, sameState));
+            _buttonIsPressing = false;
         }
-
 
         IEnumerator RotateStuck(float maxSpeed, float duration)
         {
@@ -394,13 +453,13 @@ namespace RealismMod
             float elapsedTime = 0f;
             while (elapsedTime < duration)
             {
-                Rotate(ref elapsedTime, duration, maxSpeed);
+                RotateValve(ref elapsedTime, duration, maxSpeed);
                 yield return null;
             }
             elapsedTime = 0f;
             while (elapsedTime < duration)
             {
-                Rotate(ref elapsedTime, duration, -maxSpeed);
+                RotateValve(ref elapsedTime, duration, -maxSpeed);
                 yield return null;
             }
             _isDoingStuckRotation = false;
@@ -415,16 +474,33 @@ namespace RealismMod
                 {
                     new ActionsTypesClass
                     {
-                        Name = "Turn Clockwise",
-                        Action = TurnON
+                        Name = _onString,
+                        Action = _onAction
                     },
                     new ActionsTypesClass
                     {
-                        Name = "Turn Anticlockwise",
-                        Action = TurnOff
+                        Name = _offString,
+                       Action = _offAction
                     }
                 }
              );
+        }
+
+        IEnumerator RotateValveOverTime(float maxSpeed, float duration)
+        {
+            if (_isRotating || _isDoingStuckRotation) yield break;
+            _isRotating = true;
+            float elapsedTime = 0f;
+            StartCoroutine(PlayRandomValveClipLoop());
+            StartCoroutine(AdjustVolume(VALVE_AUDIO_VOL, 1f, _valveAudioSource));
+            while (elapsedTime < duration)
+            {
+                RotateValve(ref elapsedTime, duration, maxSpeed);
+                yield return null;
+            }
+            StartCoroutine(AdjustVolume(0f, 1f, _valveAudioSource));
+            yield return StartCoroutine(StopValveAudioLoop());
+            _isRotating = false;
         }
 
         public void Log() 
@@ -432,7 +508,7 @@ namespace RealismMod
             Utils.Logger.LogWarning($"{gameObject.name} state is {State}");
         }
 
-        private bool CanTurn(EInteractableState nextState) 
+        private bool CanTurnValve(EInteractableState nextState) 
         {
             bool completed = _groupParent.ComplatedSteps >= InteractableData.CompletionStep;
             bool isSameState = State == nextState;
@@ -444,18 +520,47 @@ namespace RealismMod
             return completed && !isSameState;
         }
 
-        //turn SFX on/off, trigger action
-        public void TurnON() 
+        private bool CanTurnOn(EInteractableState nextState)
         {
-            if (_isRotating || _isDoingStuckRotation || !CanTurn(EInteractableState.On)) return;
+            bool completed = _groupParent.ComplatedSteps >= InteractableData.CompletionStep;
+            bool isSameState = State == nextState;
+            bool isGoingToBeOn = State != nextState && nextState == EInteractableState.On;
+            if (!completed || isSameState)
+            {
+                StartCoroutine(ToggleButton(false, !completed, isSameState));
+            }
+            return completed && !isSameState;
+        }
+
+
+        //need a "can turn on button" method with its own sfx
+        public void TurnOnButton()
+        {
+            if (_buttonIsPressing || !CanTurnOn(EInteractableState.On)) return;
+            StopAllCoroutines();
+            StartCoroutine(ToggleButton(true, false, false));
+            State = EInteractableState.On;
+        }
+
+        public void TurnOffButton()
+        {
+            if (_buttonIsPressing || !CanTurnOn(EInteractableState.Off)) return;
+            StopAllCoroutines();
+            StartCoroutine(ToggleButton(true, false, false));
+            State = EInteractableState.Off;
+        }
+
+        public void TurnONValve() 
+        {
+            if (_isRotating || _isDoingStuckRotation || !CanTurnValve(EInteractableState.On)) return;
             StopAllCoroutines();
             StartCoroutine(RotateValveOverTime(300f, 5f));
             State = EInteractableState.On;
         }
 
-        public void TurnOff()
+        public void TurnOffValve()
         {
-            if (_isRotating || _isDoingStuckRotation || !CanTurn(EInteractableState.Off)) return;
+            if (_isRotating || _isDoingStuckRotation || !CanTurnValve(EInteractableState.Off)) return;
             StopAllCoroutines();
             StartCoroutine(RotateValveOverTime(-300f, 5f));
             State = EInteractableState.Off;

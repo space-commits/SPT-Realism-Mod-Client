@@ -68,7 +68,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.PLUGINVERSION)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string PLUGINVERSION = "1.5.0";
+        private const string PLUGINVERSION = "1.5.1";
 
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
         public static Dictionary<string, AudioClip> HitAudioClips = new Dictionary<string, AudioClip>();
@@ -659,6 +659,7 @@ namespace RealismMod
             new ChamberCheckUIPatch().Enable();
 
             //multiple
+            new InventoryOpenPatch().Enable();
             new KeyInputPatch1().Enable();
             new KeyInputPatch2().Enable();
             new SyncWithCharacterSkillsPatch().Enable();

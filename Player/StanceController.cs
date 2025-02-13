@@ -124,6 +124,7 @@ namespace RealismMod
         public static bool CanResetDamping = true;
         public static bool WasAimingBeforeCollision = false;
         public static bool StopCameraMovement = false;
+        public static float CameraMovmentForCollisionSpeed = 0.01f;
         public static bool IsColliding = false;
 
         public static float HighReadyBlackedArmTime = 0.0f;
@@ -230,7 +231,6 @@ namespace RealismMod
 
         public static bool IsInForcedLowReady = false;
         public static bool IsAiming = false;
-        public static bool IsInInventory = false;
         public static bool DidWeaponSwap = false;
         public static bool IsBlindFiring = false;
         public static bool IsInThirdPerson = false;
@@ -637,7 +637,7 @@ namespace RealismMod
                     DidStanceWiggle = false;
                 }
 
-                if (!PlayerValues.IsSprinting && !IsInInventory && !TreatWeaponAsPistolStance)
+                if (!PlayerValues.IsSprinting && !PlayerValues.IsInInventory && !TreatWeaponAsPistolStance)
                 {
                     //cycle stances
                     if (!ShouldBlockAllStances && Input.GetKeyUp(PluginConfig.CycleStancesKeybind.Value.MainKey))
@@ -1062,7 +1062,8 @@ namespace RealismMod
             float lowReadyStanceMulti = Mathf.Clamp(stanceMulti, 0.5f, 0.98f);
             float highReadyXWiggleFactor = WeaponStats.TotalErgo <= 49f ? -1f : 1f;
             float highReadyZWiggleFactor = WeaponStats.TotalErgo <= 40f ? 1f : 2f;
-
+            bool pauseStance = PlayerValues.IsInInventory || IsBlindFiring || IsLeftShoulder;
+             
             float wiggleErgoMulti = Mathf.Clamp((WeaponStats.ErgoStanceSpeed * 0.5f), 0.1f, 1f);
             float stocklessModifier = WeaponStats.HasShoulderContact ? 1f : 0.5f;
             WiggleReturnSpeed = (1f - (PlayerValues.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerValues.StanceInjuryMulti * stocklessModifier * playerWeightFactor * (Mathf.Max(PlayerValues.RemainingArmStamFactor, 0.55f));
@@ -1185,7 +1186,7 @@ namespace RealismMod
             DoTacSprint(fc, player);
 
             ////short-stock////
-            if (CurrentStance == EStance.ShortStock && !pwa.IsAiming && !CancelShortStock && !IsBlindFiring && !pwa.LeftStance && !PlayerValues.IsSprinting && !IsLeftShoulder)
+            if (CurrentStance == EStance.ShortStock && !pwa.IsAiming && !CancelShortStock && !IsBlindFiring && !pwa.LeftStance && !PlayerValues.IsSprinting && !pauseStance)
             {
                 float activeToShort = 1f;
                 float highToShort = 1f;
@@ -1271,7 +1272,7 @@ namespace RealismMod
             }
 
             ////high ready////
-            if (CurrentStance == EStance.HighReady && !pwa.IsAiming && !IsFiringFromStance && !CancelHighReady && !IsBlindFiring && !IsLeftShoulder)
+            if (CurrentStance == EStance.HighReady && !pwa.IsAiming && !IsFiringFromStance && !CancelHighReady && !pauseStance)
             {
                 float shortToHighMulti = 1.0f;
                 float lowToHighMulti = 1.0f;
@@ -1373,7 +1374,7 @@ namespace RealismMod
             }
 
             ////low ready////
-            if (CurrentStance == EStance.LowReady && !pwa.IsAiming && !IsFiringFromStance && !CancelLowReady && !IsBlindFiring && !IsLeftShoulder)
+            if (CurrentStance == EStance.LowReady && !pwa.IsAiming && !IsFiringFromStance && !CancelLowReady && !pauseStance)
             {
                 float highToLow = 1.0f;
                 float shortToLow = 1.0f;
@@ -1465,7 +1466,7 @@ namespace RealismMod
             }
 
             ////active aiming////
-            if (CurrentStance == EStance.ActiveAiming && !CancelActiveAim && !IsBlindFiring && !IsLeftShoulder)
+            if (CurrentStance == EStance.ActiveAiming && !CancelActiveAim && !pauseStance)
             {
                 float ergoFactor = WeaponStats.TotalErgo <= 40f ? 0.75f : 1f;
                 float shortToActive = 1f;
@@ -1563,7 +1564,7 @@ namespace RealismMod
             }
 
             ////Melee////
-            if (CurrentStance == EStance.Melee && !pwa.IsAiming && !IsBlindFiring && !IsLeftShoulder && !PlayerValues.IsSprinting)
+            if (CurrentStance == EStance.Melee && !pwa.IsAiming && !PlayerValues.IsSprinting && !pauseStance)
             {
                 isResettingMelee = false;
                 hasResetMelee = false;

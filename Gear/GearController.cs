@@ -97,18 +97,6 @@ namespace RealismMod
             return null;
         }
 
-        private static void DoEquipAnimation(Player player) 
-        {
-            player.MovementContext.PlayerAnimator.AnimatedInteractions.SetInteraction(EInteraction.FaceshieldOnGear);
-            player.OnAnimatedInteraction(EInteraction.FaceshieldOnGear);
-        }
-
-        private static void DoUnEquipAnimation(Player player)
-        {
-            player.MovementContext.PlayerAnimator.AnimatedInteractions.SetInteraction(EInteraction.FaceshieldOffGear);
-            player.OnAnimatedInteraction(EInteraction.FaceshieldOffGear);
-        }
-
         public static IEnumerable<StashGridClass> GetGrids(InventoryEquipment equipment)
         {
             Slot tacVestslot = equipment.GetSlot(EquipmentSlot.TacticalVest);
@@ -183,7 +171,8 @@ namespace RealismMod
                 if (operation.Succeeded) 
                 {
                     ItemUiContext.smethod_0(player.InventoryController, item, operation, null);
-                    DoEquipAnimation(player);
+                    Gear gear = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
+                    if (!string.IsNullOrWhiteSpace(gear.MaskToUse)) DoMaskToggleAnimation(player, EInteraction.FaceshieldOnGear);
                     return;
                 }
             }
@@ -195,7 +184,8 @@ namespace RealismMod
             if (operation.Succeeded)
             {
                 ItemUiContext.smethod_0(player.InventoryController, item, operation, null);
-                DoUnEquipAnimation(player);
+                Gear gear = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
+                if (!string.IsNullOrWhiteSpace(gear.MaskToUse)) DoMaskToggleAnimation(player, EInteraction.FaceshieldOffGear); //exclude respitator and such
                 return true;
             }
             return false;
@@ -214,6 +204,13 @@ namespace RealismMod
                 TryRemoveGasMask(item, player, address);
             }
         }
+
+        private static void DoMaskToggleAnimation(Player player, EInteraction interaction)
+        {
+            player.MovementContext.PlayerAnimator.AnimatedInteractions.SetInteraction(interaction);
+            player.OnAnimatedInteraction(interaction);
+        }
+
 
         public static void ToggleGasMask(Player player)
         {

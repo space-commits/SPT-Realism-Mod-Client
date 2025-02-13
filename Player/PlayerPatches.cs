@@ -21,15 +21,35 @@ using Diz.LanguageExtensions;
 using System.Linq;
 using EFT.UI;
 using System.Runtime.CompilerServices;
+using static UnityEngine.GraphicsBuffer;
 
 namespace RealismMod
 {
+    public class InventoryOpenPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player).GetMethod("SetInventoryOpened", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void PatchPrefix(Player __instance, bool opened)
+        {
+            if (__instance.IsYourPlayer)
+            {
+                AbstractHandsController controller = (AbstractHandsController)AccessTools.Field(typeof(Player), "_handsController").GetValue(__instance);
+
+               if (controller != null) PlayerValues.IsInInventory = opened;
+               else PlayerValues.IsInInventory = false; 
+            }
+        }
+    }
+
     //door animations are jank as of SPT 3.10, and don't work well with stances
     public class DoorAnimationOverride : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-
             return typeof(MovementContext).GetMethod("SetInteractInHands", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -194,7 +214,7 @@ namespace RealismMod
         private static float _sprintTimer = 0f;
         private static bool _didSprintPenalties = false;
         private static bool _resetSwayAfterFiring = false;
-        private static float _animationWeight;
+        private static float _layer20AnimWeight;
 
         private static bool SkipSprintPenalty
         {
@@ -490,20 +510,19 @@ namespace RealismMod
         {
             int currentHash = player._animators[0].GetCurrentAnimatorStateInfo(20).nameHash;
             bool doorActive = _doorHashes.Contains(currentHash);
-            if (player.IsInventoryOpened || doorActive)
+            if (PlayerValues.IsInInventory || doorActive)
             {
-                float target = doorActive ? 0.9f : 0.1f;
-                _animationWeight = Mathf.MoveTowards(_animationWeight, target, 1.9f * Time.deltaTime);
-                player._animators[0].SetLayerWeight(20, _animationWeight);
+                float target = doorActive ? 0.9f : 0.15f;
+                _layer20AnimWeight = Mathf.MoveTowards(_layer20AnimWeight, target, 1.9f * Time.deltaTime);
+                player._animators[0].SetLayerWeight(20, _layer20AnimWeight);
             }
             else
             {
-                _animationWeight = Mathf.MoveTowards(_animationWeight, 1f, 1f * Time.deltaTime);
-                player._animators[0].SetLayerWeight(20, _animationWeight);
+                _layer20AnimWeight = Mathf.MoveTowards(_layer20AnimWeight, 1f, 1f * Time.deltaTime);
+                player._animators[0].SetLayerWeight(20, _layer20AnimWeight);
             }
 
-            //player._animators[0].SetLayerWeight(4, PluginConfig.test1.Value); sprint layer
-            //player.MovementContext.PlayerAnimator.EnableSprint(PluginConfig.test1.Value <= 0 ? true : false);
+            //player._animators[0].SetLayerWeight(4, _layer4AnimWeight); sprint
         }
 
         protected override MethodBase GetTargetMethod()
@@ -515,7 +534,6 @@ namespace RealismMod
         [PatchPostfix] 
         private static void PatchPostfix(Player __instance)
         {
-            if (PluginConfig.EnableAnimationFixes.Value) SmoothenAnimations(__instance);
             if (Plugin.ServerConfig.headset_changes)
             {
                 SurfaceSet currentSet = (SurfaceSet)surfaceField.GetValue(__instance);
@@ -527,12 +545,13 @@ namespace RealismMod
 
             if (Utils.PlayerIsReady && __instance.IsYourPlayer)
             {
+                if (PluginConfig.EnableAnimationFixes.Value) SmoothenAnimations(__instance);
+
                 GameWorldController.TimeInRaid += Time.deltaTime;
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 PlayerValues.IsSprinting = __instance.IsSprintEnabled;
                 PlayerValues.EnviroType = __instance.Environment;
                 PlayerValues.BtrState = __instance.BtrState;
-                StanceController.IsInInventory = __instance.IsInventoryOpened;
                 //bit wise operation, Mask property has serveral combined enum values
                 PlayerValues.IsMoving = __instance.IsSprintEnabled || (__instance.ProceduralWeaponAnimation.Mask & EProceduralAnimationMask.Walking) != (EProceduralAnimationMask)0;//Plugin.FikaPresent ? false : __instance.IsSprintEnabled ||  !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.x, 0f, 0.001f) || !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.z, 0f, 0.001f);
 
