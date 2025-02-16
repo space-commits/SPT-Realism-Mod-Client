@@ -294,7 +294,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(HealthEffectsComponent __instance, Item item)
         {
-            var medStats = Stats.GetDataObj<Consumable>(Stats.ConsumableStats, item.TemplateId);
+            var medStats = TemplateStats.GetDataObj<Consumable>(TemplateStats.ConsumableStats, item.TemplateId);
             bool isPainMed = medStats.ConsumableType == EConsumableType.PainPills || medStats.ConsumableType == EConsumableType.PainDrug;
             if (item.Template.ParentId == "5448f3a64bdc2d60728b456a")
             {
@@ -513,7 +513,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
-            var itemStats = Stats.GetDataObj<Consumable>(Stats.ConsumableStats, item.TemplateId);
+            var itemStats = TemplateStats.GetDataObj<Consumable>(TemplateStats.ConsumableStats, item.TemplateId);
             if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("Applying out of raid: " + item.LocalizedName());
 
             if (Plugin.ServerConfig.food_changes)

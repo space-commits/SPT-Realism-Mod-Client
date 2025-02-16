@@ -164,7 +164,7 @@ namespace RealismMod
         {
             if (__instance.IsYourPlayer)
             {
-                PlayerValues.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
+                PlayerValues.IsScav = Singleton<GameWorld>.Instance?.MainPlayer?.Profile?.Info?.Side == EPlayerSide.Savage;
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
                 GearController.CheckGear(__instance);

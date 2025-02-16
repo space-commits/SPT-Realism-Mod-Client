@@ -271,7 +271,7 @@ namespace RealismMod
             {
                 DeafenController.HasHeadSet = true;
                 HeadphonesTemplateClass headphone = headset.Template;
-                float rating = Stats.GearStats[headset.TemplateId].dB;
+                float rating = TemplateStats.GearStats[headset.TemplateId].dB;
                 return Utils.CalcultateModifierFromRange(rating, 19f, 26f, DeafenController.MaxHeadsetProtection, DeafenController.MinHeadsetProtection);
             }
             else

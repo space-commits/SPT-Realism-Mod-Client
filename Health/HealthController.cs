@@ -1150,7 +1150,7 @@ namespace RealismMod
         {
             if (item != null)
             {
-                var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
+                var gearStats = TemplateStats.GetDataObj<Gear>(TemplateStats.GearStats, item.TemplateId);
                 blocksMouth = gearStats.BlocksMouth;
             }
         }
@@ -1159,7 +1159,7 @@ namespace RealismMod
         {
             FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
             NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
-            var gearStats = fsComponent == null ? null : Stats.GetDataObj<Gear>(Stats.GearStats, fsComponent.Item.TemplateId);
+            var gearStats = fsComponent == null ? null : TemplateStats.GetDataObj<Gear>(TemplateStats.GearStats, fsComponent.Item.TemplateId);
             bool fsIsON = gearStats != null && (fsComponent.Togglable == null || fsComponent.Togglable.On) && gearStats.BlocksMouth;
             bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
             return fsIsON || nvgIsOn;
@@ -1183,7 +1183,7 @@ namespace RealismMod
             {
                 foreach (Item item in nestedItems)
                 {
-                    var nestedGearStats = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
+                    var nestedGearStats = TemplateStats.GetDataObj<Gear>(TemplateStats.GearStats, item.TemplateId);
                     FaceShieldComponent fs = item.GetItemComponent<FaceShieldComponent>();
                     if (nestedGearStats != null && fs == null && nestedGearStats.BlocksMouth)
                     {
@@ -1245,7 +1245,7 @@ namespace RealismMod
 
         public void CanConsume(Player player, Item item, ref bool canUse)
         {
-            var consumableStats = Stats.GetDataObj<Consumable>(Stats.ConsumableStats, item.TemplateId);
+            var consumableStats = TemplateStats.GetDataObj<Consumable>(TemplateStats.ConsumableStats, item.TemplateId);
             InventoryEquipment equipment = player.Equipment;
             Item face = equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
             Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
@@ -1549,7 +1549,7 @@ namespace RealismMod
                 return;
             }
 
-            var medStats = Stats.GetDataObj<Consumable>(Stats.ConsumableStats, meds.TemplateId);
+            var medStats = TemplateStats.GetDataObj<Consumable>(TemplateStats.ConsumableStats, meds.TemplateId);
 
             if (medStats.CanBeUsedInRaid == false)
             {
@@ -1772,7 +1772,7 @@ namespace RealismMod
 
         public void CanUseMedItem(Player player, EBodyPart bodyPart, Item item, ref bool canUse)
         {
-            var medStats = Stats.GetDataObj<Consumable>(Stats.ConsumableStats, item.TemplateId);
+            var medStats = TemplateStats.GetDataObj<Consumable>(TemplateStats.ConsumableStats, item.TemplateId);
             if (item.Template.Parent._id == "5448f3a64bdc2d60728b456a" || medStats.ConsumableType == EConsumableType.Drug)
             {
                 return;

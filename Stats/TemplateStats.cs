@@ -1,11 +1,8 @@
 ﻿using EFT;
 using Newtonsoft.Json;
-using SPT.Common.Utils;
+using SPT.Common.Http;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using static WheelDrive;
 
 namespace RealismMod
 {
@@ -146,9 +143,8 @@ namespace RealismMod
         public float HPRestoreTick { get; set; } = 0f;
     }
 
-    public static class Stats
+    public static class TemplateStats
     {
-        public const string TemplateFilePath = "\\db\\templates";
         public static Dictionary<string, Gun> GunStats = new Dictionary<string, Gun>();
         public static Dictionary<string, Gear> GearStats = new Dictionary<string, Gear>();
         public static Dictionary<string, WeaponMod> WeaponModStats = new Dictionary<string, WeaponMod>();
@@ -185,21 +181,6 @@ namespace RealismMod
             return newItem;
         }
 
-        public static string GetTemplatesFilePath() 
-        {
-            return Plugin.ModDir.ServerBaseDirectory + TemplateFilePath;
-        }
-
-        public static void GetStats() 
-        {
-            var templateFilePaths = GeAllFilesRecursive(GetTemplatesFilePath());
-
-            foreach (var templateFilePath in templateFilePaths) 
-            {
-                DeserializeTemplates(templateFilePath);
-            }
-        }
-
         public static void AddItemToDict<T>(Dictionary<string, T> dict, RealismItem item) where T : RealismItem
         {
             if (!dict.ContainsKey(item.ItemID))
@@ -212,74 +193,64 @@ namespace RealismMod
             }
         }
 
-        public static void DeserializeTemplates(string filepath) 
+        public static void RequestAndProcessDataFromServer() 
         {
-            var templateJson = File.ReadAllText(filepath);
+            string route = "/RealismMod/GetTemplateData";
+            var settings = new JsonSerializerSettings
+            {
+                MissingMemberHandling = MissingMemberHandling.Ignore
+            };
+     
+            try
+            {
+                var json = RequestHandler.GetJson(route);
+                DeserializeTemplates(json);
+            }
+            catch (Exception ex)
+            {
+                Utils.Logger.LogError($"REALISM MOD ERROR: FAILED TO FETCH DATA FROM SERVER USING ROUTE {route}: {ex.Message}");
+            }
+        }
 
+        public static void DeserializeTemplates(string templateData) 
+        {
             //enables typenamehandling to automatically choose what model class represents the json
             var settings = new JsonSerializerSettings
             {
-                TypeNameHandling = TypeNameHandling.Auto
+                TypeNameHandling = TypeNameHandling.Auto,
             };
 
-            var templatesBase = JsonConvert.DeserializeObject<Dictionary<string, RealismItem>>(templateJson, settings);
+            var templatesBase = JsonConvert.DeserializeObject<Dictionary<string, RealismItem>>(templateData, settings);
 
             foreach (var templateKvp in templatesBase)
             {
-                var template = templateKvp.Value;
-                if (template is Gun gun)
+                var templateType = templateKvp.Value;
+                if (templateType is Gun gun)
                 {
                     AddItemToDict<Gun>(GunStats, gun);
                 }
-                else if (template is Gear gear)
+                else if (templateType is Gear gear)
                 {
                     AddItemToDict<Gear>(GearStats, gear);
                 }
-                else if (template is WeaponMod weaponmod)
+                else if (templateType is WeaponMod weaponmod)
                 {
                     AddItemToDict<WeaponMod>(WeaponModStats, weaponmod);
                 }
-                else if (template is Consumable consumable)
+                else if (templateType is Consumable consumable)
                 {
                     AddItemToDict<Consumable>(ConsumableStats, consumable);
                 }
-                else if (template is Ammo ammo)
+                else if (templateType is Ammo ammo)
                 {
+                    Utils.Logger.LogWarning("is ammo");
                     AddItemToDict<Ammo>(RealismAmmoStats, ammo);
                 }
                 else
                 {
-                    Utils.Logger.LogFatal($"Realism Mod: Invalid Template found at {filepath}, id: {template.ItemID}");
+                    Utils.Logger.LogFatal($"Realism Mod: Invalid Template found at {templateData}, id: {templateType.ItemID}");
                 }
             }
         }
-
-        public static List<string> GeAllFilesRecursive(string directory, List<string> files) 
-        {
-            try
-            {
-                files.AddRange(Directory.GetFiles(directory));
-
-                // Recursively add files from subdirectories
-                foreach (var dir in Directory.GetDirectories(directory))
-                {
-                    GeAllFilesRecursive(dir, files);
-                }
-            }
-            catch (Exception ex)
-            {
-                Utils.Logger.LogFatal($"Realism Mod: Error accessing {directory}: {ex.Message}");
-            }
-
-            return files;
-        }
-
-        public static List<string> GeAllFilesRecursive(string directory)
-        {
-            var files = new List<string>();
-            return GeAllFilesRecursive(directory, files);
-        }
-
     }
-
 }

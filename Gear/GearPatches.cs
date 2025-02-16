@@ -33,7 +33,7 @@ namespace RealismMod
                 VisorEffect visor = (VisorEffect)AccessTools.Field(typeof(PlayerCameraController), "visorEffect_0").GetValue(__instance);
                 Material mat = visor.method_4();
 
-                var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, faceShield.Item.TemplateId);
+                var gearStats = TemplateStats.GetDataObj<Gear>(TemplateStats.GearStats, faceShield.Item.TemplateId);
                 string maskToUse = gearStats.MaskToUse;
                 if (maskToUse == null || maskToUse == string.Empty || maskToUse == "") return;
                 Texture mask = Plugin.LoadedTextures[maskToUse + ".png"];
@@ -72,7 +72,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(EquipmentPenaltyComponent __instance, Item item, bool anyArmorPlateSlots)
         {
-            var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
+            var gearStats = TemplateStats.GetDataObj<Gear>(TemplateStats.GearStats, item.TemplateId);
             if (Plugin.ServerConfig.gear_weight && (anyArmorPlateSlots || item.Template.ParentId == "5448e53e4bdc2d60728b4567"))
             {
                         float comfortModifier = gearStats.Comfort;
@@ -176,7 +176,7 @@ namespace RealismMod
         private static void PatchPostfix(RigConstructor __instance, RigTemplate template)
         {
             Item item = __instance as Item;
-            var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
+            var gearStats = TemplateStats.GetDataObj<Gear>(TemplateStats.GearStats, item.TemplateId);
             if (Plugin.ServerConfig.reload_changes)
             {
                 float gearReloadSpeed = gearStats.ReloadSpeedMulti;
@@ -230,7 +230,7 @@ namespace RealismMod
         private static void PatchPostfix(HeadsetClass __instance)
         {
             Item item = __instance as Item;
-            var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
+            var gearStats = TemplateStats.GetDataObj<Gear>(TemplateStats.GearStats, item.TemplateId);
             float dB = gearStats.dB;
 
             if (dB > 0)

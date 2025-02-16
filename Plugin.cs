@@ -51,11 +51,6 @@ namespace RealismMod
         public bool IsNightTime { get; set; }   
     }
 
-    public class RealismDir : IRealismInfo 
-    {
-        public string ServerBaseDirectory { get; set; }
-    }
-
     public enum EUpdateType 
     {
         Full,
@@ -121,7 +116,7 @@ namespace RealismMod
 
         public static RealismConfig ServerConfig;
         public static RealismEventInfo ModInfo;
-        public static RealismDir ModDir;
+        public static Dictionary<string, RealismItem> ItemTemplateData = new Dictionary<string, RealismItem>();
 
         private static T UpdateInfoFromServer<T>(string route) where T : class, IRealismInfo
         {
@@ -151,7 +146,6 @@ namespace RealismMod
                 case EUpdateType.Full:
                     ServerConfig = UpdateInfoFromServer<RealismConfig>("/RealismMod/GetConfig");
                     ModInfo = UpdateInfoFromServer<RealismEventInfo>("/RealismMod/GetInfo");
-                    ModDir = UpdateInfoFromServer<RealismDir>("/RealismMod/GetDirectory");
                     break;
                 case EUpdateType.ModInfo:
                     ModInfo = UpdateInfoFromServer<RealismEventInfo>("/RealismMod/GetInfo");
@@ -444,7 +438,7 @@ namespace RealismMod
                 LoadAudioClips();
                 CacheIcons();
                 ZoneData.DeserializeZoneData();
-                Stats.GetStats();
+                TemplateStats.RequestAndProcessDataFromServer();
 
             }
             catch (Exception exception)

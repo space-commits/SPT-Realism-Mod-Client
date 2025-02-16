@@ -632,8 +632,8 @@ namespace RealismMod
         {
             if (Plugin.ServerConfig.enable_hazard_zones)
             {
-                var sessionData = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession();
-                ProfileData.PMCLevel = sessionData.Profile.Info.Level;
+                var sessionData = Singleton<ClientApplication<ISession>>.Instance?.GetClientBackEndSession();
+                if (sessionData?.Profile?.Info != null) ProfileData.PMCLevel = sessionData.Profile.Info.Level;      
                 HazardTracker.ResetTracker();
                 HazardTracker.UpdateHazardValues(ProfileData.CurrentProfileId);
                 HazardTracker.SaveHazardValues();

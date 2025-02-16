@@ -117,7 +117,7 @@ namespace RealismMod
             if (!Utils.PlayerIsReady) return true;
             if (__instance != null && __instance?.Owner != null && __instance?.Owner?.ID != null && __instance?.Owner?.ID == Singleton<GameWorld>.Instance?.MainPlayer?.ProfileId)
             {
-                var weapStats = Stats.GetDataObj<Gun>(Stats.GunStats, __instance.TemplateId);
+                var weapStats = TemplateStats.GetDataObj<Gun>(TemplateStats.GunStats, __instance.TemplateId);
                 if (PlayerValues.IsInReloadOpertation)
                 {
                     __result = FinalStatCalc(__instance, weapStats);
@@ -153,7 +153,7 @@ namespace RealismMod
             WeaponStats.HasLongMag = false;
             if (hasMag == true)
             {
-                var magStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, magazine.TemplateId);
+                var magStats = TemplateStats.GetDataObj<WeaponMod>(TemplateStats.WeaponModStats, magazine.TemplateId);
                 float magWeightFactored = StatCalc.FactoredWeight(magWeight);
                 string position = StatCalc.GetModPosition(magazine, weapType, weapOpType, "");
                 magWeight = magazine.TotalWeight;
@@ -386,7 +386,7 @@ namespace RealismMod
             {
                 if (!Utils.IsMagazine(mod))
                 {
-                    var weaponModStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, mod.TemplateId);
+                    var weaponModStats = TemplateStats.GetDataObj<WeaponMod>(TemplateStats.WeaponModStats, mod.TemplateId);
                     string modType = weaponModStats.ModType;
                     float modWeight = mod.Weight;
                     float modWeightFactored = StatCalc.FactoredWeight(modWeight);
