@@ -243,7 +243,6 @@ namespace RealismMod
                 }
                 else if (templateType is Ammo ammo)
                 {
-                    Utils.Logger.LogWarning("is ammo");
                     AddItemToDict<Ammo>(RealismAmmoStats, ammo);
                 }
                 else

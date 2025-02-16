@@ -530,7 +530,7 @@ namespace RealismMod
             FieldInfo typeArrFieldInfo = typeType.GetField("type_0", BindingFlags.NonPublic | BindingFlags.Static);
             var typeArr = (Type[])typeArrFieldInfo.GetValue(null);
             customTypes.CopyTo(typeArr, 0);
-            typeArrFieldInfo.SetValue(null, customTypes);
+            typeArrFieldInfo.SetValue(null, typeArr);
         }
 
         public void TestAddBaseEFTEffect(int partIndex, Player player, String effect)

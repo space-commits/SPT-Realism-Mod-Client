@@ -149,7 +149,7 @@ namespace RealismMod
             float hipfireModifier = !StanceController.IsAiming ? 1.1f : 1f;
 
             //this should be a single pre-calculated value ideally
-            float baseAngle = ShootController.BaseTotalRecoilAngle;
+            float baseAngle = WeaponStats.IsVector ? 90f : ShootController.BaseTotalRecoilAngle;
             float angleBonus = StanceController.IsMounting && WeaponStats.BipodIsDeployed ? 7.5f : StanceController.IsMounting ? 5f : StanceController.IsBracing ? 2.5f : 1f;
             float dispersionAngleFactor = !isPistol ? 1f + (-WeaponStats.TotalDispersionDelta * 0.035f) : 1f;
             float totalRecAngle = (baseAngle + angleBonus) * dispersionAngleFactor;

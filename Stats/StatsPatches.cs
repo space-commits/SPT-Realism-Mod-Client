@@ -369,13 +369,12 @@ namespace RealismMod
             float currentGas = 0f;
 
             bool folded = __instance.Folded;
-            bool hasShoulderContact = false;
-            if (weapStats.HasShoulderContact && !folded)
-            {
-                hasShoulderContact = true;
-            }
+            bool hasShoulderContact = weapStats.HasShoulderContact;
+
             WeaponStats.BaseMeleeDamage = 0f; //reset the melee dmg
             WeaponStats.BaseMeleePen = 0f;
+
+            WeaponStats.IsVector = weapType == "vector";
 
             WeaponStats.HasBayonet = false;
             WeaponStats.HasBooster = false;
