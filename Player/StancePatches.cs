@@ -155,8 +155,8 @@ namespace RealismMod
             float normalSpeed = 0.1f * Time.deltaTime; //0.1f
             float delaySpeed = 0.2f * Time.deltaTime; //0.2f
             float slowDown = 0.15f; //0.05
-            float resetTime = 18.5f; //2
-            float delayTime = 1f; //0.1
+            float resetTime = 2.5f; //2
+            float delayTime = 0.15f; //0.1
 
             if (isStable)
             {
@@ -205,43 +205,43 @@ namespace RealismMod
             {
                 _stanceFactor = 1f;
                 _stanceInverseFactor = 1f;
-                StanceController.CameraMovmentForCollisionSpeed = 0.04f;
+                StanceController.CameraMovmentForCollisionSpeed = 0.06f;
             }
             else if (StanceController.CurrentStance == EStance.ShortStock || StanceController.StoredStance == EStance.ShortStock)
             {
                 _stanceFactor = 1.15f;
                 _stanceInverseFactor = 0.85f;
-                StanceController.CameraMovmentForCollisionSpeed = 0.05f;
+                StanceController.CameraMovmentForCollisionSpeed = 0.1f;
             }
             else if (StanceController.CurrentStance == EStance.HighReady || StanceController.StoredStance == EStance.HighReady)
             {
                 _stanceFactor = 1.1f;
                 _stanceInverseFactor = 0.89f;
-                StanceController.CameraMovmentForCollisionSpeed = 0.1f;
+                StanceController.CameraMovmentForCollisionSpeed = 0.2f;
             }
             else if (StanceController.CurrentStance == EStance.LowReady || StanceController.StoredStance == EStance.LowReady)
             {
                 _stanceFactor = 1.07f;
                 _stanceInverseFactor = 0.92f;
-                StanceController.CameraMovmentForCollisionSpeed = 0.085f;
+                StanceController.CameraMovmentForCollisionSpeed = 0.16f;
             }
             else if (StanceController.CurrentStance == EStance.ActiveAiming || StanceController.StoredStance == EStance.ActiveAiming)
             {
                 _stanceFactor = 1.03f;
                 _stanceInverseFactor = 0.95f;
-                StanceController.CameraMovmentForCollisionSpeed = 0.06f;
+                StanceController.CameraMovmentForCollisionSpeed = 0.08f;
             }
             else if (StanceController.CurrentStance == EStance.PatrolStance)
             {
                 _stanceFactor = 1f;
                 _stanceInverseFactor = 1f;
-                StanceController.CameraMovmentForCollisionSpeed = 0.045f;
+                StanceController.CameraMovmentForCollisionSpeed = 0.1f;
             }
             else
             {
                 _stanceFactor = 1f;
                 _stanceInverseFactor = 1f;
-                StanceController.CameraMovmentForCollisionSpeed = 0.015f;
+                StanceController.CameraMovmentForCollisionSpeed = 0.07f;
             }
         }
 
@@ -254,21 +254,6 @@ namespace RealismMod
             }
             else if (StanceController.CurrentStance == EStance.ShortStock || StanceController.StoredStance == EStance.ShortStock)
             {
-  /*              if (length >= 1.25f)
-                {
-         *//*           _finalPos = new Vector3(0.1f, -0.2f, -0.15f);
-                    _finalRot = new Vector3(-0.1f, -0.1f, -0.1f);*//*
-                    _finalPos = new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value);
-                    _finalRot = new Vector3(PluginConfig.test4.Value, PluginConfig.test5.Value, PluginConfig.test6.Value);
-                    //_finalPos = new Vector3(0.35f, 0.05f, 0.2f);
-                    //_finalRot = new Vector3(0f, 0f, -0.9f);
-                }
-                else 
-                {
-                    _finalPos = new Vector3(0f, 0f, -0.5f);
-                    _finalRot = new Vector3(0.01f, 0.1f, -0.05f);
-
-                }*/
                 _finalPos = new Vector3(0f, 0f, -0.5f);
                 _finalRot = new Vector3(0.01f, 0.1f, -0.05f);
 
@@ -301,6 +286,7 @@ namespace RealismMod
                 _finalRot = new Vector3(0.2f, -0.1f, -0.1f);
             }
         }
+
         private static void CollisionOverride(ProceduralWeaponAnimation pwa, FirearmController fc) 
         {
             _blendField.SetValue(pwa.TurnAway, 0f);
@@ -454,8 +440,8 @@ namespace RealismMod
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
 
-                if (PluginConfig.ModifyBSGCollision.Value && !PluginConfig.OverrideCollision.Value) ModifyBSGCollisions(__instance, firearmController);
-                else if (PluginConfig.OverrideCollision.Value) CollisionOverride(__instance, firearmController);
+                if (PluginConfig.OverrideCollision.Value && Plugin.FOVFixPresent) CollisionOverride(__instance, firearmController);
+                else if (PluginConfig.ModifyBSGCollision.Value) ModifyBSGCollisions(__instance, firearmController);
 
                 DoMounting(player, __instance);
             }

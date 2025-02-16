@@ -52,6 +52,7 @@ public class FogScript : MonoBehaviour
 
     void Update()
     {
+        //don#t wnt timer to go on forever
         if (_timeExisted <= 4f)
         {
             _timeExisted += Time.deltaTime;
@@ -61,7 +62,7 @@ public class FogScript : MonoBehaviour
         _shapeModule.scale = Scale; //0.85 
         _mainModule.maxParticles = _maxParticles; 
         _mainModule.gravityModifier = 0f; 
-        _mainModule.simulationSpeed = (_timeExisted <= 3f ? 1000 : _speed) * SpeedModi; 
+        _mainModule.simulationSpeed = (_timeExisted <= 2f ? 1000 : _speed) * SpeedModi; 
         _mainModule.startSpeed = _startSpeedCurve; 
         _mainModule.startSize = ParticleSize; 
         _mainModule.startLifetime = _lifeTimeCurve; 

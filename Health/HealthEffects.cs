@@ -424,7 +424,7 @@ namespace RealismMod
                 TimeExisted++;
                 if (TimeExisted % 30 == 0) 
                 {
-                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.6f);
+                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.45f);
                 }
             }
         }

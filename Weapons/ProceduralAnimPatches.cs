@@ -217,8 +217,8 @@ namespace RealismMod
                     float totalPlayerWeight = PlayerValues.TotalModifiedWeightMinusWeapon;
                     float playerWeightADSFactor = 1f - (totalPlayerWeight / 200f);
                     float stanceMulti = 
-                        StanceController.IsIdle() && !StanceController.IsLeftShoulder ? 1.75f 
-                        : StanceController.WasActiveAim || StanceController.CurrentStance == EStance.ActiveAiming ? 1.65f 
+                        StanceController.IsIdle() && !StanceController.IsLeftShoulder ? 1.5f 
+                        : StanceController.WasActiveAim || StanceController.CurrentStance == EStance.ActiveAiming ? 1.35f 
                         : StanceController.CurrentStance == EStance.HighReady || StanceController.CurrentStance == EStance.HighReady ? 1.25f 
                         : StanceController.StoredStance == EStance.LowReady || StanceController.CurrentStance == EStance.LowReady ? 1.25f 
                         : StanceController.IsLeftShoulder ? 0.85f : 1f;

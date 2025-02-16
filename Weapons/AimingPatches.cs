@@ -40,7 +40,7 @@ namespace RealismMod
                 }
 
                 fc.UpdateHipInaccuracy(); //update hipfire to take NVG toggle into account
-
+                 
                 if (Plugin.ServerConfig.enable_stances)
                 {
                     if ((toobBlocksADS || fsBlocksADS))

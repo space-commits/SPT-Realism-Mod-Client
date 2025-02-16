@@ -390,42 +390,9 @@ namespace RealismMod
 
                 HealthEffecTick();
 
-                if (Input.GetKeyDown(PluginConfig.AddEffectKeybind.Value.MainKey))
-                {
-                    /*                    AddStimDebuffs(Utils.GetYourPlayer(), Plugin.AddEffectType.Value);*/ // use this to test stim debuffs
-                    TestAddBaseEFTEffect(PluginConfig.AddEffectBodyPart.Value, Utils.GetYourPlayer(), PluginConfig.AddEffectType.Value);
-                    if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + PluginConfig.AddEffectType.Value + " To Part " + (EBodyPart)PluginConfig.AddEffectBodyPart.Value);
-                }
-
-                if (Input.GetKeyDown(PluginConfig.DropGearKeybind.Value.MainKey))
-                {
-                    if (_clickTriggered)
-                    {
-                        DropBlockingGear(Utils.GetYourPlayer());
-                        _clickTriggered = false;
-                    }
-                    else
-                    {
-                        _clickTriggered = true;
-                    }
-                    _timeSinceLastClicked = 0f;
-                }
-                _timeSinceLastClicked += Time.deltaTime;
-                if (_timeSinceLastClicked > DOUBLE_CLICK_TIME)
-                {
-                    _clickTriggered = false;
-                }
-
-                if (_doStimOverdoseTimer)
-                {
-                    _stimOverdoseWaitTime += Time.deltaTime;
-                    if (_stimOverdoseWaitTime >= 10f)
-                    {
-                        AddStimDebuffs(Utils.GetYourPlayer(), _overdoseEffectToAdd);
-                        _doStimOverdoseTimer = false;
-                        _stimOverdoseWaitTime = 0f;
-                    }
-                }
+                AddTestEffectChecker();
+                DropGearChecker();
+                OverdoseTimer();
             }
 
             if (Utils.IsInHideout || !Utils.PlayerIsReady)
@@ -433,6 +400,81 @@ namespace RealismMod
                 ResetAllEffects();
                 DmgeTracker.ResetTracker();
             }
+
+            AdrenalineTimer();
+            RegenTimer();
+            ScreenEffectsController.EffectsUpdate();
+        }
+
+        public void ResetAllEffects()
+        {
+            _activeStimOverdoses.Clear();
+            _activeHealthEffects.Clear();
+            _painInjuryStrength = 0f;
+            PainSurgeryStrength = 0f;
+            PainReliefStrength = 0f;
+            PainTunnelStrength = 0f;
+            ReliefDuration = 0;
+            HasNegativeAdrenalineEffect = false;
+            HasPositiveAdrenalineEffect = false;
+            CancelPassiveRegen = false;
+            CurrentPassiveRegenBlockDuration = BlockPassiveRegenBaseDuration;
+            _hasOverdosedStim = false;
+            _leftArmRuined = false;
+            _rightArmRuined = false;
+   
+            ResetHealhPenalties();
+        }
+
+        private void AddTestEffectChecker() 
+        {
+
+            if (Input.GetKeyDown(PluginConfig.AddEffectKeybind.Value.MainKey))
+            {
+                /*                    AddStimDebuffs(Utils.GetYourPlayer(), Plugin.AddEffectType.Value);*/ // use this to test stim debuffs
+                TestAddBaseEFTEffect(PluginConfig.AddEffectBodyPart.Value, Utils.GetYourPlayer(), PluginConfig.AddEffectType.Value);
+                if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + PluginConfig.AddEffectType.Value + " To Part " + (EBodyPart)PluginConfig.AddEffectBodyPart.Value);
+            }
+        }
+
+        private void DropGearChecker() 
+        {
+            if (Input.GetKeyDown(PluginConfig.DropGearKeybind.Value.MainKey))
+            {
+                if (_clickTriggered)
+                {
+                    DropBlockingGear(Utils.GetYourPlayer());
+                    _clickTriggered = false;
+                }
+                else
+                {
+                    _clickTriggered = true;
+                }
+                _timeSinceLastClicked = 0f;
+            }
+            _timeSinceLastClicked += Time.deltaTime;
+            if (_timeSinceLastClicked > DOUBLE_CLICK_TIME)
+            {
+                _clickTriggered = false;
+            }
+        }
+
+        private void OverdoseTimer() 
+        {
+            if (_doStimOverdoseTimer)
+            {
+                _stimOverdoseWaitTime += Time.deltaTime;
+                if (_stimOverdoseWaitTime >= 10f)
+                {
+                    AddStimDebuffs(Utils.GetYourPlayer(), _overdoseEffectToAdd);
+                    _doStimOverdoseTimer = false;
+                    _stimOverdoseWaitTime = 0f;
+                }
+            }
+        }
+
+        private void AdrenalineTimer() 
+        {
 
             if (AdrenalineCooldownActive)
             {
@@ -445,6 +487,10 @@ namespace RealismMod
                 }
             }
 
+        }
+
+        private void RegenTimer() 
+        {
             if (CancelPassiveRegen)
             {
                 CurrentPassiveRegenBlockDuration -= Time.deltaTime;
@@ -455,23 +501,6 @@ namespace RealismMod
                     CurrentPassiveRegenBlockDuration = BlockPassiveRegenBaseDuration;
                 }
             }
-           ScreenEffectsController.EffectsUpdate();
-        }
-
-
-        public void ResetAllEffects()
-        {
-            _activeStimOverdoses.Clear();
-            _activeHealthEffects.Clear();
-            _painInjuryStrength = 0f;
-            PainSurgeryStrength = 0f;
-            PainReliefStrength = 0f;
-            PainTunnelStrength = 0f;
-            ReliefDuration = 0;
-            _hasOverdosedStim = false;
-            _leftArmRuined = false;
-            _rightArmRuined = false;
-            ResetHealhPenalties();
         }
 
         //To prevent null ref exceptions while using Fika, Realism's custom effects must be added to a dicitionary of existing EFT effects

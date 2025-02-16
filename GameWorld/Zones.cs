@@ -1,20 +1,15 @@
-﻿using EFT;
+﻿using Comfort.Common;
+using EFT;
 using EFT.Interactive;
 using EFT.InventoryLogic;
+using EFT.UI;
+using EFT.UI.BattleTimer;
+using HarmonyLib;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
-using Comfort.Common;
 using KeyInteractionResultClass = GClass3344;
-using SPT.Common.Utils;
-using static CW2.Animations.PhysicsSimulator.UnityValueDevice;
-using UnityEngine.Rendering.PostProcessing;
-using EFT.InputSystem;
-using EFT.UI.BattleTimer;
-using EFT.UI;
-using HarmonyLib;
 
 namespace RealismMod
 {
@@ -42,7 +37,7 @@ namespace RealismMod
         public int ComplatedSteps { get { return _completedSteps; } }
 
         private List<InteractionZone> _interactionZones = new List<InteractionZone>();
-        private List<ExfiltrationPoint> _exfils = new List<ExfiltrationPoint>();
+        private List<ExfiltrationPoint> _exfilsToBlock = new List<ExfiltrationPoint>();
         private int _completedSteps = 0;
         private bool _allValvesInCorrectState = false;
 
@@ -60,21 +55,21 @@ namespace RealismMod
 
         private void BlockExtracts() 
         {
-            if (_exfils.Count == 0)
+            if (_exfilsToBlock.Count == 0)
             {
-                _exfils = GameWorldController.ExfilsInLocation.Where(exfil => GroupData.ExfilsToBlock.Any(name => exfil.Settings.Name == name)).ToList();
-                if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning("extract count" + _exfils.Count());
-                foreach (var exfil in _exfils)
+                _exfilsToBlock = GameWorldController.ExfilsInLocation.Where(exfil => GroupData.ExfilsToBlock.Any(name => exfil.Settings.Name == name)).ToList();
+                if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning("extract count" + _exfilsToBlock.Count());
+                foreach (var exfil in _exfilsToBlock)
                 {
                     if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning("extract " + exfil.Settings.Name);
                 }
             }
-            ToggleExtractAvailaibility(false);
+            ToggleExtractAvailaibility(_exfilsToBlock, false);
         }
 
-        private void ToggleExtractAvailaibility(bool enable)
+        private void ToggleExtractAvailaibility(List<ExfiltrationPoint> exfils, bool enable)
         {
-            foreach (var exfil in _exfils)
+            foreach (var exfil in exfils)
             {
                 if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"{exfil.Settings.Name} set to {enable}");
                 BoxCollider[] coliders = exfil.GetComponentsInChildren<BoxCollider>();
@@ -91,10 +86,7 @@ namespace RealismMod
             if (GameWorldController.GamePlayerOwner == null) return;
             ExtractionTimersPanel extractPanel = (ExtractionTimersPanel)AccessTools.Field(typeof(GamePlayerOwner), "_timerPanel").GetValue(GameWorldController.GamePlayerOwner);
             Dictionary<string, ExitTimerPanel> exitPanels = (Dictionary<string, ExitTimerPanel>)AccessTools.Field(typeof(ExtractionTimersPanel), "dictionary_0").GetValue(extractPanel);
-            foreach (var exfil in _exfils)
-            {
-                Utils.Logger.LogWarning("exfil to block  " + exfil.Settings.Name);
-            }
+
             foreach (var exitPanel in exitPanels)
             {
                 ExfiltrationPoint exfil = (ExfiltrationPoint)AccessTools.Field(typeof(EFT.UI.BattleTimer.ExitTimerPanel), "_point").GetValue(exitPanel.Value);
@@ -103,11 +95,7 @@ namespace RealismMod
 #pragma warning restore CS0618
                 Color defaultColor = (Color)AccessTools.Field(typeof(EFT.UI.BattleTimer.ExitTimerPanel), "_defaultTimerColor").GetValue(exitPanel.Value);
 
-                Utils.Logger.LogWarning("exfil paenl  " + exfil.Settings.Name);
-
-                if (!_exfils.Any(e => e.Settings.Name == exfil.Settings.Name)) continue;
-                Utils.Logger.LogWarning("match found");
-                Utils.Logger.LogWarning("_allValvesInCorrectState " + _allValvesInCorrectState);
+                if (!_exfilsToBlock.Any(e => e.Settings.Name == exfil.Settings.Name)) continue;
                 pantelText.text = exfil.Settings.Name.Localized(null);
                 if (!_allValvesInCorrectState) pantelText.text += " BLOCKED BY GAS";
                 pantelText.color = _allValvesInCorrectState ? defaultColor : Color.red;
@@ -174,7 +162,7 @@ namespace RealismMod
                     gas.Key.ZoneStrengthTargetModi = gas.Value;
                     if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"zone {gas.Key.gameObject.name} strength is {gas.Key.ZoneStrengthTargetModi}");
                 }
-                ToggleExtractAvailaibility(true);
+                ToggleExtractAvailaibility(_exfilsToBlock, true);
             }
             else 
             {
@@ -187,10 +175,11 @@ namespace RealismMod
     //set its own status
     public class InteractionZone : InteractableObject, IZone 
     {
-        public const float VALVE_AUDIO_VOL = 0.75f;
-        public const float LEAK_AUDIO_VOL = 0.25f;
+        public const float VALVE_AUDIO_VOL = 0.6f;
+        public const float VALVE_STUCK_AUDIO_VOL = 0.5f;
+        public const float LEAK_AUDIO_VOL = 0.15f;
         public const float BUTTON_AUDIO_VOL = 0.2f;
-        public const float PANEL_LOOP_VOL = 0.5f;
+        public const float PANEL_LOOP_VOL = 0.4f;
         public EZoneType ZoneType { get; }
         public float ZoneStrength { get; set; }
         public bool BlocksNav { get; set; }
@@ -233,6 +222,7 @@ namespace RealismMod
         private bool _isDoingStuckRotation = false;
 
         private float _targetLoopVolume = 1f;
+        private float _loopLerpSpeed = 0.1f;
         private float _baseLoopAudioVol = 1f;
         private bool _playLoopOnDesiredState = false;
         private string _onString = "On";
@@ -258,7 +248,7 @@ namespace RealismMod
 
         void Update() 
         {
-            LoopAudio(_loopAudioSource, _baseLoopAudioVol, 0.2f);
+            LoopAudio(_loopAudioSource, _baseLoopAudioVol, _loopLerpSpeed);
         }
 
         private void LoopAudio(AudioSource audioSource, float baseVolume, float speed) 
@@ -266,7 +256,7 @@ namespace RealismMod
             if (audioSource == null) return;
             bool isDesiredState = State == this.InteractableData.DesiredEndState;
             bool shouldDoLoop = (!_playLoopOnDesiredState && !isDesiredState) || (_playLoopOnDesiredState && isDesiredState);
-            _targetLoopVolume = shouldDoLoop ? baseVolume : 0f;
+            _targetLoopVolume = (shouldDoLoop ? baseVolume : 0f);
             if (audioSource.volume != _targetLoopVolume)
             {
                 audioSource.volume = Mathf.MoveTowards(audioSource.volume, _targetLoopVolume, speed * Time.deltaTime);
@@ -321,7 +311,7 @@ namespace RealismMod
         {
             _buttonSource = this.gameObject.AddComponent<AudioSource>();
             _buttonSource.clip = Plugin.InteractableClips["buttonpress.wav"];
-            _buttonSource.volume = BUTTON_AUDIO_VOL;
+            _buttonSource.volume = BUTTON_AUDIO_VOL * GameWorldController.GetGameVolumeAsFactor(); 
             _buttonSource.loop = false;
             _buttonSource.playOnAwake = false;
             _buttonSource.spatialBlend = 1.0f;
@@ -334,7 +324,7 @@ namespace RealismMod
         {
             _valveStuckSource = this.gameObject.AddComponent<AudioSource>();
             _valveStuckSource.clip = Plugin.InteractableClips["valve_stuck.wav"];
-            _valveStuckSource.volume = VALVE_AUDIO_VOL;
+            _valveStuckSource.volume = VALVE_STUCK_AUDIO_VOL * GameWorldController.GetGameVolumeAsFactor();
             _valveStuckSource.loop = false;
             _valveStuckSource.playOnAwake = false;
             _valveStuckSource.spatialBlend = 1.0f;
@@ -347,7 +337,7 @@ namespace RealismMod
         {
             _valveAudioSource = this.gameObject.AddComponent<AudioSource>();
             _valveAudioSource.clip = Plugin.InteractableClips["valve_loop_3.wav"];
-            _valveAudioSource.volume = VALVE_AUDIO_VOL;
+            _valveAudioSource.volume = VALVE_AUDIO_VOL * GameWorldController.GetGameVolumeAsFactor();
             _valveAudioSource.loop = false;
             _valveAudioSource.playOnAwake = false;
             _valveAudioSource.spatialBlend = 1.0f;
@@ -360,7 +350,7 @@ namespace RealismMod
         {
             _panelAudioSource = this.gameObject.AddComponent<AudioSource>();
             _panelAudioSource.clip = Plugin.InteractableClips["panel_hum_loop.wav"];
-            _panelAudioSource.volume = PANEL_LOOP_VOL;
+            _panelAudioSource.volume = PANEL_LOOP_VOL * GameWorldController.GetGameVolumeAsFactor();
             _panelAudioSource.loop = true;
             _panelAudioSource.playOnAwake = false;
             _panelAudioSource.spatialBlend = 1.0f;
@@ -373,7 +363,9 @@ namespace RealismMod
         {
             _loopAudioSource = this.gameObject.AddComponent<AudioSource>();
             _loopAudioSource.clip = InteractableData.InteractionType == EIneractableType.Valve ? Plugin.InteractableClips["gas_leak.wav"] : Plugin.InteractableClips["panel_hum_loop.wav"];
-            _loopAudioSource.volume = InteractableData.InteractionType == EIneractableType.Valve ? LEAK_AUDIO_VOL : PANEL_LOOP_VOL; 
+            _loopAudioSource.volume = (InteractableData.InteractionType == EIneractableType.Valve ? LEAK_AUDIO_VOL : PANEL_LOOP_VOL) * GameWorldController.GetGameVolumeAsFactor(); 
+            _baseLoopAudioVol = _loopAudioSource.volume;
+            _loopLerpSpeed = InteractableData.InteractionType == EIneractableType.Valve ? 0.075f :0.5f;
             _loopAudioSource.loop = true;
             _loopAudioSource.playOnAwake = false;
             _loopAudioSource.spatialBlend = 1.0f;
@@ -385,6 +377,7 @@ namespace RealismMod
 
         IEnumerator AdjustVolume(float targetVolume, float speed, AudioSource audioSource)
         {
+            targetVolume *= GameWorldController.GetGameVolumeAsFactor();
             while (audioSource.volume != targetVolume)
             {
                 audioSource.volume = Mathf.MoveTowards(audioSource.volume, targetVolume, speed * Time.deltaTime);
@@ -408,11 +401,12 @@ namespace RealismMod
             }
         }
 
-        private IEnumerator PlayButtoPressAudio(bool turnOn, bool isBlocked, bool sameState)
+        private IEnumerator PlayButtonPressAudio(bool isTurningOn, bool isBlocked, bool sameState)
         {
             if (_buttonIsPressing && !_buttonSource.isPlaying)
             {
-                string file = turnOn ? "buttonpress.wav" : isBlocked ? "buttonpress_blocked.wav" : "buttonpress_do_nothing.wav";
+                if (isBlocked || isTurningOn) PlaySoundForAI();
+                string file = isTurningOn ? "buttonpress.wav" : isBlocked ? "buttonpress_blocked.wav" : "buttonpress_do_nothing.wav";
                 _buttonSource.clip = Plugin.InteractableClips[file]; 
                 _buttonSource.Play();
             }
@@ -437,17 +431,18 @@ namespace RealismMod
             elapsedTime += Time.deltaTime;
         }
 
-        IEnumerator ToggleButton(bool turnOn, bool isBlocked, bool sameState)
+        IEnumerator ToggleButton(bool isTurningOn, bool isBlocked, bool sameState)
         {
             if (_buttonIsPressing) yield break;
             _buttonIsPressing = true;
-            yield return StartCoroutine(PlayButtoPressAudio(turnOn, isBlocked, sameState));
+            yield return StartCoroutine(PlayButtonPressAudio(isTurningOn, isBlocked, sameState));
             _buttonIsPressing = false;
         }
 
         IEnumerator RotateStuck(float maxSpeed, float duration)
         {
             if (_isRotating || _isDoingStuckRotation) yield break;
+            PlaySoundForAI();
             _isDoingStuckRotation = true;
             _valveStuckSource.Play();
             float elapsedTime = 0f;
@@ -508,6 +503,11 @@ namespace RealismMod
             Utils.Logger.LogWarning($"{gameObject.name} state is {State}");
         }
 
+        protected void PlaySoundForAI()
+        {
+            Utils.GetYourPlayer().MovementContext.PlayBreachSound();
+        }
+
         private bool CanTurnValve(EInteractableState nextState) 
         {
             bool completed = _groupParent.ComplatedSteps >= InteractableData.CompletionStep;
@@ -532,10 +532,10 @@ namespace RealismMod
             return completed && !isSameState;
         }
 
-
         //need a "can turn on button" method with its own sfx
         public void TurnOnButton()
         {
+            //GearController.DoInteractionAnimation(Utils.GetYourPlayer(), EInteraction.DoorCardOpen); other button presses in the game don't use an animation, and it looks a bit jank
             if (_buttonIsPressing || !CanTurnOn(EInteractableState.On)) return;
             StopAllCoroutines();
             StartCoroutine(ToggleButton(true, false, false));
@@ -544,13 +544,14 @@ namespace RealismMod
 
         public void TurnOffButton()
         {
+            //GearController.DoInteractionAnimation(Utils.GetYourPlayer(), EInteraction.DoorCardOpen);
             if (_buttonIsPressing || !CanTurnOn(EInteractableState.Off)) return;
             StopAllCoroutines();
             StartCoroutine(ToggleButton(true, false, false));
             State = EInteractableState.Off;
         }
 
-        public void TurnONValve() 
+        public void TurnONValve()
         {
             if (_isRotating || _isDoingStuckRotation || !CanTurnValve(EInteractableState.On)) return;
             StopAllCoroutines();
@@ -956,7 +957,7 @@ namespace RealismMod
         {
             _mainAudioSource = this.gameObject.AddComponent<AudioSource>();
             _mainAudioSource.clip = Plugin.HazardZoneClips["labs-hvac.wav"];
-            _mainAudioSource.volume = MAIN_VOLUME;
+            _mainAudioSource.volume = MAIN_VOLUME * GameWorldController.GetGameVolumeAsFactor();
             _mainAudioSource.loop = true;
             _mainAudioSource.playOnAwake = false;
             _mainAudioSource.spatialBlend = 1.0f;
@@ -970,7 +971,7 @@ namespace RealismMod
         {
             _doorShutAudioSource = this.gameObject.AddComponent<AudioSource>();
             _doorShutAudioSource.clip = Plugin.HazardZoneClips["door_shut.wav"];
-            _doorShutAudioSource.volume = SHUT_VOLUME;
+            _doorShutAudioSource.volume = SHUT_VOLUME * GameWorldController.GetGameVolumeAsFactor();
             _doorShutAudioSource.loop = false;
             _doorShutAudioSource.playOnAwake = false;
             _doorShutAudioSource.spatialBlend = 1.0f;
@@ -983,7 +984,7 @@ namespace RealismMod
         {
             _doorOpenAudioSource = this.gameObject.AddComponent<AudioSource>();
             _doorOpenAudioSource.clip = Plugin.HazardZoneClips["door_open.wav"];
-            _doorOpenAudioSource.volume = OPEN_VOLUME;
+            _doorOpenAudioSource.volume = OPEN_VOLUME * GameWorldController.GetGameVolumeAsFactor();
             _doorOpenAudioSource.loop = false;
             _doorOpenAudioSource.playOnAwake = false;
             _doorOpenAudioSource.spatialBlend = 1.0f;
@@ -994,6 +995,7 @@ namespace RealismMod
 
         IEnumerator AdjustVolume(float targetVolume, float speed, AudioSource audioSource)
         {
+            targetVolume *= GameWorldController.GetGameVolumeAsFactor();
             while (audioSource.volume != targetVolume)
             {
                 audioSource.volume = Mathf.MoveTowards(audioSource.volume, targetVolume, speed * Time.deltaTime);

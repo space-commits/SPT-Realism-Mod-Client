@@ -1,11 +1,10 @@
-﻿using EFT;
+﻿using Comfort.Common;
+using EFT;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using static ObjectInHandsAnimator;
 
 namespace RealismMod
 {
@@ -120,6 +119,17 @@ namespace RealismMod
             }
         }
 
+        public static float GetHeadsetVolume() 
+        {
+            return PluginConfig.HeadsetGain.Value * 0.02f;
+        }
+
+        public static float GetGameVolumeAsFactor()
+        {
+            var instance = Singleton<SharedGameSettingsClass>.Instance;
+            if (instance?.Sound?.Settings == null) return 1f;
+            return instance.Sound.Settings.OverallVolume?.Value * 0.1f ?? 1f;
+        }
         public static void ModifyLootResources(Item item) 
         {
             if (Plugin.ServerConfig.bot_loot_changes)

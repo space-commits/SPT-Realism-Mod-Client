@@ -1,17 +1,10 @@
-﻿using Diz.LanguageExtensions;
-using EFT;
+﻿using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
-using GPUInstancer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Mail;
-using System.Reflection.Emit;
 using UnityEngine;
-using static EFT.SpeedTree.TreeWind;
-using static RootMotion.FinalIK.InteractionTrigger.Range;
-using static WheelDrive;
 using ArmorTemplate = GClass2550; //to find again, search for HasHinge field
 
 namespace RealismMod
@@ -172,7 +165,7 @@ namespace RealismMod
                 {
                     ItemUiContext.smethod_0(player.InventoryController, item, operation, null);
                     Gear gear = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
-                    if (!string.IsNullOrWhiteSpace(gear.MaskToUse)) DoMaskToggleAnimation(player, EInteraction.FaceshieldOnGear);
+                    if (!string.IsNullOrWhiteSpace(gear.MaskToUse)) DoInteractionAnimation(player, EInteraction.FaceshieldOnGear);
                     return;
                 }
             }
@@ -185,7 +178,7 @@ namespace RealismMod
             {
                 ItemUiContext.smethod_0(player.InventoryController, item, operation, null);
                 Gear gear = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
-                if (!string.IsNullOrWhiteSpace(gear.MaskToUse)) DoMaskToggleAnimation(player, EInteraction.FaceshieldOffGear); //exclude respitator and such
+                if (!string.IsNullOrWhiteSpace(gear.MaskToUse)) DoInteractionAnimation(player, EInteraction.FaceshieldOffGear); //exclude respitator and such
                 return true;
             }
             return false;
@@ -205,12 +198,11 @@ namespace RealismMod
             }
         }
 
-        private static void DoMaskToggleAnimation(Player player, EInteraction interaction)
+        public static void DoInteractionAnimation(Player player, EInteraction interaction)
         {
             player.MovementContext.PlayerAnimator.AnimatedInteractions.SetInteraction(interaction);
             player.OnAnimatedInteraction(interaction);
         }
-
 
         public static void ToggleGasMask(Player player)
         {

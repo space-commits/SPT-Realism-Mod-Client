@@ -2,8 +2,6 @@
 using EFT;
 using EFT.Interactive;
 using RealismMod;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DamageTypeClass = GClass2788;
 
@@ -22,7 +20,7 @@ public class ShockWave : TriggerWithId
         EFT.Interactive.TriggerWithId trigger = gameObject.AddComponent<EFT.Interactive.TriggerWithId>();
         trigger.SetId("nuke");
         gameObject.layer = LayerMask.NameToLayer("Triggers");
-        float gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume.Value * 0.1f;
+        float gameVolume = GameWorldController.GetGameVolumeAsFactor();
         shockwaveSound.volume *= gameVolume;
     }
 
