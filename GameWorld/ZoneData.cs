@@ -193,7 +193,11 @@ namespace RealismMod
           new Vector3(-21.1f, 0.6f, 23.5f),
           new Vector3(30.4f, 0.7f, 14.8f),
           new Vector3(15.1f, 5f, 35.9f),
-
+          new Vector3(17.38438f, 0.2f, -45.25214f),
+          new Vector3(-29.87388f, 1.6f, 38.69071f),
+          new Vector3(70.74198f, 0.7f, -59.29128f),
+          new Vector3(35.20501f, 3.8f, -12.11283f),
+          new Vector3(32.74858f, 7.7f, -32.19572f)
         };
 
         public static IEnumerable<Vector3> LabsSpawns = new Vector3[]
@@ -772,7 +776,6 @@ namespace RealismMod
         public static IEnumerable<Vector3> GetSafeSpawns()
         {
             string map = Singleton<GameWorld>.Instance.MainPlayer.Location;
-
             switch (map)
             {
                 case "rezervbase":
