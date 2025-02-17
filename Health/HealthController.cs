@@ -503,34 +503,46 @@ namespace RealismMod
             }
         }
 
-        //To prevent null ref exceptions while using Fika, Realism's custom effects must be added to a dicitionary of existing EFT effects
         public void AddCustomEffectsToDict()
         {
             Type[] customTypes = new Type[] { typeof(ResourceRateDrain), typeof(HealthChange), typeof(HealthDrain), typeof(ToxicityDamage), typeof(RadiationDamage) };
 
             Type type0 = typeof(EffectsDictionary);
+
+            // Get the existing type array
+            FieldInfo typeArrFieldInfo = type0.GetField("type_0", BindingFlags.NonPublic | BindingFlags.Static);
+            var existingTypeArr = (Type[])typeArrFieldInfo.GetValue(null);
+
+            // Create new combined array
+            var newTypeArr = new Type[existingTypeArr.Length + customTypes.Length];
+            existingTypeArr.CopyTo(newTypeArr, 0);
+            customTypes.CopyTo(newTypeArr, existingTypeArr.Length);
+
+            // Update type array first since dictionaries depend on it
+            typeArrFieldInfo.SetValue(null, newTypeArr);
+
+            // Recreate dictionary_0 using their pattern
             FieldInfo dictionaryField0 = type0.GetField("dictionary_0", BindingFlags.NonPublic | BindingFlags.Static);
-            var effectDict0 = (Dictionary<string, byte>)dictionaryField0.GetValue(null);
-            foreach (var customType in customTypes)
-            {
-                effectDict0.Add(customType.ToString(), Convert.ToByte(effectDict0.Count + 1));
-            }
-            dictionaryField0.SetValue(null, effectDict0);
+            var newDict0 = newTypeArr.ToDictionary(
+                t => t.Name,  // They use Name, not FullName or ToString()
+                t => (byte)Array.IndexOf(newTypeArr, t)
+            );
+            dictionaryField0.SetValue(null, newDict0);
 
-            Type type1 = typeof(EffectsDictionary);
-            FieldInfo dictionaryField1 = type1.GetField("dictionary_1", BindingFlags.NonPublic | BindingFlags.Static);
-            var effectDict1 = (Dictionary<byte, string>)dictionaryField1.GetValue(null);
-            foreach (var customType in customTypes)
-            {
-                effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), customType.ToString());
-            }
-            dictionaryField1.SetValue(null, effectDict1);
+            // Recreate dictionary_1 using their pattern
+            FieldInfo dictionaryField1 = type0.GetField("dictionary_1", BindingFlags.NonPublic | BindingFlags.Static);
+            var newDict1 = newDict0.ToDictionary(
+                kv => kv.Value,
+                kv => kv.Key
+            );
+            dictionaryField1.SetValue(null, newDict1);
 
-            Type typeType = typeof(EffectsDictionary);
-            FieldInfo typeArrFieldInfo = typeType.GetField("type_0", BindingFlags.NonPublic | BindingFlags.Static);
-            var typeArr = (Type[])typeArrFieldInfo.GetValue(null);
-            customTypes.CopyTo(typeArr, 0);
-            typeArrFieldInfo.SetValue(null, typeArr);
+            // Debug logging
+            UnityEngine.Debug.Log($"Added {customTypes.Length} custom types to effects dictionary");
+            foreach (var type in customTypes)
+            {
+                UnityEngine.Debug.Log($"Added effect: {type.Name} with index {Array.IndexOf(newTypeArr, type)}");
+            }
         }
 
         public void TestAddBaseEFTEffect(int partIndex, Player player, String effect)
