@@ -1,11 +1,10 @@
-﻿using EFT;
+﻿using Comfort.Common;
+using EFT;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using static ObjectInHandsAnimator;
 
 namespace RealismMod
 {
@@ -25,8 +24,10 @@ namespace RealismMod
         public static float CurrentGasEventStrength { get; private set; } = 0;
         public static float CurrentGasEventStrengthBot { get; private set; } = 0;
         public static List<LampController> Lights { get; set; } = new List<LampController>();
+        public static List<ExfiltrationPoint> ExfilsInLocation { get; set; } = new List<ExfiltrationPoint>();
         public static bool IsRightDateForExp { get; private set; }
         public static float TimeInRaid { get; set; }
+        public static GamePlayerOwner GamePlayerOwner { get; set; }
 
         public static bool DoMapGasEvent
         {
@@ -54,9 +55,13 @@ namespace RealismMod
             }
         }
 
-        public static void ClearGameObjectLists() 
+        public static void Reset() 
         {
             Lights.Clear(); 
+            ExfilsInLocation.Clear();
+            GameStarted = false;
+            RanEarliestGameCheck = false;
+            TimeInRaid = 0f;
         }
 
         public static void CalculateGasEventStrength()
@@ -114,6 +119,17 @@ namespace RealismMod
             }
         }
 
+        public static float GetHeadsetVolume() 
+        {
+            return PluginConfig.HeadsetGain.Value * 0.02f;
+        }
+
+        public static float GetGameVolumeAsFactor()
+        {
+            var instance = Singleton<SharedGameSettingsClass>.Instance;
+            if (instance?.Sound?.Settings == null) return 1f;
+            return instance.Sound.Settings.OverallVolume?.Value * 0.1f ?? 1f;
+        }
         public static void ModifyLootResources(Item item) 
         {
             if (Plugin.ServerConfig.bot_loot_changes)

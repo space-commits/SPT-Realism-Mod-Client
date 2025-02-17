@@ -15,14 +15,14 @@ namespace RealismMod
         public static bool IsFiring = false;
         public static bool IsFiringDeafen = false;
         public static bool IsFiringMovement = false;
-        public static bool IsFiringWiggle = false;
+        public static bool DoFiringWiggle = false;
         public static int ShotCount = 0;
-        public static int PrevShotCount = ShotCount;
-        public static float FiringTimer = 0.0f;
-        public static float ShotCountTimer = 0.0f;
-        public static float DeafenShotTimer = 0.0f;
-        public static float WiggleShotTimer = 0.0f;
-        public static float MovementSpeedShotTimer = 0.0f;
+        public static float FiringResetTimer = 0.0f;
+        public static float FiringDuration = 0.0f;
+        public static float ShotCountResetTimer = 0.0f;
+        public static float DeafenResetTimer = 0.0f;
+        public static float WiggleResetTimer = 0.0f;
+        public static float MovementSpeedResetTimer = 0.0f;
         private const float FpsFactor = 144f;
         private const float FpsSmoothingFactor = 0.42f;
 
@@ -49,61 +49,88 @@ namespace RealismMod
         private static float _dispersionSpeed;
         private static float _convergenceMulti = 1f;
 
-        public static void ShootUpdate(Player player)
-        {           
+
+        private static AnimationCurve _convergenceCurve = new AnimationCurve(
+         new Keyframe(0, 1f),
+         new Keyframe(0.25f, 0.95f),
+         new Keyframe(0.5f, 0.9f),
+         new Keyframe(0.75f, 0.85f),
+         new Keyframe(1f, 0.8f),
+         new Keyframe(1.25f, 0.75f),
+         new Keyframe(1.5f, 0.7f),
+         new Keyframe(1.75f, 0.65f),
+         new Keyframe(2f, 0.5f)
+        );
+
+        private static AnimationCurve _autoPistolConvergenceCurve = new AnimationCurve(
+        new Keyframe(0, 1f),
+        new Keyframe(0.05f, 2f),
+        new Keyframe(0.1f, 2.5f),
+        new Keyframe(0.3f, 2f),
+        new Keyframe(0.5f, 1.5f),
+        new Keyframe(0.7f, 1.25f),
+        new Keyframe(0.9f, 1.15f),
+        new Keyframe(1.2f, 1f)
+       );
+
+
+        public static void ShootUpdate(Player player, FirearmController fc)
+        {
             //bool fireButtonIsBeingHeld = Input.GetMouseButton(0);
-            if (ShotCount > PrevShotCount)
+            bool isAutoFiring =  player.ProceduralWeaponAnimation.method_18(); // || fc.IsTriggerPressed is literally holding mb
+
+            if (IsFiring || isAutoFiring) 
             {
-                IsFiring = true;
-                IsFiringDeafen = true;
-                IsFiringWiggle = true;
-                IsFiringMovement = true;
-                StanceController.IsFiringFromStance = true;
                 DeafenController.IncreaseDeafeningShooting();
                 RecoilController(player);
-                PrevShotCount = ShotCount;
+                FiringDuration += Time.deltaTime;
             }
 
-            DeafenShotTimer += Time.deltaTime;
-            WiggleShotTimer += Time.deltaTime;
-            FiringTimer += Time.deltaTime;
-            MovementSpeedShotTimer += Time.deltaTime;
-            ShotCountTimer += Time.deltaTime;
+            DeafenResetTimer += Time.deltaTime;
+            WiggleResetTimer += Time.deltaTime;
+            FiringResetTimer += Time.deltaTime;
+            MovementSpeedResetTimer += Time.deltaTime;
+            ShotCountResetTimer += Time.deltaTime;
 
-            if (FiringTimer >= PluginConfig.ShotResetDelay.Value)
+            if (!isAutoFiring) 
             {
-                FiringTimer = 0f;
+                FiringDuration = 0f;
+            }
+
+            if (FiringResetTimer >= PluginConfig.ShotResetDelay.Value && !isAutoFiring)
+            {
+                FiringResetTimer = 0f;
                 _targetRotation = Vector2.zero;
+                ShotCount = 0;
                 IsFiring = false;
             }
 
-            if (ShotCountTimer >= -1f && !player.ProceduralWeaponAnimation.method_18())//make instant for testing
+        /*    if (ShotCountTimer >= -1f && !isAutoFiring)//make instant for testing
             {
                 ShotCountTimer = 0f;
                 ShotCount = 0;
-                PrevShotCount = 0;
             }
-
-            if (DeafenShotTimer >= PluginConfig.DeafenResetDelay.Value)
+*/
+            if (DeafenResetTimer >= PluginConfig.DeafenResetDelay.Value)
             {
                 IsFiringDeafen = false;
-                DeafenShotTimer = 0f;
+                DeafenResetTimer = 0f;
             }
 
-            if (WiggleShotTimer >= 0.12f)
+            if (WiggleResetTimer >= 0.12f)
             {
-                IsFiringWiggle = false;
-                WiggleShotTimer = 0f;
+                DoFiringWiggle = false;
+                WiggleResetTimer = 0f;
             }
 
-            if (MovementSpeedShotTimer >= 0.5f)
+            if (MovementSpeedResetTimer >= 0.5f)
             {
                 IsFiringMovement = false;
-                MovementSpeedShotTimer = 0f;
+                MovementSpeedResetTimer = 0f;
             }
 
             StanceController.StanceShotTimer();
-            LerpConvergenceMulti();
+            UpdateConvergence(fc, player);
             LerpRecoilRotation(player);
         }
 
@@ -122,7 +149,7 @@ namespace RealismMod
             float hipfireModifier = !StanceController.IsAiming ? 1.1f : 1f;
 
             //this should be a single pre-calculated value ideally
-            float baseAngle = ShootController.BaseTotalRecoilAngle;
+            float baseAngle = WeaponStats.IsVector ? 90f : ShootController.BaseTotalRecoilAngle;
             float angleBonus = StanceController.IsMounting && WeaponStats.BipodIsDeployed ? 7.5f : StanceController.IsMounting ? 5f : StanceController.IsBracing ? 2.5f : 1f;
             float dispersionAngleFactor = !isPistol ? 1f + (-WeaponStats.TotalDispersionDelta * 0.035f) : 1f;
             float totalRecAngle = (baseAngle + angleBonus) * dispersionAngleFactor;
@@ -150,9 +177,6 @@ namespace RealismMod
 
         public static void LerpRecoilRotation(Player player)
         {
-            float stanceFactor = player.IsInPronePose ? 0.75f : 1f;
-            FactoredTotalConvergence = BaseTotalConvergence * stanceFactor * _convergenceMulti;
-
             float fpsFactor = 1f;
             if (PluginConfig.UseFpsRecoilFactor.Value)
             {
@@ -170,46 +194,26 @@ namespace RealismMod
         private static float ShotConvergenceFactor()
         {
             bool isAutoPistol = WeaponStats.IsPistol && WeaponStats.FireMode == Weapon.EFireMode.fullauto;
-            switch (ShotCount)
-            {
-                case 0:
-                    return isAutoPistol ? 1f : 1f;
-                case 1:
-                    return isAutoPistol ? 1.1f : 0.95f;
-                case 2:
-                    return isAutoPistol ? 2.5f : 0.9f;
-                case 3:
-                    return isAutoPistol ? 2.3f : 0.85f;
-                case 4:
-                    return isAutoPistol ? 2.1f : 0.8f;
-                case 5:
-                    return isAutoPistol ? 1.9f : 0.7f;
-                case 6:
-                    return isAutoPistol ? 1.0f : 0.6f;
-                case 7:
-                    return isAutoPistol ? 1.7f : 0.6f;
-                case 8:
-                    return isAutoPistol ? 1.6f : 0.6f;
-                case >= 9:
-                    return isAutoPistol ? 1.5f : 0.6f;
-                default:
-                    return 1;
-            }
+            return isAutoPistol ? _autoPistolConvergenceCurve.Evaluate(FiringDuration) : _convergenceCurve.Evaluate(FiringDuration);
         }
 
-        public static void LerpConvergenceMulti()
+
+        public static void UpdateConvergence(FirearmController fc, Player player)
         {
-            float target = IsFiring ? ShotConvergenceFactor() : 1f;
-            _convergenceMulti = Mathf.Lerp(_convergenceMulti, target, 0.9f);
+            bool isAutoPistol = WeaponStats.IsPistol && WeaponStats.FireMode == Weapon.EFireMode.fullauto;
+            _convergenceMulti = fc.autoFireOn ? ShotConvergenceFactor() : 1f;
+            float stanceFactor = player.IsInPronePose ? 0.75f : 1f;
+            FactoredTotalConvergence = BaseTotalConvergence * stanceFactor * _convergenceMulti;
+            player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = FactoredTotalConvergence;
         }
 
         public static void DoVisualRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation)
         {
             float cantedRecoilSpeed = Mathf.Clamp(BaseTotalConvergence * 0.95f, 9f, 16f);
 
-            if (IsFiringWiggle)
+            if (DoFiringWiggle)
             {
-                float cantedRecoilAmount = FactoredTotalHRecoil / 32f;
+                float cantedRecoilAmount = FactoredTotalHRecoil / 31f;
                 float totalCantedRecoil = Mathf.Lerp(-cantedRecoilAmount, cantedRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed * 1.05f, 1.0f));
                 float additionalRecoilAmount = FactoredTotalDispersion / 16f;
                 float totalSideRecoil = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f)) * 0.05f;
@@ -224,6 +228,24 @@ namespace RealismMod
             currentRecoil = Vector3.Lerp(currentRecoil, targetRecoil, 1f);
             Quaternion recoilQ = Quaternion.Euler(currentRecoil);
             weapRotation *= recoilQ;
+        }
+
+        //update and reset firing state
+        public static void ResetFiringState(ProceduralWeaponAnimation pwa, Weapon weapon, Player player)
+        {
+            ShootController.SetRecoilParams(pwa, weapon, player);
+            ShootController.ShotCount++;
+            ShootController.FiringResetTimer = 0f;
+            ShootController.ShotCountResetTimer = 0f;
+            ShootController.DeafenResetTimer = 0f;
+            ShootController.WiggleResetTimer = 0f;
+            ShootController.MovementSpeedResetTimer = 0f;
+            StanceController.StanceShotTime = 0f;
+            ShootController.IsFiring = true;
+            ShootController.IsFiringDeafen = true;
+            ShootController.DoFiringWiggle = true;
+            ShootController.IsFiringMovement = true;
+            StanceController.IsFiringFromStance = true;
         }
 
         public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon, Player player)
@@ -248,8 +270,6 @@ namespace RealismMod
 
             newRecoil.HandRotationRecoil.NextStablePointDistanceRange.x = 1; //1  (defaults are 0.1, 6)
             newRecoil.HandRotationRecoil.NextStablePointDistanceRange.y = 4; //4
-
-            pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = FactoredTotalConvergence;
         }
     }
 }

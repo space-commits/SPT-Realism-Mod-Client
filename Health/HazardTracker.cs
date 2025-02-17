@@ -177,6 +177,11 @@ namespace RealismMod
                 _hazardRecords = JsonConvert.DeserializeObject<Dictionary<string, HazardRecord>>(json);
             }
 
+            if (_hazardRecords == null)
+            {
+                _hazardRecords = new Dictionary<string, HazardRecord>();
+            }
+
             HazardRecord record = null;
             if (_hazardRecords.TryGetValue(profileId, out record))
             {

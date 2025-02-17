@@ -25,6 +25,13 @@ using System.Threading.Tasks;
 using static RootMotion.FinalIK.GenericPoser;
 using Audio.AmbientSubsystem;
 using static BotsPresets;
+using EFT.UI.BattleTimer;
+using TMPro;
+using System.Text;
+using System.Xml.Linq;
+using static RootMotion.FinalIK.IKSolver;
+using EFT.InputSystem;
+using static RealismMod.DebugGizmos;
 
 namespace RealismMod
 {
@@ -85,6 +92,61 @@ namespace RealismMod
               return true;
           }
       }*/
+
+
+  /*  public class ActivateBossesByWavePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(BotsController).GetMethod(
+                nameof(BotsController.ActivateBotsByWave),
+                BindingFlags.Public | BindingFlags.Instance,
+                null,
+                new Type[] { typeof(BossLocationSpawn) },
+                null);
+        }
+
+        [PatchPrefix]
+        protected static bool PatchPrefix()
+        {
+            
+            return false;
+        }
+
+    }*/
+
+    public class GamePlayerPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GamePlayerOwner).GetMethod("LateUpdate");
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(GamePlayerOwner __instance)
+        {
+            if (GameWorldController.GamePlayerOwner == null) GameWorldController.GamePlayerOwner = __instance;
+        }
+    }
+
+    public class ExfilInitPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ExfiltrationControllerClass).GetMethod("InitAllExfiltrationPoints");
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(ExfiltrationControllerClass __instance)
+        {
+            GameWorldController.ExfilsInLocation.Clear();
+            foreach (var exfil in __instance.ExfiltrationPoints) 
+            {
+                if (PluginConfig.ZoneDebug.Value) Logger.LogWarning($"exfil {exfil.name}, id {exfil.Id}, go {exfil.gameObject.tag}, name {exfil.Settings.Name},  id {exfil.Settings.Id}");
+                GameWorldController.ExfilsInLocation.Add(exfil);
+            }
+        }
+    }
 
     //attempt to prevent stutter when game needlessly generates new bot waves
     public class SpawnUpdatePatch : ModulePatch
@@ -221,13 +283,18 @@ namespace RealismMod
 
         private static void HandleZombies(BossLocationSpawn __instance, ref bool disabledZombieSpawn, bool isZombie)
         {
-            bool disableZombie = !Plugin.ServerConfig.realistic_zombies || (Plugin.ServerConfig.realistic_zombies && !Plugin.ModInfo.DoGasEvent);
-            if (isZombie && disableZombie)
+            bool doZombies = Plugin.ServerConfig.realistic_zombies && Plugin.ModInfo.DoGasEvent;
+            if (isZombie && !doZombies)
             {
                 __instance.BossChance = 0f;
                 __instance.ShallSpawn = false;
                 disabledZombieSpawn = true;
             }
+        }
+
+        private static bool IsForbiddenSpawnZone(string[] zones) 
+        {
+            return _forbiddenZones.Intersect(zones).Any();
         }
         
         [PatchPostfix]
@@ -235,11 +302,11 @@ namespace RealismMod
         {
             GameWorldController.RunEarlyGameCheck();
             bool isZombie = __instance.BossType.ToString().ToLower().Contains("infected");
-            bool disabledZombieSpawn = false;
-            HandleZombies(__instance, ref disabledZombieSpawn, isZombie);
+            bool disableZombieSpawn = false;
+            HandleZombies(__instance, ref disableZombieSpawn, isZombie);
 
             var zones = __instance.BossZone.Split(new char[] { ',' });
-            if (disabledZombieSpawn || _forbiddenZones.Intersect(zones).Any()) return;
+            if (disableZombieSpawn || (IsForbiddenSpawnZone(zones) && !isZombie)) return;
 
             bool increaseSectantChance = __instance.BossType == WildSpawnType.sectantPriest && Plugin.ModInfo.DoGasEvent && !Plugin.ModInfo.DoExtraRaiders;
             bool increaseRaiderChance = __instance.BossType == WildSpawnType.pmcBot && Plugin.ModInfo.DoExtraRaiders;
@@ -295,13 +362,24 @@ namespace RealismMod
         public static bool PatchPrefix(object[] __args, ref ActionsReturnClass __result)
         {
             // __args[1] is a GInterface called "interactive", it represents the component that enables interaction
-            if (__args[1] is InteractableComponent)
+            if (__args[1] is DebugComponent)
             {
-                var customInteractable = __args[1] as InteractableComponent;
+                var debugInteraction = __args[1] as DebugComponent;
 
                 __result = new ActionsReturnClass()
                 {
-                    Actions = customInteractable.Actions
+                    Actions = debugInteraction.DebugActions
+                };
+                return false;
+
+            }
+            if (__args[1] is InteractionZone)
+            {
+                var interactableZone = __args[1] as InteractionZone;
+
+                __result = new ActionsReturnClass()
+                {
+                    Actions = interactableZone.InteractableActions
                 };
                 return false;
 
@@ -516,7 +594,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.2f, minDelayBeforePlayback: 60f); //spooky short playback
-                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.38f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
+                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.2f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
                 }
 
                 if (GameWorldController.DoMapRads)
@@ -531,6 +609,7 @@ namespace RealismMod
                 if (ZoneSpawner.ShouldSpawnDynamicZones()) ZoneSpawner.CreateZones(ZoneData.RadAssetZoneLocations);
                 ZoneSpawner.CreateZones(ZoneData.SafeZoneLocations);
                 ZoneSpawner.CreateZones(ZoneData.QuestZoneLocations);
+                ZoneSpawner.CreateZones(ZoneData.InteractionLocations);
 
                 //hazardtracker 
                 HazardTracker.GetHazardValues(ProfileData.CurrentProfileId);
@@ -553,18 +632,14 @@ namespace RealismMod
         {
             if (Plugin.ServerConfig.enable_hazard_zones)
             {
-                var sessionData = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession();
-                ProfileData.PMCLevel = sessionData.Profile.Info.Level;
+                var sessionData = Singleton<ClientApplication<ISession>>.Instance?.GetClientBackEndSession();
+                if (sessionData?.Profile?.Info != null) ProfileData.PMCLevel = sessionData.Profile.Info.Level;      
                 HazardTracker.ResetTracker();
                 HazardTracker.UpdateHazardValues(ProfileData.CurrentProfileId);
                 HazardTracker.SaveHazardValues();
                 HazardTracker.GetHazardValues(ProfileData.PMCProfileId); //update to use PMC id and not potentially scav id
-                GameWorldController.ClearGameObjectLists();   
             }
-
-            GameWorldController.GameStarted = false;
-            GameWorldController.RanEarliestGameCheck = false;
-            GameWorldController.TimeInRaid = 0f;
+            GameWorldController.Reset();
         }
     }
 }

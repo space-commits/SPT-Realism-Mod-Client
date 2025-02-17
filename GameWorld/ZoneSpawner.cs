@@ -3,9 +3,11 @@ using EFT;
 using EFT.Quests;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
+using static RootMotion.FinalIK.IKSolver;
 
 namespace RealismMod
 {
@@ -84,10 +86,11 @@ namespace RealismMod
                 if (collection.ZoneType == EZoneType.Radiation || collection.ZoneType == EZoneType.RadAssets) CreateZone<RadiationZone>(zone, collection.ZoneType);
                 if (collection.ZoneType == EZoneType.SafeZone) CreateZone<LabsSafeZone>(zone, collection.ZoneType);
                 if (collection.ZoneType == EZoneType.Quest) CreateZone<QuestZone>(zone, collection.ZoneType);
+                if (collection.ZoneType == EZoneType.Interactable) CreateZone<InteractionZone>(zone, collection.ZoneType);
             }
         }
 
-        private static bool ShouldSpawnZone(HazardLocation hazardLocation, EZoneType zoneType) 
+        private static bool ShouldSpawnZone(HazardGroup hazardLocation, EZoneType zoneType) 
         {
             if (PluginConfig.ZoneDebug.Value) return true;
 
@@ -134,83 +137,143 @@ namespace RealismMod
             return !isDisabled || isEnabled;
         }
 
-        public static void CreateZone<T>(HazardLocation hazardLocation, EZoneType zoneType) where T : MonoBehaviour, IZone
+        public static void AddGasVisual(Zone subZone, GameObject hazardZone, EZoneType zoneType, Vector3 position, Vector3 rotation, Vector3 size) 
+        {
+            GameObject fogAsset = Assets.FogBundle.LoadAsset<GameObject>("Assets/Fog/Gray Volume Fog.prefab");
+            GameObject spawnedFog = UnityEngine.Object.Instantiate(fogAsset, position, Quaternion.Euler(rotation));
+            spawnedFog.transform.SetParent(hazardZone.transform, true);
+            var particleSystems = spawnedFog.GetComponentsInChildren<ParticleSystem>();
+            spawnedFog.name = subZone.Name + "_particle_system";
+
+            foreach (var ps in particleSystems)
+            {
+                FogScript fogComponent = ps.gameObject.AddComponent<FogScript>();
+                ps.gameObject.transform.rotation = Quaternion.Euler(rotation);
+                ps.gameObject.transform.position = position;
+                ParticleSystem.ShapeModule shapeModule = ps.shape;
+                fogComponent.Scale = size * subZone.VisZoneSizeMulti;
+                fogComponent.UsePhysics = subZone.VisUsePhysics;
+                fogComponent.SpeedModi = subZone.VisSpeedModi;
+                fogComponent.OpacityModi = subZone.VisOpacityModi;
+                fogComponent.ParticleRate = subZone.VisParticleRate;
+                fogComponent.ParticleSize = new ParticleSystem.MinMaxCurve(4f, 7f);
+            }
+        }
+
+        private static void SetUpSubZone<T>(HazardGroup hazardLocation, Zone subZone, GameObject zoneGroup, EZoneType zoneType, bool isBufferZone = false) where T : MonoBehaviour, IZone
+        {
+            string zoneName = subZone.Name;
+            Vector3 position = new Vector3(subZone.Position.X, subZone.Position.Y, subZone.Position.Z);
+            Vector3 rotation = new Vector3(subZone.Rotation.X, subZone.Rotation.Y, subZone.Rotation.Z);
+            Vector3 size = new Vector3(subZone.Size.X, subZone.Size.Y, subZone.Size.Z);
+            bool isGasZone = zoneType == EZoneType.Gas || zoneType == EZoneType.GasAssets;
+
+            GameObject hazardZone = new GameObject(zoneName);
+            T hazard = hazardZone.AddComponent<T>();
+
+            hazard.UsesDistanceFalloff = subZone.UsesDistanceFalloff;
+
+            float strengthModifier = 1f;
+            if (isGasZone && (!Plugin.FikaPresent && !PluginConfig.ZoneDebug.Value) && GameWorldController.CurrentMap != "laboratory")
+            {
+                strengthModifier = UnityEngine.Random.Range(0.9f, 1.15f);
+            }
+            hazard.ZoneStrength = subZone.Strength * strengthModifier;
+            hazard.IsAnalysable = subZone?.Analysable == null ? false : CheckIsAnalysable(subZone.Analysable);
+
+            hazardZone.transform.position = position;
+            hazardZone.transform.rotation = Quaternion.Euler(rotation);
+
+            EFT.Interactive.TriggerWithId trigger = hazardZone.AddComponent<EFT.Interactive.TriggerWithId>();
+            trigger.SetId(zoneName);
+
+            string questZoneName = hazardLocation.Assets != null && zoneName.Contains("dynamicquest") ? "dynamic" + GameWorldController.CurrentMap : zoneName;
+
+            EFT.Interactive.ExperienceTrigger questTrigger = hazardZone.AddComponent<EFT.Interactive.ExperienceTrigger>();
+            questTrigger.SetId(questZoneName);
+
+            EFT.Interactive.PlaceItemTrigger placeIemTrigger = hazardZone.AddComponent<EFT.Interactive.PlaceItemTrigger>();
+            placeIemTrigger.SetId(questZoneName);
+
+            hazardZone.layer = LayerMask.NameToLayer("Triggers");
+            hazardZone.name = zoneName;
+
+            BoxCollider boxCollider = hazardZone.AddComponent<BoxCollider>();
+            boxCollider.isTrigger = true;
+            boxCollider.size = size;
+
+            //if gas event or rad event, all bots have gas mask, but asset zone assets do not block bot paths so they get stuck
+            bool ignoreNav = (GameWorldController.DoMapGasEvent || GameWorldController.DoMapRads) && hazard.ZoneType != EZoneType.GasAssets && hazard.ZoneType != EZoneType.RadAssets;
+            hazard.BlocksNav = ignoreNav ? false : subZone.BlockNav;
+
+            if (hazard.BlocksNav)
+            {
+                var navMeshObstacle = hazardZone.AddComponent<NavMeshObstacle>();
+                navMeshObstacle.carving = true;
+                navMeshObstacle.center = boxCollider.center;
+                navMeshObstacle.size = boxCollider.size;
+            }
+
+            if (zoneType == EZoneType.Interactable) 
+            {
+                hazard.InteractableData = subZone.Interactable;
+            }
+
+            if (!isBufferZone && subZone.UseVisual && isGasZone && PluginConfig.ShowGasEffects.Value) AddGasVisual(subZone, hazardZone, zoneType, position, rotation, size);
+
+            hazardZone.transform.SetParent(zoneGroup.transform, true);
+
+            // visual representation for debugging
+            if (PluginConfig.ZoneDebug.Value && !isBufferZone)
+            {
+                GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                visualRepresentation.name = zoneName + "Visual";
+                visualRepresentation.transform.parent = hazardZone.transform;
+                visualRepresentation.transform.localScale = size;
+                visualRepresentation.transform.localPosition = boxCollider.center;
+                visualRepresentation.transform.rotation = boxCollider.transform.rotation;
+                visualRepresentation.GetComponent<Renderer>().material.color = hazard.ZoneType == EZoneType.Radiation || hazard.ZoneType == EZoneType.RadAssets ? new UnityEngine.Color(0f, 1f, 0f, 0.15f) : new UnityEngine.Color(1f, 0f, 0f, 0.15f);
+                UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
+                MoveDaCube.AddComponentToExistingGO(visualRepresentation, zoneName);
+            }
+        }
+
+        //add low-strength buffer zone around subzone to warn player
+        private static void AddBufferZone<T>(HazardGroup hazardLocation, Zone subZone, GameObject zoneGroup, EZoneType zoneType) where T : MonoBehaviour, IZone
+        {
+            Zone bufferZone = new Zone();
+            bufferZone.Name = subZone.Name + "_buffeZone";
+            bufferZone.UsesDistanceFalloff = false;
+            bufferZone.Strength = 10;
+            bufferZone.BlockNav = false;
+            bufferZone.Position = subZone.Position;
+            bufferZone.Rotation = subZone.Rotation;
+            Vector3 size = new Vector3(subZone.Size.X, subZone.Size.Y, subZone.Size.Z) * 1.4f;
+            bufferZone.Size = new Size { X = size.x, Y = size.y, Z = size.z };
+            SetUpSubZone<T>(hazardLocation, bufferZone, zoneGroup, zoneType, true);
+        }
+
+        public static void CreateZone<T>(HazardGroup hazardLocation, EZoneType zoneType) where T : MonoBehaviour, IZone
         {
             if (hazardLocation.IsTriggered || !ShouldSpawnZone(hazardLocation, zoneType)) return;
             HandleZoneAssets(hazardLocation);
             HandleZoneLoot(hazardLocation);
 
+            GameObject hazardGroupObject = new GameObject(zoneType + Utils.GenId());
             foreach (var subZone in hazardLocation.Zones)
             {
-                string zoneName = subZone.Name;
-                Vector3 position = new Vector3(subZone.Position.X, subZone.Position.Y, subZone.Position.Z);
-                Vector3 rotation = new Vector3(subZone.Rotation.X, subZone.Rotation.Y, subZone.Rotation.Z);
-                Vector3 size = new Vector3(subZone.Size.X, subZone.Size.Y, subZone.Size.Z);
-                Vector3 scale = size;
+                SetUpSubZone<T>(hazardLocation, subZone, hazardGroupObject, zoneType);
+                if(subZone.UseVisual && (zoneType == EZoneType.Gas || zoneType == EZoneType.GasAssets)) AddBufferZone<T>(hazardLocation, subZone, hazardGroupObject, zoneType);
+            }
 
-                GameObject hazardZone = new GameObject(zoneName);
-                T hazard = hazardZone.AddComponent<T>();
-
-                hazard.UsesDistanceFalloff = subZone.UsesDistanceFalloff;
- 
-                float strengthModifier = 1f;
-                if ((hazard.ZoneType == EZoneType.Gas || hazard.ZoneType == EZoneType.GasAssets) && (!Plugin.FikaPresent && !PluginConfig.ZoneDebug.Value) && GameWorldController.CurrentMap != "laboratory")
-                {
-                    strengthModifier = UnityEngine.Random.Range(0.9f, 1.15f);
-                }
-                hazard.ZoneStrengthModifier = subZone.Strength * strengthModifier;
-                hazard.IsAnalysable = subZone?.Analysable == null ? false : CheckIsAnalysable(subZone.Analysable);  
-
-                hazardZone.transform.position = position;
-                hazardZone.transform.rotation = Quaternion.Euler(rotation);
-
-                EFT.Interactive.TriggerWithId trigger = hazardZone.AddComponent<EFT.Interactive.TriggerWithId>();
-                trigger.SetId(zoneName);
-
-                string questZoneName = hazardLocation.Assets != null && zoneName.Contains("dynamicquest") ? "dynamic" + GameWorldController.CurrentMap : zoneName;
-
-                EFT.Interactive.ExperienceTrigger questTrigger = hazardZone.AddComponent<EFT.Interactive.ExperienceTrigger>();
-                questTrigger.SetId(questZoneName);
-
-                EFT.Interactive.PlaceItemTrigger placeIemTrigger = hazardZone.AddComponent<EFT.Interactive.PlaceItemTrigger>();
-                placeIemTrigger.SetId(questZoneName);
-
-                hazardZone.layer = LayerMask.NameToLayer("Triggers");
-                hazardZone.name = zoneName;
-
-                BoxCollider boxCollider = hazardZone.AddComponent<BoxCollider>();
-                boxCollider.isTrigger = true;
-                boxCollider.size = size;
-
-                //if gas event or rad event, all bots have gas mask, but asset zone assets do not block bot paths so they get stuck
-                bool ignoreNav = (GameWorldController.DoMapGasEvent || GameWorldController.DoMapRads) && hazard.ZoneType != EZoneType.GasAssets && hazard.ZoneType != EZoneType.RadAssets;
-                hazard.BlocksNav = ignoreNav ? false : subZone.BlockNav;
-
-                if (hazard.BlocksNav)
-                {
-                    var navMeshObstacle = hazardZone.AddComponent<NavMeshObstacle>();
-                    navMeshObstacle.carving = true;
-                    navMeshObstacle.center = boxCollider.center;
-                    navMeshObstacle.size = boxCollider.size;
-                }
-
-                // visual representation for debugging
-                if (PluginConfig.ZoneDebug.Value)
-                {
-                    GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    visualRepresentation.name = zoneName + "Visual";
-                    visualRepresentation.transform.parent = hazardZone.transform;
-                    visualRepresentation.transform.localScale = size;
-                    visualRepresentation.transform.localPosition = boxCollider.center;
-                    visualRepresentation.transform.rotation = boxCollider.transform.rotation;
-                    visualRepresentation.GetComponent<Renderer>().material.color = hazard.ZoneType == EZoneType.Radiation || hazard.ZoneType == EZoneType.RadAssets ? new Color(0f, 1f, 0f, 0.15f) : new Color(1f, 0f, 0f, 0.15f);
-                    UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
-                    MoveDaCube.AddComponentToExistingGO(visualRepresentation, zoneName);
-                }
+            if (zoneType == EZoneType.Interactable) 
+            {
+                var group = hazardGroupObject.AddComponent<InteractableGroupComponent>();
+                group.GroupData = hazardLocation.InteractableGroup;
             }
         }
 
-        public static void HandleZoneAssets(HazardLocation zone) 
+        public static void HandleZoneAssets(HazardGroup zone) 
         {
             if (zone.Assets == null) return;
             foreach (var asset in zone.Assets) 
@@ -223,18 +286,18 @@ namespace RealismMod
                 }
 
                 Vector3 position = new Vector3(asset.Position.X, asset.Position.Y, asset.Position.Z);
-                Vector3 rotaiton = new Vector3(asset.Rotation.X, asset.Rotation.Y, asset.Rotation.Z);
+                Vector3 rotation = new Vector3(asset.Rotation.X, asset.Rotation.Y, asset.Rotation.Z);
 
-                GameObject containerPrefab = GetAndLoadAsset(asset.AssetName);
-                if (containerPrefab == null) 
+                GameObject assetPrefab = GetAndLoadAsset(asset.AssetName);
+                if (assetPrefab == null) 
                 {
                     Utils.Logger.LogError("Realism Mod: Error Loading Asset From Bundle For Asset: " + asset.AssetName);
                 }
-                GameObject spawnedContainer = UnityEngine.Object.Instantiate(containerPrefab, position, Quaternion.Euler(rotaiton));
+                GameObject spawnedAsset = UnityEngine.Object.Instantiate(assetPrefab, position, Quaternion.Euler(rotation));
             }
         }
 
-        public static void HandleZoneLoot(HazardLocation zone)
+        public static void HandleZoneLoot(HazardGroup zone)
         {
             if (zone.Loot == null || Plugin.FikaPresent) return;
 
@@ -310,9 +373,9 @@ namespace RealismMod
         private static void LoadLooseLoot(Vector3 postion, Vector3 rotation, string tempalteId)
         {
             Quaternion quat = Quaternion.Euler(rotation);
-#pragma warning disable CS4014 
+#pragma warning disable CS4014
             Utils.LoadLoot(postion, quat, tempalteId); //yes, I know this isn't running asnyc
-#pragma warning restore CS4014 
+#pragma warning restore CS4014
         }
 
         public static void DebugZones()
@@ -342,7 +405,7 @@ namespace RealismMod
                 visualRepresentation.transform.localScale = boxCollider.size;
                 visualRepresentation.transform.localPosition = boxCollider.center;
                 visualRepresentation.transform.rotation = boxCollider.transform.rotation;
-                visualRepresentation.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.25f);
+                visualRepresentation.GetComponent<Renderer>().material.color = new UnityEngine.Color(1f, 1f, 1f, 0.25f);
                 UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
 
                 Utils.Logger.LogWarning("player pos " + Utils.GetYourPlayer().Transform.position);

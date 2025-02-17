@@ -71,6 +71,8 @@ namespace RealismMod
         public static float SprintTotalBreathIntensity = 1f;
         public static float SprintHipfirePenalty = 1f;
 
+        public static bool IsInInventory = false;
+
         public static float ADSSprintMulti = 1f;
 
         public static float WeaponSkillErgo = 0f;

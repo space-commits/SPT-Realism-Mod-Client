@@ -216,6 +216,8 @@ namespace RealismMod
 
         public static float CurrentVisualRecoilMulti = 1f;
 
+        public static bool IsVector = false;
+
         public static Dictionary<string, Vector2> ZeroOffsetDict = new Dictionary<string, Vector2>();
         public static Vector2 ZeroRecoilOffset = Vector2.zero;
         public static float ScopeAccuracyFactor = 0f;

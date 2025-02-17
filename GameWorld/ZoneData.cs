@@ -17,7 +17,29 @@ namespace RealismMod
         RadAssets,
         GasAssets,
         SafeZone,
-        Quest
+        Quest,
+        Interactable
+    }
+
+    public enum EIneractableType
+    {
+        None,
+        Valve,
+        Button
+    }
+
+    public enum EIneractableAction
+    {
+        None,
+        On,
+        Off
+    }
+
+    public enum EInteractableState
+    {
+        None,
+        On,
+        Off
     }
 
     public static class Assets
@@ -41,6 +63,8 @@ namespace RealismMod
         public static AssetBundle LabsBarrelPileBundle { get; set; }
         public static AssetBundle RadSign1 { get; set; }
         public static AssetBundle TerraGroupFence { get; set; }
+        public static AssetBundle FogBundle { get; set; }
+        public static AssetBundle GasBundle { get; set; }
         public static AssetBundle ExplosionBundle { get; set; }
     }
 
@@ -245,6 +269,103 @@ namespace RealismMod
         };
     }
 
+    public interface ZoneCollection
+    {
+        public EZoneType ZoneType { get; set; }
+        public List<HazardGroup> Factory { get; set; }
+        public List<HazardGroup> Customs { get; set; }
+        public List<HazardGroup> GZ { get; set; }
+        public List<HazardGroup> Shoreline { get; set; }
+        public List<HazardGroup> Streets { get; set; }
+        public List<HazardGroup> Labs { get; set; }
+        public List<HazardGroup> Interchange { get; set; }
+        public List<HazardGroup> Lighthouse { get; set; }
+        public List<HazardGroup> Woods { get; set; }
+        public List<HazardGroup> Reserve { get; set; }
+    }
+
+    public class HazardGroup
+    {
+        public bool IsTriggered { get; set; }
+        public float SpawnChance { get; set; }
+        public string QuestToEnable { get; set; }
+        public string QuestToBlock { get; set; }
+        public InteractableGroup InteractableGroup { get; set; }
+        public List<Zone> Zones { get; set; }
+        public List<Asset> Assets { get; set; }
+        public List<Loot> Loot { get; set; }
+        public List<string> AudioFiles { get; set; }
+    }
+
+    public class Zone
+    {
+        public string Name { get; set; }
+        public float Strength { get; set; }
+        public bool UsesDistanceFalloff { get; set; }
+        public bool BlockNav { get; set; }
+        public Analysable Analysable { get; set; }
+        public InteractableSubZone Interactable { get; set; }
+        public string AudioFile { get; set; }
+        public Position Position { get; set; }
+        public Rotation Rotation { get; set; }
+        public Size Size { get; set; }
+        public bool UseVisual { get; set; } = true;
+        public float VisParticleRate { get; set; } = 40f;
+        public float VisOpacityModi { get; set; } = 1f;
+        public float VisSpeedModi { get; set; } = 1f;
+        public float VisZoneSizeMulti { get; set; } = 0.85f;
+        public bool VisUsePhysics { get; set; } = false;
+    }
+
+    public class Asset
+    {
+        public string AssetName { get; set; }
+        public string Type { get; set; }
+        public int Odds { get; set; }
+        public bool RandomizeRotation { get; set; }
+        public Position Position { get; set; }
+        public Rotation Rotation { get; set; }
+    }
+
+    public class Loot
+    {
+        public string Type { get; set; }
+        public Dictionary<string, int> LootOverride { get; set; }
+        public int Odds { get; set; }
+        public bool RandomizeRotation { get; set; }
+        public Position Position { get; set; }
+        public Rotation Rotation { get; set; }
+    }
+
+    public class Analysable 
+    {
+        public bool NoRequirement { get; set; }
+        public string[] EnabledBy { get; set; }
+        public string[] DisabledBy { get; set; }
+    }
+
+    public class InteractableGroup
+    {
+        public string[] EnabledBy { get; set; }
+        public string[] DisabledBy { get; set; }
+        public string[] ExfilsToBlock { get; set; }
+    }
+
+    public class InteractableSubZone
+    {
+        public EIneractableType InteractionType { get; set; }
+        public int CompletionStep { get; set; } = 0; //what step this interactable is if order of completion is needed
+        public EInteractableState StartingState { get; set; } = EInteractableState.On;
+        public EInteractableState DesiredEndState { get; set; } = EInteractableState.Off;
+        public string TargeObject { get; set; }
+        public EIneractableAction[] InteractionAction { get; set; }
+        public float PartialCompletionModifier { get; set; } //modifer for when the primary interactable is triggered
+        public float FullCompletionModifer { get; set; } = 0f;
+        public string[] ZoneNames { get; set; }
+        public bool Randomize { get; set; }
+
+    }
+
     public class Position
     {
         public float X { get; set; }
@@ -266,106 +387,39 @@ namespace RealismMod
         public float Z { get; set; }
     }
 
-    public class Asset
-    {
-        public string AssetName { get; set; }
-        public string Type { get; set; }
-        public int Odds { get; set; }
-        public bool RandomizeRotation { get; set; }
-        public Position Position { get; set; }
-        public Rotation Rotation { get; set; }
-    }
-
-    public class Analysable 
-    {
-        public bool NoRequirement { get; set; }
-        public string[] EnabledBy { get; set; }
-        public string[] DisabledBy { get; set; }
-    }
-
-    public class Zone
-    {
-        public string Name { get; set; }
-        public float Strength { get; set; }
-        public bool UsesDistanceFalloff { get; set; }
-        public bool BlockNav { get; set; }
-        public Analysable Analysable { get; set; }
-        public string AudioFile { get; set; }
-        public Position Position { get; set; }
-        public Rotation Rotation { get; set; }
-        public Size Size { get; set; }
-    }
-
-    public class Loot 
-    {
-        public string Type { get; set; }
-        public Dictionary<string, int> LootOverride { get; set; }
-        public int Odds { get; set; }
-        public bool RandomizeRotation { get; set; }
-        public Position Position { get; set; }
-        public Rotation Rotation { get; set; }
-    }
-
-    public class HazardLocation
-    {
-        public bool IsTriggered { get; set; }
-        public float SpawnChance { get; set; }
-        public string QuestToEnable { get; set; }
-        public string QuestToBlock { get; set; }
-        public List<Zone> Zones { get; set; }
-        public List<Asset> Assets { get; set; }
-        public List<Loot> Loot { get; set; }
-        public List<string> AudioFiles { get; set; }
-    }
-
-    public interface ZoneCollection 
-    {
-        public EZoneType ZoneType { get; set; }
-        public List<HazardLocation> Factory { get; set; }
-        public List<HazardLocation> Customs { get; set; }
-        public List<HazardLocation> GZ { get; set; }
-        public List<HazardLocation> Shoreline { get; set; }
-        public List<HazardLocation> Streets { get; set; }
-        public List<HazardLocation> Labs { get; set; }
-        public List<HazardLocation> Interchange { get; set; }
-        public List<HazardLocation> Lighthouse { get; set; }
-        public List<HazardLocation> Woods { get; set; }
-        public List<HazardLocation> Reserve { get; set; }
-    }
-
     public class UserZones : ZoneCollection
     {
         public EZoneType ZoneType { get; set; } = EZoneType.SafeZone;
 
         [JsonProperty("FactoryUserZones")]
-        public List<HazardLocation> Factory { get; set; }
+        public List<HazardGroup> Factory { get; set; }
 
         [JsonProperty("CustomsUserZones")]
-        public List<HazardLocation> Customs { get; set; }
+        public List<HazardGroup> Customs { get; set; }
 
         [JsonProperty("GZUserZones")]
-        public List<HazardLocation> GZ { get; set; }
+        public List<HazardGroup> GZ { get; set; }
 
         [JsonProperty("ShorelineUserZones")]
-        public List<HazardLocation> Shoreline { get; set; }
+        public List<HazardGroup> Shoreline { get; set; }
 
         [JsonProperty("StreetsUserZones")]
-        public List<HazardLocation> Streets { get; set; }
+        public List<HazardGroup> Streets { get; set; }
 
         [JsonProperty("LabsUserZones")]
-        public List<HazardLocation> Labs { get; set; }
+        public List<HazardGroup> Labs { get; set; }
 
         [JsonProperty("InterchangeUserZone")]
-        public List<HazardLocation> Interchange { get; set; }
+        public List<HazardGroup> Interchange { get; set; }
 
         [JsonProperty("LighthouseUserZones")]
-        public List<HazardLocation> Lighthouse { get; set; }
+        public List<HazardGroup> Lighthouse { get; set; }
 
         [JsonProperty("WoodsUserZones")]
-        public List<HazardLocation> Woods { get; set; }
+        public List<HazardGroup> Woods { get; set; }
 
         [JsonProperty("ReserveUserZones")]
-        public List<HazardLocation> Reserve { get; set; }
+        public List<HazardGroup> Reserve { get; set; }
     }
 
     public class SafeZones : ZoneCollection
@@ -373,34 +427,34 @@ namespace RealismMod
         public EZoneType ZoneType { get; set; } = EZoneType.SafeZone;
 
         [JsonProperty("FactorySafeZones")]
-        public List<HazardLocation> Factory { get; set; }
+        public List<HazardGroup> Factory { get; set; }
 
         [JsonProperty("CustomsSafeZones")]
-        public List<HazardLocation> Customs { get; set; }
+        public List<HazardGroup> Customs { get; set; }
 
         [JsonProperty("GZSafeZones")]
-        public List<HazardLocation> GZ { get; set; }
+        public List<HazardGroup> GZ { get; set; }
 
         [JsonProperty("ShorelineSafeZones")]
-        public List<HazardLocation> Shoreline { get; set; }
+        public List<HazardGroup> Shoreline { get; set; }
 
         [JsonProperty("StreetsSafeZones")]
-        public List<HazardLocation> Streets { get; set; }
+        public List<HazardGroup> Streets { get; set; }
 
         [JsonProperty("LabsSafeZones")]
-        public List<HazardLocation> Labs { get; set; }
+        public List<HazardGroup> Labs { get; set; }
 
         [JsonProperty("InterchangeSafeZone")]
-        public List<HazardLocation> Interchange { get; set; }
+        public List<HazardGroup> Interchange { get; set; }
 
         [JsonProperty("LighthouseSafeZones")]
-        public List<HazardLocation> Lighthouse { get; set; }
+        public List<HazardGroup> Lighthouse { get; set; }
 
         [JsonProperty("WoodsSafeZones")]
-        public List<HazardLocation> Woods { get; set; }
+        public List<HazardGroup> Woods { get; set; }
 
         [JsonProperty("ReserveSafeZones")]
-        public List<HazardLocation> Reserve { get; set; }
+        public List<HazardGroup> Reserve { get; set; }
     }
 
     public class RadAssetZones : ZoneCollection
@@ -408,34 +462,34 @@ namespace RealismMod
         public EZoneType ZoneType { get; set; } = EZoneType.RadAssets;
 
         [JsonProperty("FactoryAssetZones")]
-        public List<HazardLocation> Factory { get; set; }
+        public List<HazardGroup> Factory { get; set; }
 
         [JsonProperty("CustomsAssetZones")]
-        public List<HazardLocation> Customs { get; set; }
+        public List<HazardGroup> Customs { get; set; }
 
         [JsonProperty("GZAssetZones")]
-        public List<HazardLocation> GZ { get; set; }
+        public List<HazardGroup> GZ { get; set; }
 
         [JsonProperty("ShorelineAssetZones")]
-        public List<HazardLocation> Shoreline { get; set; }
+        public List<HazardGroup> Shoreline { get; set; }
 
         [JsonProperty("StreetsAssetZones")]
-        public List<HazardLocation> Streets { get; set; }
+        public List<HazardGroup> Streets { get; set; }
 
         [JsonProperty("LabsAssetZones")]
-        public List<HazardLocation> Labs { get; set; }
+        public List<HazardGroup> Labs { get; set; }
 
         [JsonProperty("InterchangeAssetZone")]
-        public List<HazardLocation> Interchange { get; set; }
+        public List<HazardGroup> Interchange { get; set; }
 
         [JsonProperty("LighthouseAssetZones")]
-        public List<HazardLocation> Lighthouse { get; set; }
+        public List<HazardGroup> Lighthouse { get; set; }
 
         [JsonProperty("WoodsAssetZones")]
-        public List<HazardLocation> Woods { get; set; }
+        public List<HazardGroup> Woods { get; set; }
 
         [JsonProperty("ReserveAssetZones")]
-        public List<HazardLocation> Reserve { get; set; }
+        public List<HazardGroup> Reserve { get; set; }
     }
 
     public class RadZones: ZoneCollection 
@@ -443,34 +497,34 @@ namespace RealismMod
         public EZoneType ZoneType { get; set; } = EZoneType.Radiation;
 
         [JsonProperty("FactoryRadZones")]
-        public List<HazardLocation> Factory { get; set; }
+        public List<HazardGroup> Factory { get; set; }
 
         [JsonProperty("CustomsRadZones")]
-        public List<HazardLocation> Customs { get; set; }
+        public List<HazardGroup> Customs { get; set; }
 
         [JsonProperty("GZRadZones")]
-        public List<HazardLocation> GZ { get; set; }
+        public List<HazardGroup> GZ { get; set; }
 
         [JsonProperty("ShorelineRadZones")]
-        public List<HazardLocation> Shoreline { get; set; }
+        public List<HazardGroup> Shoreline { get; set; }
 
         [JsonProperty("StreetsRadZones")]
-        public List<HazardLocation> Streets { get; set; }
+        public List<HazardGroup> Streets { get; set; }
 
         [JsonProperty("LabsRadZones")]
-        public List<HazardLocation> Labs { get; set; }
+        public List<HazardGroup> Labs { get; set; }
 
         [JsonProperty("InterchangeRadZones")]
-        public List<HazardLocation> Interchange { get; set; }
+        public List<HazardGroup> Interchange { get; set; }
 
         [JsonProperty("LighthouseRadZones")]
-        public List<HazardLocation> Lighthouse { get; set; }
+        public List<HazardGroup> Lighthouse { get; set; }
 
         [JsonProperty("WoodsRadZones")]
-        public List<HazardLocation> Woods { get; set; }
+        public List<HazardGroup> Woods { get; set; }
 
         [JsonProperty("ReserveRadZones")]
-        public List<HazardLocation> Reserve { get; set; }
+        public List<HazardGroup> Reserve { get; set; }
     }
 
     public class GasAssetZones : ZoneCollection
@@ -478,34 +532,34 @@ namespace RealismMod
         public EZoneType ZoneType { get; set; } = EZoneType.GasAssets;
 
         [JsonProperty("FactoryAssetZones")]
-        public List<HazardLocation> Factory { get; set; }
+        public List<HazardGroup> Factory { get; set; }
 
         [JsonProperty("CustomsAssetZones")]
-        public List<HazardLocation> Customs { get; set; }
+        public List<HazardGroup> Customs { get; set; }
 
         [JsonProperty("GZAssetZones")]
-        public List<HazardLocation> GZ { get; set; }
+        public List<HazardGroup> GZ { get; set; }
 
         [JsonProperty("ShorelineAssetZones")]
-        public List<HazardLocation> Shoreline { get; set; }
+        public List<HazardGroup> Shoreline { get; set; }
 
         [JsonProperty("StreetsAssetZones")]
-        public List<HazardLocation> Streets { get; set; }
+        public List<HazardGroup> Streets { get; set; }
 
         [JsonProperty("LabsAssetZones")]
-        public List<HazardLocation> Labs { get; set; }
+        public List<HazardGroup> Labs { get; set; }
 
         [JsonProperty("InterchangeAssetZone")]
-        public List<HazardLocation> Interchange { get; set; }
+        public List<HazardGroup> Interchange { get; set; }
 
         [JsonProperty("LighthouseAssetZones")]
-        public List<HazardLocation> Lighthouse { get; set; }
+        public List<HazardGroup> Lighthouse { get; set; }
 
         [JsonProperty("WoodsAssetZones")]
-        public List<HazardLocation> Woods { get; set; }
+        public List<HazardGroup> Woods { get; set; }
 
         [JsonProperty("ReserveAssetZones")]
-        public List<HazardLocation> Reserve { get; set; }
+        public List<HazardGroup> Reserve { get; set; }
     }
 
     public class GasZones: ZoneCollection
@@ -513,34 +567,34 @@ namespace RealismMod
         public EZoneType ZoneType { get; set; } = EZoneType.Gas;
 
         [JsonProperty("FactoryGasZones")]
-        public List<HazardLocation> Factory { get; set; }
+        public List<HazardGroup> Factory { get; set; }
 
         [JsonProperty("CustomsGasZones")]
-        public List<HazardLocation> Customs { get; set; }
+        public List<HazardGroup> Customs { get; set; }
 
         [JsonProperty("GZGasZones")]
-        public List<HazardLocation> GZ { get; set; }
+        public List<HazardGroup> GZ { get; set; }
 
         [JsonProperty("ShorelineGasZones")]
-        public List<HazardLocation> Shoreline { get; set; }
+        public List<HazardGroup> Shoreline { get; set; }
 
         [JsonProperty("StreetsGasZones")]
-        public List<HazardLocation> Streets { get; set; }
+        public List<HazardGroup> Streets { get; set; }
 
         [JsonProperty("LabsGasZones")]
-        public List<HazardLocation> Labs { get; set; }
+        public List<HazardGroup> Labs { get; set; }
 
         [JsonProperty("InterchangeGas")]
-        public List<HazardLocation> Interchange { get; set; }
+        public List<HazardGroup> Interchange { get; set; }
 
         [JsonProperty("LighthouseGasZones")]
-        public List<HazardLocation> Lighthouse { get; set; }
+        public List<HazardGroup> Lighthouse { get; set; }
 
         [JsonProperty("WoodsGasZones")]
-        public List<HazardLocation> Woods { get; set; }
+        public List<HazardGroup> Woods { get; set; }
 
         [JsonProperty("ReserveGasZones")]
-        public List<HazardLocation> Reserve{ get; set; }
+        public List<HazardGroup> Reserve{ get; set; }
     }
 
     public class QuestZones : ZoneCollection
@@ -548,34 +602,69 @@ namespace RealismMod
         public EZoneType ZoneType { get; set; } = EZoneType.Quest;
 
         [JsonProperty("FactoryQuestZones")]
-        public List<HazardLocation> Factory { get; set; }
+        public List<HazardGroup> Factory { get; set; }
 
         [JsonProperty("CustomsQuestZones")]
-        public List<HazardLocation> Customs { get; set; }
+        public List<HazardGroup> Customs { get; set; }
 
         [JsonProperty("GZQuestZones")]
-        public List<HazardLocation> GZ { get; set; }
+        public List<HazardGroup> GZ { get; set; }
 
         [JsonProperty("ShorelineQuestZones")]
-        public List<HazardLocation> Shoreline { get; set; }
+        public List<HazardGroup> Shoreline { get; set; }
 
         [JsonProperty("StreetsQuestZones")]
-        public List<HazardLocation> Streets { get; set; }
+        public List<HazardGroup> Streets { get; set; }
 
         [JsonProperty("LabsQuestZones")]
-        public List<HazardLocation> Labs { get; set; }
+        public List<HazardGroup> Labs { get; set; }
 
         [JsonProperty("InterchangeQuestZones")]
-        public List<HazardLocation> Interchange { get; set; }
+        public List<HazardGroup> Interchange { get; set; }
 
         [JsonProperty("LighthouseQuestZones")]
-        public List<HazardLocation> Lighthouse { get; set; }
+        public List<HazardGroup> Lighthouse { get; set; }
 
         [JsonProperty("WoodsQuestZones")]
-        public List<HazardLocation> Woods { get; set; }
+        public List<HazardGroup> Woods { get; set; }
 
         [JsonProperty("ReserveQuestZones")]
-        public List<HazardLocation> Reserve { get; set; }
+        public List<HazardGroup> Reserve { get; set; }
+    }
+
+    public class InteractionZones : ZoneCollection
+    {
+        public EZoneType ZoneType { get; set; } = EZoneType.Interactable;
+
+        [JsonProperty("FactoryZones")]
+        public List<HazardGroup> Factory { get; set; }
+
+        [JsonProperty("CustomsZones")]
+        public List<HazardGroup> Customs { get; set; }
+
+        [JsonProperty("GZZones")]
+        public List<HazardGroup> GZ { get; set; }
+
+        [JsonProperty("ShorelineZones")]
+        public List<HazardGroup> Shoreline { get; set; }
+
+        [JsonProperty("StreetsZones")]
+        public List<HazardGroup> Streets { get; set; }
+
+        [JsonProperty("LabsZones")]
+        public List<HazardGroup> Labs { get; set; }
+
+        [JsonProperty("InterchangeZones")]
+        public List<HazardGroup> Interchange { get; set; }
+
+        [JsonProperty("LighthouseZones")]
+        public List<HazardGroup> Lighthouse { get; set; }
+
+        [JsonProperty("WoodsZones")]
+        public List<HazardGroup> Woods { get; set; }
+
+        [JsonProperty("ReserveZones")]
+        public List<HazardGroup> Reserve { get; set; }
     }
 
     public static class ZoneData
@@ -586,6 +675,7 @@ namespace RealismMod
         public static RadZones RadZoneLocations;
         public static RadAssetZones RadAssetZoneLocations;
         public static QuestZones QuestZoneLocations;
+        public static InteractionZones InteractionLocations;
 
         private static T DeserializeHazardZones<T>(string file) where T : class
         {
@@ -616,6 +706,8 @@ namespace RealismMod
             var userSafeZones = DeserializeHazardZones<UserZones>("user_safe_zones");
             MergeData(SafeZoneLocations, userSafeZones);
 
+            InteractionLocations = DeserializeHazardZones<InteractionZones>("interactable_zones");
+
             QuestZoneLocations = DeserializeHazardZones<QuestZones>("quest_zones");
             var userQuestZones = DeserializeHazardZones<UserZones>("user_quest_zones");
             MergeData(QuestZoneLocations, userQuestZones);
@@ -637,7 +729,7 @@ namespace RealismMod
             MergeData(RadAssetZoneLocations, userRadAssetZones);
         }
 
-        public static List<HazardLocation> GetZones(EZoneType zoneType, string map)
+        public static List<HazardGroup> GetZones(EZoneType zoneType, string map)
         {
             ZoneCollection zones =
                 zoneType == EZoneType.RadAssets ? RadAssetZoneLocations :
@@ -645,6 +737,7 @@ namespace RealismMod
                 zoneType == EZoneType.GasAssets ? GasAssetZoneLocations :
                 zoneType == EZoneType.Gas ? GasZoneLocations :
                 zoneType == EZoneType.Quest ? QuestZoneLocations :
+                zoneType == EZoneType.Interactable ? InteractionLocations :
                 SafeZoneLocations;
 
             switch (map)

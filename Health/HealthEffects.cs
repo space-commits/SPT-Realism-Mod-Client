@@ -109,11 +109,12 @@ namespace RealismMod
         public float HpRegened { get; set; }
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
-        public float HpRegenLimit { get; }
+        public float HpRegenLimitFactor { get; }
         private bool hasRemovedTrnqt = false;
-        private bool haveNotified = false;
+        private bool ranOnce = false;
+        private float _painFactor = 0f;
 
-        public SurgeryEffect(float hpTick, int? dur, EBodyPart part, Player player, int delay, float limit, RealismHealthController realHealthController)
+        public SurgeryEffect(float hpTick, int? dur, EBodyPart part, Player player, int delay, float limitFactor, RealismHealthController realHealthController)
         {
             TimeExisted = 0;
             HpRegened = 0;
@@ -122,9 +123,10 @@ namespace RealismMod
             BodyPart = part;
             _Player = player;
             Delay = delay;
-            HpRegenLimit = limit;
+            HpRegenLimitFactor = limitFactor;
             EffectType = EHealthEffectType.Surgery;
             RealHealthController = realHealthController;
+            _painFactor = RealHealthController.SurgeryPainFactor;
         }
 
         public void Tick()
@@ -133,10 +135,11 @@ namespace RealismMod
             {
                 TimeExisted++;
 
-                if (!haveNotified)
+                if (!ranOnce)
                 {
                     if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgery Kit Applied On " + BodyPart + ", Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-                    haveNotified = true;
+                    RealHealthController.PainSurgeryStrength += _painFactor;
+                    ranOnce = true;
                 }
 
                 if (!hasRemovedTrnqt)
@@ -148,7 +151,7 @@ namespace RealismMod
 
                 float currentHp = _Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
                 float maxHp = _Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Maximum;
-                float maxHpRegen = maxHp * HpRegenLimit;
+                float maxHpRegen = maxHp * HpRegenLimitFactor;
 
                 if (HpRegened < maxHpRegen && TimeExisted % 3 == 0)
                 {
@@ -160,6 +163,7 @@ namespace RealismMod
                 {
                     if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgical Kit Health Regeneration On " + BodyPart + " Has Expired", EFT.Communications.ENotificationDurationType.Long);
                     Duration = 0;
+                    RealHealthController.PainSurgeryStrength -= _painFactor;
                     return;
                 }
             }
@@ -420,7 +424,7 @@ namespace RealismMod
                 TimeExisted++;
                 if (TimeExisted % 30 == 0) 
                 {
-                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.6f);
+                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.45f);
                 }
             }
         }

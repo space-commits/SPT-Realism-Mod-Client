@@ -79,7 +79,7 @@ namespace RealismMod
         public static string UBGL = "55818b014bdc2ddc698b456b";
 
 
-        public static bool GetIPlayer(IPlayer x)
+        public static bool IPlayerMatches(IPlayer x)
         {
             return x.ProfileId == Utils.GetYourPlayer().ProfileId;
         }
@@ -91,7 +91,7 @@ namespace RealismMod
             item.SpawnedInSession = true;
             ResourceKey[] resources = item.Template.AllResources.ToArray();
             await LoadBundle(resources);
-            IPlayer player = Singleton<GameWorld>.Instance.RegisteredPlayers.FirstOrDefault(new Func<IPlayer, bool>(GetIPlayer));
+            IPlayer player = Singleton<GameWorld>.Instance.RegisteredPlayers.FirstOrDefault(new Func<IPlayer, bool>(IPlayerMatches));
             Singleton<GameWorld>.Instance.ThrowItem(item, player, position, rotation, Vector3.zero, Vector3.zero, true, true, EFTHardSettings.Instance.ThrowLootMakeVisibleDelay);
         }
 

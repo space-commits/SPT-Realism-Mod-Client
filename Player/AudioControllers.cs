@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static EFT.Interactive.BetterPropagationGroups;
 
 
 namespace RealismMod
@@ -24,13 +25,12 @@ namespace RealismMod
         private AudioSource _audioSource;
         private float _randomDistanceFromPlayer;
         private Vector3 _relativePositionFromPlayer;
-        private float _gameVolume = 1f;
 
         void Start()
         {
-            _gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume.Value * 0.1f;
+            Volume *= GameWorldController.GetGameVolumeAsFactor();
             _audioSource = this.gameObject.AddComponent<AudioSource>();
-            _audioSource.volume = Volume * _gameVolume;
+            _audioSource.volume = Volume;
             _audioSource.loop = false;
             _audioSource.playOnAwake = false;
             _audioSource.spatialBlend = 1f;
@@ -49,7 +49,7 @@ namespace RealismMod
 
             if (PlayerValues.EnviroType == EnvironmentType.Indoor || PlayerValues.BtrState == EPlayerBtrState.Inside)
             {
-                _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, 0.5f, 0.35f * Time.deltaTime);
+                _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, Volume * 0.5f, 0.35f * Time.deltaTime);
             }
             else
             {
@@ -141,6 +141,7 @@ namespace RealismMod
         private const float GAS_DEVICE_VOLUME = 0.28f;
         private const float GEIGER_VOLUME = 0.32f;
         private const float BASE_BREATH_VOLUME = 0.3f;
+        private const float TOGGLE_DEVICE_VOLUME = 0.6f;
 
         private static float _currentBreathClipLength = 0f;
         private static float _breathTimer = 0f;
@@ -166,8 +167,8 @@ namespace RealismMod
             SetUpAudio(_gasMaskAudioSource, 1f, 0f);
             SetUpAudio(_gasAnalyserSource, 1f, 1f);
             SetUpAudio(_geigerAudioSource, 1f, 1f);
-            SetUpAudio(_toggleDeviceSource, 1f, 0.37f);
-            SetUpAudio(_foodPoisoningSfx, 0.75f, 0f);
+            SetUpAudio(_toggleDeviceSource, TOGGLE_DEVICE_VOLUME, 0.37f);
+            SetUpAudio(_foodPoisoningSfx, 0.65f, 0f);
         }
 
         void Update()
@@ -218,7 +219,7 @@ namespace RealismMod
 
         private void SetUpAudio(AudioSource source, float vol = 1f, float spatialBlend = 0f, float minDistance = 5f, float maxDistance = 10f) 
         {
-            source.volume = vol;
+            source.volume = vol * GameWorldController.GetGameVolumeAsFactor();
             source.spatialBlend = spatialBlend; 
             source.minDistance = minDistance;
             source.maxDistance = maxDistance;
@@ -227,7 +228,7 @@ namespace RealismMod
         public void PlayFoodPoisoningSFX(float vol = 0.5f)
         {
             _foodPoisoningSfx.clip = Plugin.FoodPoisoningSfx.RandomElement().Value;
-            _foodPoisoningSfx.volume = vol;
+            _foodPoisoningSfx.volume = vol * GameWorldController.GetGameVolumeAsFactor();
             _foodPoisoningSfx.Play();
         }
 
@@ -238,7 +239,9 @@ namespace RealismMod
 
         private float GetBreathVolume() 
         {
-            return BASE_BREATH_VOLUME * (2f - PlayerValues.BaseStaminaPerc) * PluginConfig.GasMaskBreathVolume.Value;
+            float baseVol = BASE_BREATH_VOLUME + GameWorldController.GetHeadsetVolume();
+            float modifiers = (2f - PlayerValues.BaseStaminaPerc) * PluginConfig.GasMaskBreathVolume.Value * GameWorldController.GetGameVolumeAsFactor();
+            return Mathf.Max(baseVol * modifiers, 0);
         }
 
         private string GetAudioFromOtherStates()
@@ -310,6 +313,7 @@ namespace RealismMod
         private void PlayToggleSfx(string clip)
         {
             _toggleDeviceSource.clip = Plugin.DeviceAudioClips[clip];
+            _toggleDeviceSource.volume = (TOGGLE_DEVICE_VOLUME + GameWorldController.GetHeadsetVolume()) * GameWorldController.GetGameVolumeAsFactor();
             _toggleDeviceSource.Play();
         }
 
@@ -374,7 +378,7 @@ namespace RealismMod
         {
             switch (gasLevel)
             {
-                case <= 0f:
+                case <= 0.01f:
                     volumeModi = 1f;
                     return null;
                 case <= 0.02f:
@@ -427,6 +431,13 @@ namespace RealismMod
             }
         }
 
+        private float GetDeviceVolume(float baseVol, float additionalModi = 1f)
+        {
+            baseVol += GameWorldController.GetHeadsetVolume();
+            float modifiers = PluginConfig.DeviceVolume.Value * additionalModi * GameWorldController.GetGameVolumeAsFactor();
+            return Mathf.Max(baseVol * modifiers, 0);
+        }
+
         public void PlayGasAnalyserClips(Player player)
         {
             float volumeModi = 1f;
@@ -434,7 +445,7 @@ namespace RealismMod
             if (clip == null) return;
             AudioClip audioClip = Plugin.DeviceAudioClips[clip];
             _currentGasClipLength = audioClip.length;
-            float volume = (_muteGasAnalyser ? 0f : (GAS_DEVICE_VOLUME + (PluginConfig.HeadsetGain.Value * 0.01f)) * PluginConfig.DeviceVolume.Value) * volumeModi;
+            float volume = _muteGasAnalyser ? 0f : GetDeviceVolume(GEIGER_VOLUME, volumeModi);
 
             _gasAnalyserSource.volume = volume;
             _gasAnalyserSource.clip = audioClip;
@@ -449,7 +460,7 @@ namespace RealismMod
             string clip = clips[rndNumber];
             AudioClip audioClip = Plugin.DeviceAudioClips[clip];
             _currentGeigerClipLength = audioClip.length;
-            float volume = _muteGeiger ? 0f : (GEIGER_VOLUME + (PluginConfig.HeadsetGain.Value * 0.01f)) * PluginConfig.DeviceVolume.Value;
+            float volume = _muteGeiger ? 0f : GetDeviceVolume(GEIGER_VOLUME);
 
             _geigerAudioSource.volume = volume;
             _geigerAudioSource.clip = audioClip;

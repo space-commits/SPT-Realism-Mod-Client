@@ -35,6 +35,8 @@ namespace RealismMod
         public bool realistic_zombies { get; set; }
         public bool bot_loot_changes { get; set; }
         public bool spawn_waves { get; set; }
+        public bool boss_spawns { get; set; }
+        public bool loot_changes { get; set; }
     }
 
     public class RealismEventInfo : IRealismInfo
@@ -49,11 +51,6 @@ namespace RealismMod
         public bool IsNightTime { get; set; }   
     }
 
-    public class RealismDir : IRealismInfo 
-    {
-        public string ServerBaseDirectory { get; set; }
-    }
-
     public enum EUpdateType 
     {
         Full,
@@ -66,7 +63,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.PLUGINVERSION)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string PLUGINVERSION = "1.5.0";
+        private const string PLUGINVERSION = "1.5.1";
 
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
         public static Dictionary<string, AudioClip> HitAudioClips = new Dictionary<string, AudioClip>();
@@ -76,6 +73,7 @@ namespace RealismMod
         public static Dictionary<string, AudioClip> RadEventAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> GasEventAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> GasEventLongAudioClips = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, AudioClip> InteractableClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> FoodPoisoningSfx = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
         public static Dictionary<string, Texture> LoadedTextures = new Dictionary<string, Texture>();
@@ -118,7 +116,7 @@ namespace RealismMod
 
         public static RealismConfig ServerConfig;
         public static RealismEventInfo ModInfo;
-        public static RealismDir ModDir;
+        public static Dictionary<string, RealismItem> ItemTemplateData = new Dictionary<string, RealismItem>();
 
         private static T UpdateInfoFromServer<T>(string route) where T : class, IRealismInfo
         {
@@ -148,8 +146,6 @@ namespace RealismMod
                 case EUpdateType.Full:
                     ServerConfig = UpdateInfoFromServer<RealismConfig>("/RealismMod/GetConfig");
                     ModInfo = UpdateInfoFromServer<RealismEventInfo>("/RealismMod/GetInfo");
-                    ModDir = UpdateInfoFromServer<RealismDir>("/RealismMod/GetDirectory");
-                    Utils.Logger.LogWarning("directory " + ModDir.ServerBaseDirectory);
                     break;
                 case EUpdateType.ModInfo:
                     ModInfo = UpdateInfoFromServer<RealismEventInfo>("/RealismMod/GetInfo");
@@ -311,6 +307,7 @@ namespace RealismMod
             string[] radEventAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\maprads");
             string[] gasEventLongAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\long");
             string[] foodPoisoning = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\health\\foodpoisoning");
+            string[] interactable = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\interactable");
 
             HitAudioClips.Clear();
             GasMaskAudioClips.Clear();
@@ -318,6 +315,7 @@ namespace RealismMod
             DeviceAudioClips.Clear();
             GasEventAudioClips.Clear();
             RadEventAudioClips.Clear();
+            InteractableClips.Clear();
             FoodPoisoningSfx.Clear();
 
             LoadAudioClipHelper(hitSoundsDir, HitAudioClips);
@@ -328,6 +326,7 @@ namespace RealismMod
             LoadAudioClipHelper(radEventAmbient, RadEventAudioClips);
             LoadAudioClipHelper(gasEventLongAmbient, GasEventLongAudioClips);
             LoadAudioClipHelper(foodPoisoning, FoodPoisoningSfx);
+            LoadAudioClipHelper(interactable, InteractableClips);
 
             Plugin.HasReloadedAudio = true;
         }
@@ -373,7 +372,6 @@ namespace RealismMod
         private void LoadBundles() 
         {
             _baseBundleFilepath = Path.Combine(Environment.CurrentDirectory, "BepInEx\\plugins\\Realism\\bundles\\");
-
             Assets.GooBarrelBundle = LoadAndInitializePrefabs("hazard_assets\\yellow_barrel.bundle");
             Assets.BlueBoxBundle = LoadAndInitializePrefabs("hazard_assets\\bluebox.bundle");
             Assets.RedForkLiftBundle = LoadAndInitializePrefabs("hazard_assets\\redforklift.bundle");
@@ -392,6 +390,8 @@ namespace RealismMod
             Assets.LabsBarrelPileBundle = LoadAndInitializePrefabs("hazard_assets\\labsbarrelpile.bundle");
             Assets.RadSign1 = LoadAndInitializePrefabs("hazard_assets\\radsign1.bundle");
             Assets.TerraGroupFence = LoadAndInitializePrefabs("hazard_assets\\terragroupchainfence.bundle");
+            Assets.FogBundle = LoadAndInitializePrefabs("hazard_assets\\fog.bundle");
+            Assets.GasBundle = LoadAndInitializePrefabs("hazard_assets\\gas.bundle");
             Assets.ExplosionBundle = LoadAndInitializePrefabs("exp\\expl.bundle");
             ExplosionGO = Assets.ExplosionBundle.LoadAsset<GameObject>("Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
             DontDestroyOnLoad(ExplosionGO);
@@ -438,7 +438,7 @@ namespace RealismMod
                 LoadAudioClips();
                 CacheIcons();
                 ZoneData.DeserializeZoneData();
-                Stats.GetStats();
+                TemplateStats.RequestAndProcessDataFromServer();
 
             }
             catch (Exception exception)
@@ -613,12 +613,13 @@ namespace RealismMod
             if (ServerConfig.enable_hazard_zones) HazardTracker.OutOfRaidUpdate();
             if (PluginConfig.ZoneDebug.Value) ZoneDebugUpdate();
 
+
+            if (ServerConfig.med_changes) RealHealthController.ControllerUpdate();
+
             Utils.CheckIsReady();
             if (Utils.PlayerIsReady)
             {
                 GameWorldController.GameWorldUpdate();
-
-                if (ServerConfig.med_changes) RealHealthController.ControllerUpdate();
 
                 if (!Plugin.HasReloadedAudio)
                 {
@@ -652,6 +653,7 @@ namespace RealismMod
             new ChamberCheckUIPatch().Enable();
 
             //multiple
+            new InventoryOpenPatch().Enable();
             new KeyInputPatch1().Enable();
             new KeyInputPatch2().Enable();
             new SyncWithCharacterSkillsPatch().Enable();
@@ -661,14 +663,20 @@ namespace RealismMod
             new FaceshieldMaskPatch().Enable();
             new PlayPhrasePatch().Enable();
             new OnGameStartPatch().Enable();
-            new StaticLootSpawnPatch().Enable();
-            new RigidLootSpawnPatch().Enable();
             new OnGameEndPatch().Enable();
             new QuestCompletePatch().Enable();
+            new ExfilInitPatch().Enable();
+            new GamePlayerPatch().Enable();
 
             //stats used by multiple features
             new RigConstructorPatch().Enable();
             new EquipmentPenaltyComponentPatch().Enable();
+
+            if (ServerConfig.loot_changes)
+            {
+                new StaticLootSpawnPatch().Enable();
+                new RigidLootSpawnPatch().Enable();
+            }
         }
 
         private void LoadHazardPatches()
@@ -676,7 +684,7 @@ namespace RealismMod
             new HealthPanelPatch().Enable();
             new DropItemPatch().Enable();
             new GetAvailableActionsPatch().Enable();
-            new BossSpawnPatch().Enable();
+            if (ServerConfig.boss_spawns) new BossSpawnPatch().Enable();
             new LampPatch().Enable();
             new AmbientSoundPlayerGroupPatch().Enable();
             new DayTimeAmbientPatch().Enable();
@@ -798,7 +806,9 @@ namespace RealismMod
 
         private void LoadStancePatches()
         {
+            new DoorAnimationOverride().Enable();
             new ChangeScopePatch().Enable();
+            new DisableAimOnReloadPatch().Enable();
             new TacticalReloadPatch().Enable();
             new WeaponOverlapViewPatch().Enable();
             new CollisionPatch().Enable();

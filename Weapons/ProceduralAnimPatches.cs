@@ -68,8 +68,9 @@ namespace RealismMod
                 {
                     return false;
                 }
+                Vector3 current = __instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Current;
                 bool autoFireOn;
-                if (((autoFireOn = (__instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect as NewRotationRecoilProcess).AutoFireOn) & __instance.IsAiming))
+                if (((autoFireOn = (__instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect as NewRotationRecoilProcess).AutoFireOn) & __instance.IsAiming) && current != Vector3.zero)
                 {
                     if (!__instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.StableOn)
                     {
@@ -84,11 +85,12 @@ namespace RealismMod
                         _cameraRecoilRotateField.SetValue(__instance, newRecoilRotation);
                         return false;
                     }
+                    Quaternion previousCameraTargetRotation = _previousCameraTargetRotation;
+                    previousCameraTargetRotation.z = __instance.HandsContainer.CameraTransform.localRotation.z;
                     _camRecoilLerpTempSpeed = Mathf.Clamp(_camRecoilLerpTempSpeed + __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y) * 2f;
-                    Quaternion newCameraRotation = Quaternion.Lerp(_currentRecoilCameraRotate, _previousCameraTargetRotation, _camRecoilLerpTempSpeed);
+                    Quaternion newCameraRotation = Quaternion.Lerp(_currentRecoilCameraRotate, previousCameraTargetRotation, _camRecoilLerpTempSpeed);
                     __instance.HandsContainer.CameraTransform.localRotation = newCameraRotation;
                     _cameraRecoilRotateField.SetValue(__instance, newCameraRotation);
-
                     return false;
                 }
                 else
@@ -206,7 +208,7 @@ namespace RealismMod
                     __instance.CrankRecoil = PluginConfig.EnableCrank.Value;  // || (!WeaponStats.HasShoulderContact && WeaponStats._WeapClass != "pistol")
 
                     Mod currentAimingMod = (__instance.CurrentAimingMod != null) ? __instance.CurrentAimingMod.Item as Mod : null;
-                    var aimingModStats = currentAimingMod == null ? null : Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, currentAimingMod.TemplateId);
+                    var aimingModStats = currentAimingMod == null ? null : TemplateStats.GetDataObj<WeaponMod>(TemplateStats.WeaponModStats, currentAimingMod.TemplateId);
                     WeaponStats.IsOptic = __instance.CurrentScope.IsOptic;
                     StatCalc.CalcSightAccuracy(currentAimingMod, aimingModStats);
                     float accuracy = weapon.GetTotalCenterOfImpact(false);
@@ -215,8 +217,8 @@ namespace RealismMod
                     float totalPlayerWeight = PlayerValues.TotalModifiedWeightMinusWeapon;
                     float playerWeightADSFactor = 1f - (totalPlayerWeight / 200f);
                     float stanceMulti = 
-                        StanceController.IsIdle() && !StanceController.IsLeftShoulder ? 1.75f 
-                        : StanceController.WasActiveAim || StanceController.CurrentStance == EStance.ActiveAiming ? 1.65f 
+                        StanceController.IsIdle() && !StanceController.IsLeftShoulder ? 1.5f 
+                        : StanceController.WasActiveAim || StanceController.CurrentStance == EStance.ActiveAiming ? 1.35f 
                         : StanceController.CurrentStance == EStance.HighReady || StanceController.CurrentStance == EStance.HighReady ? 1.25f 
                         : StanceController.StoredStance == EStance.LowReady || StanceController.CurrentStance == EStance.LowReady ? 1.25f 
                         : StanceController.IsLeftShoulder ? 0.85f : 1f;
@@ -306,8 +308,8 @@ namespace RealismMod
                         Logger.LogWarning("totalSightlessAimSpeed = " + totalSightlessAimSpeed);
                         Logger.LogWarning("totalSightedAimSpeed = " + totalSightedAimSpeed);
                         Logger.LogWarning("newAimSpeed = " + newAimSpeed);
-                        Logger.LogWarning("breathIntensity = " + breathIntensity);
-                        Logger.LogWarning("handsIntensity = " + handsIntensity);
+                        Logger.LogWarning("totalBreathIntensity = " + totalBreathIntensity);
+                        Logger.LogWarning("totalInputIntensitry = " + totalInputIntensitry);
                         Logger.LogWarning("ergoWeight = " + ergoWeight);
                         Logger.LogWarning("ergoWeightFactor = " + ergoWeightFactor);
                         Logger.LogWarning("totalErgoFactor = " + totalErgoFactor);
@@ -507,10 +509,10 @@ namespace RealismMod
             {
                 float modSwayFactor = Mathf.Pow(WeaponStats.TotalAimStabilityModi, 1.2f);
                 float holdBreathBonusSway = (__instance.Physical.HoldingBreath ? 0.495f : 1f) * modSwayFactor;
-                float holdBreathBonusUpDown = (__instance.Physical.HoldingBreath ? 0.275f : 1f) * modSwayFactor;
-                float swayFactor = (WeaponStats.IsOptic ? PluginConfig.SwayIntensity.Value : PluginConfig.SwayIntensity.Value * 1.1f);
+                float holdBreathBonusUpDown = (__instance.Physical.HoldingBreath ? 0.375f : 1f) * modSwayFactor;
+                float swayFactor = (WeaponStats.IsOptic ? PluginConfig.SwayIntensity.Value * 1.1f : PluginConfig.SwayIntensity.Value);
                 float t = lackOfOxygenStrength.Evaluate(__instance.OxygenLevel);
-                float b = __instance.IsAiming ? 0.75f : 1f;
+                float b = __instance.IsAiming ? 0.8f : 1.05f;
                 breathIntensityField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity * holdBreathBonusUpDown * swayFactor);
                 breathFrequencyField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, 1f, t), 1f, 2.5f) * deltaTime * holdBreathBonusSway * swayFactor);
                 shakeIntensityField.SetValue(__instance, holdBreathBonusSway * swayFactor);

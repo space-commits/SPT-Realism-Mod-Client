@@ -105,7 +105,7 @@ namespace RealismMod
 
         protected AudioSource SetUpAudio(string clip, GameObject go)
         {
-            _gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume.Value * 0.1f;
+            _gameVolume = GameWorldController.GetGameVolumeAsFactor();
             AudioSource audioSource = go.AddComponent<AudioSource>();
             audioSource.clip = Plugin.DeviceAudioClips[clip];
             audioSource.volume = 1.05f * _gameVolume;
@@ -367,7 +367,7 @@ namespace RealismMod
 
         private AudioSource SetUpAudio(string clip, GameObject go)
         {
-            _gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume.Value * 0.1f;
+            _gameVolume = GameWorldController.GetGameVolumeAsFactor();
             AudioSource audioSource = go.AddComponent<AudioSource>();
             audioSource.clip = Plugin.DeviceAudioClips[clip];
             audioSource.volume = 1.0f * _gameVolume;

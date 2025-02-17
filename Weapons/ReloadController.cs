@@ -43,7 +43,7 @@ namespace RealismMod.Weapons
 
         public static void MagReloadSpeedModifier(Weapon weapon, MagazineItemClass magazine, bool isNewMag, bool reloadFromNoMag, bool isQuickReload = false)
         {
-            var weaponModStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, magazine.TemplateId);
+            var weaponModStats = TemplateStats.GetDataObj<WeaponMod>(TemplateStats.WeaponModStats, magazine.TemplateId);
             float magWeight = weapon.IsBeltMachineGun ? magazine.TotalWeight * StatCalc.MagWeightMult * 0.5f : magazine.TotalWeight * StatCalc.MagWeightMult;
             float magWeightFactor = (magWeight / -100f) + 1f;
             float magSpeed = weaponModStats.ReloadSpeed;

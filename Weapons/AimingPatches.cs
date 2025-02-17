@@ -35,12 +35,12 @@ namespace RealismMod
 
                 if (HeadDeviceStateChanged) 
                 {
-                    GearController.GetGearPenalty(Utils.GetYourPlayer());
+                    GearController.CheckGear(Utils.GetYourPlayer());
                     HeadDeviceStateChanged = false;
                 }
 
                 fc.UpdateHipInaccuracy(); //update hipfire to take NVG toggle into account
-
+                 
                 if (Plugin.ServerConfig.enable_stances)
                 {
                     if ((toobBlocksADS || fsBlocksADS))

@@ -98,7 +98,7 @@ namespace RealismMod
                 {
                     if (item is Mod)
                     {
-                        var modStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, item.TemplateId);
+                        var modStats = TemplateStats.GetDataObj<WeaponMod>(TemplateStats.WeaponModStats, item.TemplateId);
                         if (modStats.ModType != "mount") continue;
                         Mod mod = item as Mod;
                         currentSightFactor += (mod.Accuracy / 100f);
@@ -149,6 +149,7 @@ namespace RealismMod
                 Utils.Logger.LogWarning("total ergo = " + WeaponStats.TotalErgo);
                 Utils.Logger.LogWarning("aimSpeed = " + aimSpeed);
                 Utils.Logger.LogWarning("base aimSpeed = " + baseAimspeed);
+                Utils.Logger.LogWarning("swayStrength = " + swayStrength);
                 Utils.Logger.LogWarning("total ergofactor = " + WeaponStats.ErgoFactor * (1f - (PlayerValues.StrengthSkillAimBuff * 1.5f)));
                 Utils.Logger.LogWarning("gear ergo factor = " + PlayerValues.GearErgoPenalty);
 
@@ -431,7 +432,7 @@ namespace RealismMod
 
                     if (modType == "buffer_adapter" || modType == "stock_adapter")
                     {
-                        if (mod.Slots.Length > 1 && mod.Slots[1].ContainedItem != null)
+                        if (mod?.Slots?.Length > 1 && mod?.Slots[1]?.ContainedItem != null)
                         {
                             modVRecoil += WeaponStats.AdapterPistolGripBonusVRecoil;
                             modHRecoil += WeaponStats.AdapterPistolGripBonusHRecoil;
@@ -439,7 +440,7 @@ namespace RealismMod
                             modErgo += WeaponStats.AdapterPistolGripBonusErgo;
                             modChamber += WeaponStats.AdapterPistolGripBonusChamber;
                         }
-                        if (mod.Slots[0].ContainedItem != null)
+                        if (mod?.Slots[0]?.ContainedItem != null)
                         {
                             Mod containedMod = mod.Slots[0].ContainedItem as Mod;
                             if (weaponModStats.ModType != "buffer")
@@ -735,7 +736,7 @@ namespace RealismMod
         {
             if (mod.Parent.Container != null)
             {
-                var parentStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, mod.Parent.Container.ParentItem.TemplateId);
+                var parentStats = TemplateStats.GetDataObj<WeaponMod>(TemplateStats.WeaponModStats, mod.Parent.Container.ParentItem.TemplateId);
                 string parentModType = parentStats.ModType;
                 if (parentModType == "buffer" || parentModType == "buffer_adapter")
                 {

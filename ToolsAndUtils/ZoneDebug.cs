@@ -55,12 +55,12 @@ namespace RealismMod
         private static void DrawerSpawnObject(ConfigEntryBase entry)
         {
             if (Utils.GetYourPlayer() == null) return;
-            InitializeButton(InteractableComponent.SpawnCube, "Spawn Object");
+            InitializeButton(DebugComponent.SpawnCube, "Spawn Object");
         }
         private static void DrawerSpawnAsset(ConfigEntryBase entry)
         {
             if (Utils.GetYourPlayer() == null) return;
-            InitializeButton(InteractableComponent.SpawnAsset, "Spawn Asset");
+            InitializeButton(DebugComponent.SpawnAsset, "Spawn Asset");
         }
         private static void DrawerLogObjects(ConfigEntryBase entry)
         {
@@ -261,8 +261,8 @@ namespace RealismMod
             );
         }
 
-        public static InteractableComponent TargetInteractableComponent;
-        public static List<InteractableComponent> AllInteractableComponents = new List<InteractableComponent>();
+        public static DebugComponent TargetInteractableComponent;
+        public static List<DebugComponent> AllInteractableComponents = new List<DebugComponent>();
         public static NoteWindow NoteUIPanel;
         public static InventoryScreen InventoryUI;
         public static TasksScreen TasksUI;
@@ -290,8 +290,8 @@ namespace RealismMod
             cube.transform.rotation = box.transform.rotation;
             cube.transform.localScale = box.transform.localScale;
 
-            cube.AddComponent<InteractableComponent>();
-            InteractableComponent interactableComponent = cube.GetComponent<InteractableComponent>();
+            cube.AddComponent<DebugComponent>();
+            DebugComponent interactableComponent = cube.GetComponent<DebugComponent>();
             interactableComponent.Init();
             interactableComponent.SetName(name);
 
@@ -360,7 +360,7 @@ namespace RealismMod
                 Utils.Logger.LogWarning("zone name " + zone.name);
                 if (zone.Asset != null) Utils.Logger.LogWarning("asset name " + zone.Asset.name);
                 Utils.Logger.LogWarning("\"position\": {" + "\"x\":" + zone.transform.position.x + "," + "\"y\":" + zone.transform.position.y + "," + "\"z\":" + zone.transform.position.z + "},");
-                Utils.Logger.LogWarning("\"rotation\": {" + "\"x\":" + zone.transform.rotation.eulerAngles.x + "," + "\"y\":" + zone.transform.eulerAngles.y + "," + "\"z\":" + zone.transform.eulerAngles.z + "}");
+                Utils.Logger.LogWarning("\"rotation\": {" + "\"x\":" + zone.transform.rotation.eulerAngles.x + "," + "\"y\":" + zone.transform.eulerAngles.y + "," + "\"z\":" + zone.transform.eulerAngles.z + "},");
                 Utils.Logger.LogWarning("\"size\": {" + "\"x\":" + zone.transform.localScale.x + "," + "\"y\":" + zone.transform.localScale.y + "," + "\"z\":" + zone.transform.localScale.z + "}");
                 Utils.Logger.LogWarning("==");
             }
@@ -374,7 +374,7 @@ namespace RealismMod
                    if (NameFieldEmpty() || NameTaken()) return;
                }
    */
-            TargetInteractableComponent = obj.GetComponent<InteractableComponent>();
+            TargetInteractableComponent = obj.GetComponent<DebugComponent>();
             Mode = EInputMode.Translate;
             TargetInteractableComponent.SetColor(new Color(0, 1, 0, 0.1f));
             SelectedObjectName.Value = TargetInteractableComponent.GetName();
@@ -512,9 +512,9 @@ namespace RealismMod
 
     }
 
-    public class InteractableComponent : InteractableObject
+    public class DebugComponent : InteractableObject
     {
-        public List<ActionsTypesClass> Actions = new List<ActionsTypesClass>();
+        public List<ActionsTypesClass> DebugActions = new List<ActionsTypesClass>();
         public GameObject ParentGameObject { get; private set; }
         public GameObject Asset { get; private set; }
 
@@ -523,7 +523,7 @@ namespace RealismMod
             this.gameObject.layer = LayerMask.NameToLayer("Interactive");
             ParentGameObject = this.gameObject.transform.parent.gameObject;
 
-            Actions.AddRange(
+            DebugActions.AddRange(
                 new List<ActionsTypesClass>()
                 {
                     new ActionsTypesClass
@@ -575,6 +575,11 @@ namespace RealismMod
                     {
                         Name = "Delete",
                         Action = Delete
+                    },
+                    new ActionsTypesClass
+                    {
+                        Name = "LogObjectsInBounds",
+                        Action = LogObjectsInBounds
                     }
                 }
             );
@@ -606,8 +611,8 @@ namespace RealismMod
             var zone = this.transform;
             Utils.Logger.LogWarning("==== " + this.transform.parent.name);
             Utils.Logger.LogWarning("name " + this.transform.parent.name);
-            Utils.Logger.LogWarning("\"position\": " + "{\"x\":" + zone.transform.position.x + "," + "\"y\":" + zone.transform.position.y + "," + "\"z\":" + zone.transform.position.z + "}");
-            Utils.Logger.LogWarning("\"rotation\": " + "{\"x\":" + zone.transform.rotation.eulerAngles.x + "," + "\"y\":" + zone.transform.eulerAngles.y + "," + "\"z\":" + zone.transform.eulerAngles.z + "}");
+            Utils.Logger.LogWarning("\"position\": " + "{\"x\":" + zone.transform.position.x + "," + "\"y\":" + zone.transform.position.y + "," + "\"z\":" + zone.transform.position.z + "},");
+            Utils.Logger.LogWarning("\"rotation\": " + "{\"x\":" + zone.transform.rotation.eulerAngles.x + "," + "\"y\":" + zone.transform.eulerAngles.y + "," + "\"z\":" + zone.transform.eulerAngles.z + "},");
             Utils.Logger.LogWarning("\"size\": " + "{\"x\":" + zone.transform.localScale.x + "," + "\"y\":" + zone.transform.localScale.y + "," + "\"z\":" + zone.transform.localScale.z + "}");
             Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.GeneratorTurnOff);
         }
@@ -616,6 +621,25 @@ namespace RealismMod
         {
             this.gameObject.transform.localScale = new Vector3(1, 1, 1);
             Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.GeneratorTurnOff);
+            Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.GeneratorTurnOff);
+        }
+
+        public void LogObjectsInBounds()
+        {
+            // Clear previous list
+            List<GameObject> detectedObjects = new List<GameObject>();
+            var box = this.gameObject.AddComponent<BoxCollider>();
+            box.size = this.gameObject.transform.localScale;
+            box.transform.position = this.gameObject.transform.position;
+            box.transform.rotation = this.gameObject.transform.rotation;
+
+            Bounds bounds = box.bounds; // Get world-space bounds
+            Collider[] colliders = Physics.OverlapBox(bounds.center, bounds.extents, Quaternion.identity);
+            Utils.Logger.LogWarning($"Found {colliders.Length} objects in the box collider bounds:");
+            foreach (Collider col in colliders)
+            {
+                Utils.Logger.LogWarning(col.gameObject.name);
+            }
         }
 
         public void Delete()
@@ -731,7 +755,7 @@ namespace RealismMod
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.GetComponent<Renderer>().enabled = true;
             cube.transform.parent = parent.transform;
-            InteractableComponent interactableComponent = cube.AddComponent<InteractableComponent>();
+            DebugComponent interactableComponent = cube.AddComponent<DebugComponent>();
             interactableComponent.Init();
             interactableComponent.ResetTranslation();
             interactableComponent.MatchPlayerYRotation();
@@ -768,7 +792,7 @@ namespace RealismMod
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.GetComponent<Renderer>().enabled = true;
             cube.transform.parent = parent.transform;
-            InteractableComponent interactableComponent = cube.AddComponent<InteractableComponent>();
+            DebugComponent interactableComponent = cube.AddComponent<DebugComponent>();
             interactableComponent.Init();
             interactableComponent.ResetTranslation();
             interactableComponent.MatchPlayerYRotation();

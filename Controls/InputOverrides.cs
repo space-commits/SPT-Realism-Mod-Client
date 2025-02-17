@@ -14,6 +14,7 @@ using StatusStruct = GStruct446<GInterface385>;
 using ItemEventClass = EFT.InventoryLogic;
 using EFT.Animations;
 using EFT.WeaponMounting;
+using System.Linq;
 
 namespace RealismMod
 {
@@ -97,6 +98,7 @@ namespace RealismMod
             }
             if (command == ECommand.ToggleBipods) 
             {
+                if (StanceController.CurrentStance != EStance.None) return false;
                 StanceController.IsMounting = false;
             }
             //cancel stances
@@ -151,7 +153,7 @@ namespace RealismMod
             {
                 return false;
             }
-            if (command == ECommand.WeaponMounting && PluginConfig.OverrideMounting.Value)
+            if (command == ECommand.WeaponMounting && PluginConfig.OverrideMounting.Value && Plugin.ServerConfig.enable_stances)
             {
                 Player player = Utils.GetYourPlayer();
                 ProceduralWeaponAnimation pwa = player.ProceduralWeaponAnimation;
@@ -162,13 +164,28 @@ namespace RealismMod
                     if (WeaponStats.BipodIsDeployed && (StanceController.BracingDirection != EBracingDirection.Top)) return false;
                     StanceController.IsMounting = !StanceController.IsMounting;
                     if (StanceController.IsMounting) StanceController.CancelAllStances();
-                    StanceController.DoWiggleEffects(player, pwa, fc.Weapon, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true, wiggleFactor: 0.5f);
+                    StanceController.DoWiggleEffects(player, pwa, fc.Weapon, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
                 }
                 if (!StanceController.IsBracing && StanceController.IsMounting)
                 {
                     StanceController.IsMounting = false;
                 }
-                if (StanceController.IsMounting && WeaponStats.BipodIsDeployed) ChangeScopeModeOnMount(pwa, fc);
+                if (StanceController.IsMounting && WeaponStats.BipodIsDeployed)
+                {
+                    ChangeScopeModeOnMount(pwa, fc);
+/*
+                    MountPointData mountData = new MountPointData(StanceController.MountPos, StanceController.MountDir, EMountSideDirection.Forward);
+                    Quaternion targetBodyRotation = Quaternion.AngleAxis(player.MovementContext.Yaw, Vector3.up);
+                    player.MovementContext.PlayerMountingPointData.SetData(mountData, player.MovementContext.TransformPosition, player.MovementContext.PoseLevel, player.MovementContext.Yaw, PluginConfig.test10.Value, targetBodyRotation, new Vector2(0f, 0f), new Vector2(-3, 6), new Vector2(-10, 10));
+                    player.MovementContext.EnterMountedState();
+                    player.MovementContext.PlayerAnimator.SetProneBipodMount(true);*/
+
+                    /*         AccessTools.Field(typeof(MovementContext), "_inMountedState").SetValue(player.MovementContext, true);
+                             player.MovementContext.PlayerAnimator.SetProneBipodMount(true);
+                             fc.FirearmsAnimator.SetMounted(true);
+                             player.ProceduralWeaponAnimation.SetMountingData(true, true);*/
+                }
+         
                 return false;
             }
             return true;

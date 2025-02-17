@@ -23,7 +23,6 @@ using EFT.Animations;
 
 namespace RealismMod
 {
-
     //enable reloading while aiming
     public class TacticalReloadPatch : ModulePatch
     {
@@ -476,7 +475,7 @@ namespace RealismMod
                 {
                     maxSpeed = 1.5f;
                     chamberSpeed *= PluginConfig.GlobalShotgunRackSpeedFactor.Value;
-                    stanceModifier = StanceController.IsBracing ? 1.12f : StanceController.IsMounting ? 1.22f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.35f : 1f;
+                    stanceModifier = StanceController.IsMounting ? 1.2f : StanceController.IsBracing ? 1.1f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.32f : 1f;
                 }
                 if (__instance.Item.IsGrenadeLauncher || __instance.Item.IsUnderBarrelDeviceActive)
                 {
@@ -485,7 +484,7 @@ namespace RealismMod
                 if (WeaponStats._WeapClass == "sniperRifle")
                 {
                     chamberSpeed *= PluginConfig.GlobalBoltSpeedMulti.Value;
-                    stanceModifier = StanceController.IsBracing ? 1.12f : StanceController.IsMounting && WeaponStats.BipodIsDeployed ? 1.4f : StanceController.IsMounting ? 1.2f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.15f : 1f;
+                    stanceModifier = StanceController.IsMounting && WeaponStats.BipodIsDeployed ? 1.3f : StanceController.IsMounting ? 1.2f : StanceController.IsBracing ? 1.14f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.1f : 1f;
                 }
                
                 float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerValues.ReloadSkillMulti * PlayerValues.ReloadInjuryMulti * stanceModifier

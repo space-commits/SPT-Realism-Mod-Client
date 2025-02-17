@@ -31,7 +31,7 @@ namespace RealismMod.Health
             PrismEffects.chromaticDistanceTwo = 0.7f; //0.9f
 
             bool hasAdrenaline = Plugin.RealHealthController.HasNegativeAdrenalineEffect;
-            bool hasOverdoed = Plugin.RealHealthController.HasOverdosed;
+            bool hasOverdoed = Plugin.RealHealthController.HasOverdosedOnStim;
             float blur = hasAdrenaline ? Mathf.Lerp(0.8f, 7f, Mathf.PingPong(Time.time * 0.5f, 1f)) : 0f;
             float chroma = hasOverdoed ? Mathf.Lerp(0.05f, 0.2f, Mathf.PingPong(Time.time * 0.2f, 1f)) : 0f;
 

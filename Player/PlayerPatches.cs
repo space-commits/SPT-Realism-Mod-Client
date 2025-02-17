@@ -16,9 +16,67 @@ using WeaponSkills = EFT.SkillManager.GClass1981;
 using WeaponStateClass = GClass1668;
 using EFT.AssetsManager;
 using System;
+using static RootMotion.FinalIK.InteractionTrigger.Range;
+using Diz.LanguageExtensions;
+using System.Linq;
+using EFT.UI;
+using System.Runtime.CompilerServices;
+using static UnityEngine.GraphicsBuffer;
 
 namespace RealismMod
 {
+    public class InventoryOpenPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player).GetMethod("SetInventoryOpened", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void PatchPrefix(Player __instance, bool opened)
+        {
+            if (__instance.IsYourPlayer)
+            {
+                AbstractHandsController controller = (AbstractHandsController)AccessTools.Field(typeof(Player), "_handsController").GetValue(__instance);
+
+               if (controller != null) PlayerValues.IsInInventory = opened;
+               else PlayerValues.IsInInventory = false; 
+            }
+        }
+    }
+
+    //door animations are jank as of SPT 3.10, and don't work well with stances
+    public class DoorAnimationOverride : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(MovementContext).GetMethod("SetInteractInHands", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void PatchPrefix(MovementContext __instance, ref EInteraction interaction)
+        {
+            if (!PluginConfig.EnableAnimationFixes.Value) return;
+            Player player = (Player)AccessTools.Field(typeof(MovementContext), "_player").GetValue(__instance);
+            if (player.IsYourPlayer)
+            {
+                switch (interaction)
+                {
+                    case EInteraction.DoorPullBackward:
+                    case EInteraction.PullHingeLeft:
+                    case EInteraction.PullHingeRight:
+                        interaction = (EInteraction)31;
+                        break;
+                    case EInteraction.DoorPushForward:
+                    case EInteraction.PushHingeRight:
+                    case EInteraction.PushHingeLeft:
+                        interaction = (EInteraction)33;
+                        break;
+                }
+            }
+        }
+    }
+
     public class FlyingBulletPatch : ModulePatch
     {
         private static FieldInfo _playerField;
@@ -106,10 +164,10 @@ namespace RealismMod
         {
             if (__instance.IsYourPlayer)
             {
-                PlayerValues.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
+                PlayerValues.IsScav = Singleton<GameWorld>.Instance?.MainPlayer?.Profile?.Info?.Side == EPlayerSide.Savage;
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
-                GearController.GetGearPenalty(__instance);
+                GearController.CheckGear(__instance);
                 if (Plugin.ServerConfig.enable_hazard_zones) 
                 { 
                     Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
@@ -140,7 +198,7 @@ namespace RealismMod
             {
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
-                GearController.GetGearPenalty(__instance);
+                GearController.CheckGear(__instance);
                 GearController.CheckForDevices(__instance.Inventory);
                 if (Plugin.ServerConfig.enable_hazard_zones) Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
             }
@@ -156,13 +214,14 @@ namespace RealismMod
         private static float _sprintTimer = 0f;
         private static bool _didSprintPenalties = false;
         private static bool _resetSwayAfterFiring = false;
+        private static float _layer20AnimWeight;
 
         private static bool SkipSprintPenalty
-        { 
-            get 
+        {
+            get
             {
                 return ShootController.IsFiring && !StanceController.IsAiming;
-            }  
+            }
         }
 
         private static void DoSprintTimer(Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc, float mountingBonus)
@@ -216,7 +275,7 @@ namespace RealismMod
             PlayerValues.ADSSprintMulti = Mathf.Lerp(PlayerValues.ADSSprintMulti, 1f, resetSpeed);
             PlayerValues.SprintHipfirePenalty = Mathf.Lerp(PlayerValues.SprintHipfirePenalty, 1f, resetSpeed);
 
-            pwa.Breath.Intensity =  Mathf.Clamp(PlayerValues.SprintTotalBreathIntensity * mountingBonus, 0.1f, skipPenalty ? 1f : 3f);
+            pwa.Breath.Intensity = Mathf.Clamp(PlayerValues.SprintTotalBreathIntensity * mountingBonus, 0.1f, skipPenalty ? 1f : 3f);
             pwa.HandsContainer.HandsRotation.InputIntensity = Mathf.Clamp(PlayerValues.SprintTotalHandsIntensity * mountingBonus, 0.1f, skipPenalty ? 1f : 1.05f);
 
             if (Utils.AreFloatsEqual(1f, PlayerValues.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerValues.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerValues.TotalHandsIntensity))
@@ -287,7 +346,7 @@ namespace RealismMod
         private static void CalcBaseHipfireAccuracy(Player player)
         {
             float baseValue = 0.5f;
-            float stockFactor = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol || !WeaponStats.HasShoulderContact ? 1.25f: 1f;
+            float stockFactor = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol || !WeaponStats.HasShoulderContact ? 1.25f : 1f;
             float convergenceFactor = 1f - (ShootController.BaseTotalConvergence / 100f);
             float dispersionFactor = 1f + (ShootController.BaseTotalDispersion / 100f);
             float recoilFactor = 1f + ((ShootController.BaseTotalVRecoil + ShootController.BaseTotalHRecoil) / 100f);
@@ -304,24 +363,24 @@ namespace RealismMod
             WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(baseValue * ergoFactor * stockFactor * PlayerValues.DeviceBonus * staminaFactor * stanceFactor * Mathf.Pow(WeaponStats.TotalWeaponHandlingModi, 0.45f) * healthFactor * totalRecoilFactors * playerWeightFactor, 0.2f, 1f);
         }
 
-        private static void ModifyWalkRelatedValues(Player player) 
+        private static void ModifyWalkRelatedValues(Player player)
         {
             float staminaFactor = Mathf.Max((2f - PlayerValues.CombinedStaminaPerc), 0.5f);
             float coughing = Plugin.RealHealthController.IsCoughingInGas ? 2f : 1f;
             float totalFactors = WeaponStats.WalkMotionIntensity * PlayerValues.ErgoDeltaInjuryMulti * staminaFactor * coughing;
 
-           float stanceMultiSide = 
-                StanceController.IsMounting ? 0.25f :
-                StanceController.IsBracing ? 0.5f :
-                StanceController.IsLeftShoulder && !StanceController.IsAiming ? 1.15f :
-                StanceController.IsLeftShoulder ? 0.95f :
-                StanceController.IsAiming ? 0.85f :
-                StanceController.CurrentStance == EStance.PistolCompressed ? 1.2f :
-                StanceController.CurrentStance == EStance.ShortStock ? 0.9f :
-                StanceController.CurrentStance == EStance.HighReady ? 0.9f :
-                StanceController.CurrentStance == EStance.LowReady ? 0.85f :
-                StanceController.CurrentStance == EStance.ActiveAiming ? 0.9f :
-                1f;
+            float stanceMultiSide =
+                 StanceController.IsMounting ? 0.25f :
+                 StanceController.IsBracing ? 0.5f :
+                 StanceController.IsLeftShoulder && !StanceController.IsAiming ? 1.15f :
+                 StanceController.IsLeftShoulder ? 0.95f :
+                 StanceController.IsAiming ? 0.85f :
+                 StanceController.CurrentStance == EStance.PistolCompressed ? 1.2f :
+                 StanceController.CurrentStance == EStance.ShortStock ? 0.9f :
+                 StanceController.CurrentStance == EStance.HighReady ? 0.9f :
+                 StanceController.CurrentStance == EStance.LowReady ? 0.85f :
+                 StanceController.CurrentStance == EStance.ActiveAiming ? 0.9f :
+                 1f;
 
             float stanceMultiUp = StanceController.IsMounting ? 0.25f :
                 StanceController.IsBracing ? 0.5f :
@@ -337,12 +396,12 @@ namespace RealismMod
 
 
             player.ProceduralWeaponAnimation.Walk.StepFrequency = Mathf.Min(player.ProceduralWeaponAnimation.Walk.StepFrequency, 1.1f);
-            player.ProceduralWeaponAnimation.Walk.IntensityMinMax[0] = new Vector2(0.5f, 1f); 
+            player.ProceduralWeaponAnimation.Walk.IntensityMinMax[0] = new Vector2(0.5f, 1f);
 
-            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.1f; 
+            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.1f;
             player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.InputIntensity = Mathf.Clamp(0.99f * stanceMultiUp * totalFactors, 0.55f, 0.85f); //up down
 
-            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.ReturnSpeed = 0.05f; 
+            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.ReturnSpeed = 0.05f;
             player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = Mathf.Clamp(0.98f * stanceMultiSide * totalFactors, 0.6f, 0.95f); //side to side
 
             player.ProceduralWeaponAnimation.MotionReact.Intensity = WeaponStats.BaseWeaponMotionIntensity * staminaFactor * PlayerValues.DeviceBonus;
@@ -390,18 +449,11 @@ namespace RealismMod
             }
         }
 
-        private static void PWAUpdate(Player player, Player.FirearmController fc) 
+        private static void PWAUpdate(Player player, Player.FirearmController fc)
         {
             if (fc != null)
             {
-                ShootController.ShootUpdate(player);
-                //hyperburst
-                /*          fc.Item.MalfState.OverheatFirerateMultInited = true;
-                            if (ShootController.ShotCount < PluginConfig.test3.Value && (fc.Item.SelectedFireMode == Weapon.EFireMode.fullauto || fc.Item.SelectedFireMode == Weapon.EFireMode.burst)) 
-                            {
-                                fc.Item.MalfState.OverheatFirerateMult = PluginConfig.test1.Value;
-                            }
-                            else fc.Item.MalfState.OverheatFirerateMult = PluginConfig.test2.Value;*/
+                ShootController.ShootUpdate(player, fc);
 
                 WeaponStats.BipodIsDeployed = fc.HasBipod && fc.BipodState;
                 WeaponStats.FireMode = fc.Item.SelectedFireMode;
@@ -435,17 +487,15 @@ namespace RealismMod
 
                 GetStaminaPerc(player);
 
-                if (!ShootController.IsFiringMovement && Plugin.ServerConfig.enable_stances)
-                {
-                    SetStancePWAValues(player, fc);
-                }
-                if (StanceController.IsInThirdPerson) player.MovementContext.SetPatrol(StanceController.CurrentStance == EStance.PatrolStance ? true : false);
+                if (!ShootController.IsFiringMovement && Plugin.ServerConfig.enable_stances) SetStancePWAValues(player, fc);
+
+                player.MovementContext.SetPatrol(StanceController.IsInThirdPerson && StanceController.CurrentStance == EStance.PatrolStance ? true : false);
             }
             else if (Plugin.ServerConfig.enable_stances && PluginConfig.EnableStanceStamChanges.Value && !StanceController.HaveResetStamDrain)
             {
                 StanceController.UnarmedStanceStamina(player);
             }
-            else 
+            else
             {
                 StanceController.IsMounting = false;
             }
@@ -454,12 +504,33 @@ namespace RealismMod
             player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerValues.SprintHipfirePenalty, 0.1f, 0.5f);
         }
 
+        private static int[] _doorHashes = { 1682425115, 2067175453, 235030625, 1710112953 };
+
+        private static void SmoothenAnimations(Player player) 
+        {
+            int currentHash = player._animators[0].GetCurrentAnimatorStateInfo(20).nameHash;
+            bool doorActive = _doorHashes.Contains(currentHash);
+            if (PlayerValues.IsInInventory || doorActive)
+            {
+                float target = doorActive ? 0.9f : 0.15f;
+                _layer20AnimWeight = Mathf.MoveTowards(_layer20AnimWeight, target, 1.9f * Time.deltaTime);
+                player._animators[0].SetLayerWeight(20, _layer20AnimWeight);
+            }
+            else
+            {
+                _layer20AnimWeight = Mathf.MoveTowards(_layer20AnimWeight, 1f, 1f * Time.deltaTime);
+                player._animators[0].SetLayerWeight(20, _layer20AnimWeight);
+            }
+
+            //player._animators[0].SetLayerWeight(4, _layer4AnimWeight); sprint
+        }
+
         protected override MethodBase GetTargetMethod()
         {
             surfaceField = AccessTools.Field(typeof(Player), "_currentSet");
             return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.Public);
         }
-
+  
         [PatchPostfix] 
         private static void PatchPostfix(Player __instance)
         {
@@ -474,15 +545,20 @@ namespace RealismMod
 
             if (Utils.PlayerIsReady && __instance.IsYourPlayer)
             {
-                GameWorldController.TimeInRaid += Time.deltaTime;
+                if (PluginConfig.EnableAnimationFixes.Value) SmoothenAnimations(__instance);
 
+                GameWorldController.TimeInRaid += Time.deltaTime;
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 PlayerValues.IsSprinting = __instance.IsSprintEnabled;
                 PlayerValues.EnviroType = __instance.Environment;
                 PlayerValues.BtrState = __instance.BtrState;
-                StanceController.IsInInventory = __instance.IsInventoryOpened;
                 //bit wise operation, Mask property has serveral combined enum values
                 PlayerValues.IsMoving = __instance.IsSprintEnabled || (__instance.ProceduralWeaponAnimation.Mask & EProceduralAnimationMask.Walking) != (EProceduralAnimationMask)0;//Plugin.FikaPresent ? false : __instance.IsSprintEnabled ||  !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.x, 0f, 0.001f) || !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.z, 0f, 0.001f);
+
+                if (Input.GetKeyDown(PluginConfig.ToggleGasMaskKey.Value.MainKey) && PluginConfig.ToggleGasMaskKey.Value.Modifiers.All(Input.GetKey)) 
+                {
+                    GearController.ToggleGasMask(__instance);
+                }
 
                 if (PluginConfig.EnableSprintPenalty.Value)
                 {

@@ -87,12 +87,12 @@ namespace RealismMod
             {
                 WeaponSkills skillsClass = (WeaponSkills)_skillField.GetValue(__instance);
                 float deltaErgo = skillsClass.DeltaErgonomics;
-                if (!PluginConfig.OverrideMounting.Value && player.MovementContext.IsInMountedState)
+                if (!PluginConfig.OverrideMounting.Value && Plugin.ServerConfig.enable_stances && player.MovementContext.IsInMountedState)
                 {
                     deltaErgo += ((player.MovementContext.PlayerMountingPointData.MountPointData.MountSideDirection != EMountSideDirection.Forward || !__instance.BipodState) ? skillsClass.MountingBonusErgo : skillsClass.BipodBonusErgo);
                 }
                 bool isBracingTop = StanceController.IsBracing && StanceController.BracingDirection == EBracingDirection.Top;
-                if (PluginConfig.OverrideMounting.Value && WeaponStats.BipodIsDeployed && !StanceController.IsMounting && !isBracingTop) 
+                if (Plugin.ServerConfig.enable_stances && PluginConfig.OverrideMounting.Value && WeaponStats.BipodIsDeployed && !StanceController.IsMounting && !isBracingTop) 
                 {
                     deltaErgo -= 0.15f;
                 }
@@ -117,7 +117,7 @@ namespace RealismMod
             if (!Utils.PlayerIsReady) return true;
             if (__instance != null && __instance?.Owner != null && __instance?.Owner?.ID != null && __instance?.Owner?.ID == Singleton<GameWorld>.Instance?.MainPlayer?.ProfileId)
             {
-                var weapStats = Stats.GetDataObj<Gun>(Stats.GunStats, __instance.TemplateId);
+                var weapStats = TemplateStats.GetDataObj<Gun>(TemplateStats.GunStats, __instance.TemplateId);
                 if (PlayerValues.IsInReloadOpertation)
                 {
                     __result = FinalStatCalc(__instance, weapStats);
@@ -153,7 +153,7 @@ namespace RealismMod
             WeaponStats.HasLongMag = false;
             if (hasMag == true)
             {
-                var magStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, magazine.TemplateId);
+                var magStats = TemplateStats.GetDataObj<WeaponMod>(TemplateStats.WeaponModStats, magazine.TemplateId);
                 float magWeightFactored = StatCalc.FactoredWeight(magWeight);
                 string position = StatCalc.GetModPosition(magazine, weapType, weapOpType, "");
                 magWeight = magazine.TotalWeight;
@@ -369,13 +369,12 @@ namespace RealismMod
             float currentGas = 0f;
 
             bool folded = __instance.Folded;
-            bool hasShoulderContact = false;
-            if (weapStats.HasShoulderContact && !folded)
-            {
-                hasShoulderContact = true;
-            }
+            bool hasShoulderContact = weapStats.HasShoulderContact;
+
             WeaponStats.BaseMeleeDamage = 0f; //reset the melee dmg
             WeaponStats.BaseMeleePen = 0f;
+
+            WeaponStats.IsVector = weapType == "vector";
 
             WeaponStats.HasBayonet = false;
             WeaponStats.HasBooster = false;
@@ -386,7 +385,7 @@ namespace RealismMod
             {
                 if (!Utils.IsMagazine(mod))
                 {
-                    var weaponModStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, mod.TemplateId);
+                    var weaponModStats = TemplateStats.GetDataObj<WeaponMod>(TemplateStats.WeaponModStats, mod.TemplateId);
                     string modType = weaponModStats.ModType;
                     float modWeight = mod.Weight;
                     float modWeightFactored = StatCalc.FactoredWeight(modWeight);
