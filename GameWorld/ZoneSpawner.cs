@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
+using static GClass1389;
 using static RootMotion.FinalIK.IKSolver;
 
 namespace RealismMod
@@ -53,11 +54,25 @@ namespace RealismMod
             return PluginConfig.ZoneDebug.Value || ProfileData.PMCLevel >= 20 || HasMetQuestCriteria(new string[] { "66dad1a18cbba6e558486336", "670ae811bd43cbf026768126" },  new EQuestStatus[] { EQuestStatus.Started, EQuestStatus.Success });
         }
 
-        //for player, get closest spawn. For bot, sort by min distance, or furthest from player failing that.
-        public static Vector3 TryGetSafeSpawnPoint(Player entitiy, bool isBot, bool blocksNav, bool isInRads)
+        public static void DebugSpawnPoints() 
         {
             IEnumerable<Vector3> spawns = ZoneData.GetSafeSpawns();
-            if (spawns == null || (isBot && !blocksNav) || (!isBot && GameWorldController.CurrentMap == "laboratory" && !isInRads)) return entitiy.Transform.position; //can't account for bot vs player, because of maps like Labs where player should spawn in gas
+            foreach (var spawn in spawns)
+            { 
+                Vector3 spawnLocation = new Vector3(spawn.x, spawn.y, spawn.z);
+                var spawnGo = new GameObject(spawnLocation.ToString());
+                spawnGo.transform.position = spawnLocation;
+                BoxCollider boxCollider = spawnGo.AddComponent<BoxCollider>();
+                boxCollider.size = new Vector3(1, 500, 1);
+                VisualizeZone(spawnGo.name, spawnGo.transform, boxCollider);
+            }
+        }
+
+        //for player, get closest spawn. For bot, sort by min distance, or furthest from player failing that.
+        public static Vector3 TryGetSafeSpawnPoint(Player entity, bool isBot, bool blocksNav, bool isInRads)
+        {
+            IEnumerable<Vector3> spawns = ZoneData.GetSafeSpawns();
+            if (spawns == null || (isBot && !blocksNav) || (!isBot && GameWorldController.CurrentMap == "laboratory" && !isInRads)) return entity.Transform.position; //can't account for bot vs player, because of maps like Labs where player should spawn in gas
             IEnumerable<Vector3> validSpawns = spawns;
             Player player = Utils.GetYourPlayer();
 
@@ -68,7 +83,7 @@ namespace RealismMod
 
             if (validSpawns.Any() || !isBot)
             {
-                return validSpawns.OrderBy(s => Vector3.Distance(s, entitiy.Transform.position)).First(); //if found spawns for bot, or if not a bot, find the closest spwan
+                return validSpawns.OrderBy(s => Vector3.Distance(s, entity.Transform.position)).First(); //if found spawns for bot, or if not a bot, find the closest spwan
             }
             else 
             {
@@ -80,6 +95,7 @@ namespace RealismMod
         {
             var zones = ZoneData.GetZones(collection.ZoneType, GameWorldController.CurrentMap);
             if (zones == null) return;
+            if (PluginConfig.ZoneDebug.Value) DebugSpawnPoints();
             foreach (var zone in zones)
             {
                 if (collection.ZoneType == EZoneType.Gas || collection.ZoneType == EZoneType.GasAssets) CreateZone<GasZone>(zone, collection.ZoneType);
@@ -156,7 +172,7 @@ namespace RealismMod
                 fogComponent.SpeedModi = subZone.VisSpeedModi;
                 fogComponent.OpacityModi = subZone.VisOpacityModi;
                 fogComponent.ParticleRate = subZone.VisParticleRate;
-                fogComponent.ParticleSize = new ParticleSystem.MinMaxCurve(4f, 7f);
+                fogComponent.ParticleSize = new ParticleSystem.MinMaxCurve(4f, 9f);
             }
         }
 
@@ -226,16 +242,21 @@ namespace RealismMod
             // visual representation for debugging
             if (PluginConfig.ZoneDebug.Value && !isBufferZone)
             {
-                GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                visualRepresentation.name = zoneName + "Visual";
-                visualRepresentation.transform.parent = hazardZone.transform;
-                visualRepresentation.transform.localScale = size;
-                visualRepresentation.transform.localPosition = boxCollider.center;
-                visualRepresentation.transform.rotation = boxCollider.transform.rotation;
-                visualRepresentation.GetComponent<Renderer>().material.color = hazard.ZoneType == EZoneType.Radiation || hazard.ZoneType == EZoneType.RadAssets ? new UnityEngine.Color(0f, 1f, 0f, 0.15f) : new UnityEngine.Color(1f, 0f, 0f, 0.15f);
-                UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
-                MoveDaCube.AddComponentToExistingGO(visualRepresentation, zoneName);
+                VisualizeZone(zoneName, hazardZone.transform, boxCollider, hazard.ZoneType);
             }
+        }
+
+        private static void VisualizeZone(string name, Transform parentTransform, BoxCollider collider, EZoneType zoneType = EZoneType.Gas) 
+        {
+            GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            visualRepresentation.name = name + "Visual";
+            visualRepresentation.transform.parent = parentTransform;
+            visualRepresentation.transform.localScale = collider.size;
+            visualRepresentation.transform.localPosition = collider.center;
+            visualRepresentation.transform.rotation = collider.transform.rotation;
+            visualRepresentation.GetComponent<Renderer>().material.color = zoneType == EZoneType.Radiation || zoneType == EZoneType.RadAssets ? new UnityEngine.Color(0f, 1f, 0f, 0.15f) : new UnityEngine.Color(1f, 0f, 0f, 0.15f);
+            UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
+            MoveDaCube.AddComponentToExistingGO(visualRepresentation, name);
         }
 
         //add low-strength buffer zone around subzone to warn player

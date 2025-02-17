@@ -110,7 +110,7 @@ namespace RealismMod
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
         public float HpRegenLimitFactor { get; }
-        private bool hasRemovedTrnqt = false;
+        private bool triedtoRemoveTrnqt = false;
         private bool ranOnce = false;
         private float _painFactor = 0f;
 
@@ -142,11 +142,11 @@ namespace RealismMod
                     ranOnce = true;
                 }
 
-                if (!hasRemovedTrnqt)
+                if (!triedtoRemoveTrnqt)
                 {
-                    hasRemovedTrnqt = true;
-                    RealHealthController.RemoveCustomEffectOfType(typeof(TourniquetEffect), BodyPart);
-                    if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Tourniquet Effect Present On Limb If Present: " + BodyPart, EFT.Communications.ENotificationDurationType.Long);
+                    triedtoRemoveTrnqt = true;
+                    bool removedTrnqt = RealHealthController.RemoveCustomEffectOfType(typeof(TourniquetEffect), BodyPart);
+                    if (removedTrnqt && PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Tourniquet Effect Present On: " + BodyPart, EFT.Communications.ENotificationDurationType.Long);
                 }
 
                 float currentHp = _Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;

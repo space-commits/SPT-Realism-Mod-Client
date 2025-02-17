@@ -13,7 +13,7 @@ namespace RealismMod
     public class PlayerZoneBridge : MonoBehaviour
     {
         private const float BOT_INTERVAL = 10f;
-        private const float SPAWNTIME = 30f;
+        private const float SPAWN_TIME = 30f;
         public Player _Player { get; set; }
         public bool IsBot { get; private set; } = false;
         public bool SpawnedInZone { get; private set; } = false;
@@ -124,7 +124,7 @@ namespace RealismMod
                     MoveEntityToSafeLocation();
                 }
                 bool isMoving = _Player.IsSprintEnabled || (_Player.ProceduralWeaponAnimation.Mask & EProceduralAnimationMask.Walking) != (EProceduralAnimationMask)0;
-                if (_timeActive >= SPAWNTIME || SpawnedInZone || (_timeActive >= 5f && isMoving)) _checkedSpawn = true;
+                if (_timeActive >= SPAWN_TIME || SpawnedInZone || (_timeActive >= 5f && isMoving)) _checkedSpawn = true;
             }
         }
 

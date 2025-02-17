@@ -536,13 +536,6 @@ namespace RealismMod
                 kv => kv.Key
             );
             dictionaryField1.SetValue(null, newDict1);
-
-            // Debug logging
-            UnityEngine.Debug.Log($"Added {customTypes.Length} custom types to effects dictionary");
-            foreach (var type in customTypes)
-            {
-                UnityEngine.Debug.Log($"Added effect: {type.Name} with index {Array.IndexOf(newTypeArr, type)}");
-            }
         }
 
         public void TestAddBaseEFTEffect(int partIndex, Player player, String effect)
@@ -692,16 +685,19 @@ namespace RealismMod
             return true;
         }
 
-        public void RemoveCustomEffectOfType(Type effect, EBodyPart bodyPart)
+        public bool RemoveCustomEffectOfType(Type effect, EBodyPart bodyPart)
         {
+            bool removedEffect = false;
             for (int i = _activeHealthEffects.Count - 1; i >= 0; i--)
             {
                 ICustomHealthEffect activeHealthEffect = _activeHealthEffects[i];
                 if (activeHealthEffect.GetType() == effect && activeHealthEffect.BodyPart == bodyPart)
                 {
                     _activeHealthEffects.RemoveAt(i);
+                    removedEffect = true;
                 }
             }
+            return removedEffect;
         }
 
         public bool HasCustomEffectOfType(Type effect, EBodyPart bodyPart = EBodyPart.Common)
