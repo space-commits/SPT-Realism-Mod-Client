@@ -250,6 +250,7 @@ namespace RealismMod
 
         public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon, Player player)
         {
+            if (!Plugin.ServerConfig.recoil_attachment_overhaul) return;
             NewRecoilShotEffect newRecoil = pwa.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
             bool hasOptic = WeaponStats.IsOptic && StanceController.IsAiming;
             float shoulderContactFactor = weapon.WeapClass != "pistol" && !WeaponStats.HasShoulderContact ? 1.25f : WeaponStats.IsStockedPistol ? 0.85f : 1f;
