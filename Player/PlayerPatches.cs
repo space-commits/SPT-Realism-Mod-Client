@@ -453,7 +453,7 @@ namespace RealismMod
         {
             if (fc != null)
             {
-                ShootController.ShootUpdate(player, fc);
+                if (Plugin.ServerConfig.recoil_attachment_overhaul) ShootController.ShootUpdate(player, fc);
 
                 WeaponStats.BipodIsDeployed = fc.HasBipod && fc.BipodState;
                 WeaponStats.FireMode = fc.Item.SelectedFireMode;
