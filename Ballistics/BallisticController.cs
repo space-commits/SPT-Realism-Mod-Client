@@ -253,9 +253,9 @@ namespace RealismMod
             return hitZone;
         }
 
-        public static void ModifyDamageByZone(Player player, ref DamageInfo damageInfo, EBodyPartColliderType partHit, float maxHp)
+        public static void ModifyDamageByZone(Player player, EBodyPartColliderType partHit, float maxHp, bool isBluntDamage, ref DamageInfo damageInfo)
         {
-            if (!damageInfo.Blunt || string.IsNullOrEmpty(damageInfo.BlockedBy))
+            if (!isBluntDamage)
             {
                 EBodyHitZone hitZone = GetBodyHitZone(player, partHit, damageInfo);
                 BallisticsController.ModifyDamageByHitZone(maxHp, partHit, hitZone, ref damageInfo);
@@ -263,9 +263,10 @@ namespace RealismMod
         }
 
 
-        public static bool ShouldDoSpalling(bool isBuckshot, AmmoTemplate ammoTemp, DamageInfo damageInfo, EBodyPart bodyPartType)
+        public static bool ShouldDoSpalling(bool isBuckshot, AmmoTemplate ammoTemp, DamageInfo damageInfo, EBodyPart bodyPartType, bool isBluntDamage)
         {
-            if (isBuckshot || ammoTemp == null || damageInfo.DamageType == EDamageType.Melee || !damageInfo.Blunt || (bodyPartType != EBodyPart.Chest && bodyPartType != EBodyPart.Stomach)) return false;
+            if (isBuckshot || ammoTemp == null || damageInfo.DamageType == EDamageType.Melee || !isBluntDamage || (bodyPartType != EBodyPart.Chest && bodyPartType != EBodyPart.Stomach)) return false;
+             //peformance is terrible as of SPT 3.10, so disabling for buckshot for now
 /*            if (isBuckshot)
             {
                 int rndNum = UnityEngine.Random.Range(1, 30);
@@ -367,8 +368,8 @@ namespace RealismMod
             float bluntDamage = damageInfo.Damage;
             float speedFactor = damageInfo.ArmorDamage / ammoTemp.InitialSpeed;
             float fragChance = ammoTemp.FragmentationChance * speedFactor;
-            float lightBleedChance = damageInfo.LightBleedingDelta;
-            float heavyBleedChance = damageInfo.HeavyBleedingDelta;
+            float lightBleedChance = 0.8f; //if it's blunt damage, I set bleed delta to -1, so need new value
+            float heavyBleedChance = 0.25f;
             float ricochetChance = ammoTemp.RicochetChance * speedFactor;
             float spallReduction = gearStats.SpallReduction;
             float armorDamageActual = ammoTemp.ArmorDamage * speedFactor;

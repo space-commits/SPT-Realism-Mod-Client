@@ -78,8 +78,8 @@ namespace RealismMod
         {
             //bool fireButtonIsBeingHeld = Input.GetMouseButton(0);
             bool isAutoFiring =  player.ProceduralWeaponAnimation.method_18(); // || fc.IsTriggerPressed is literally holding mb
-
-            if (IsFiring || isAutoFiring) 
+            bool isFiring = IsFiring || isAutoFiring;
+            if (isFiring) 
             {
                 DeafenController.IncreaseDeafeningShooting();
                 RecoilController(player);
@@ -131,7 +131,7 @@ namespace RealismMod
 
             StanceController.StanceShotTimer();
             UpdateConvergence(fc, player);
-            LerpRecoilRotation(player);
+            LerpRecoilRotation(player, isFiring);
         }
 
         private static float ShotModifier()
@@ -175,7 +175,7 @@ namespace RealismMod
             _targetRotation.y = yRotation;
         }
 
-        public static void LerpRecoilRotation(Player player)
+        public static void LerpRecoilRotation(Player player, bool isFiring)
         {
             float fpsFactor = 1f;
             if (PluginConfig.UseFpsRecoilFactor.Value)
@@ -186,8 +186,8 @@ namespace RealismMod
 
             float xRoation = !IsFiring ? 0f : Mathf.Lerp(-_targetRotation.x, _targetRotation.x, Mathf.PingPong(Time.time * _dispersionSpeed, 1f)) + _recoilAngle; //need angle and dispersionSpeed
             Vector2 newRotation = new Vector2(xRoation, _targetRotation.y);
-            float speed = Mathf.InverseLerp(0f, 9f, FactoredTotalConvergence);
-            _currentRotation = Vector2.Lerp(_currentRotation, newRotation * fpsFactor, speed);
+            float speed = !isFiring ? 30f : Mathf.InverseLerp(0f, 9f, FactoredTotalConvergence) * PluginConfig.RecoilClimbSpeed.Value;
+            _currentRotation = Vector2.MoveTowards(_currentRotation, newRotation * fpsFactor, speed * Time.deltaTime); 
             player.Rotate(_currentRotation, false);
         }
 
