@@ -221,7 +221,7 @@ namespace RealismMod
             __instance.IsForwardHit = shot.IsForwardHit;
             __instance.SourceId = shot.Ammo.TemplateId;
 
-            if (__instance.DamageType == EDamageType.Blunt || __instance.DamageType == EDamageType.Bullet)
+            if (__instance.DamageType == EDamageType.Blunt || __instance.DamageType == EDamageType.Bullet || !string.IsNullOrEmpty(__instance.BlockedBy))
             {
                 if (PluginConfig.EnableGeneralLogging.Value)
                 {
@@ -354,9 +354,17 @@ namespace RealismMod
                 return;
             }
 
+            bool isBluntDamage = damageInfo.DamageType == EDamageType.Blunt || !string.IsNullOrEmpty(damageInfo.BlockedBy);
             bool isZombie = Utils.IsZombie(__instance);
 
-            if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
+            if (isBluntDamage) 
+            {
+                damageInfo.BleedBlock = true;
+                damageInfo.HeavyBleedingDelta = -1f;
+                damageInfo.LightBleedingDelta = -1f;
+            }
+
+            if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee || isBluntDamage)
             {
                 EBodyPartColliderType partHit = EBodyPartColliderType.None;
                 if (damageInfo.BodyPartColliderType == EBodyPartColliderType.None) //for fika value it's populated, otherwise it's unused
@@ -370,7 +378,7 @@ namespace RealismMod
                 }
  
                 //if fika, based on collidor type, get refernce to player assetpoolobject, get collidors, get component
-                if (PluginConfig.EnableBodyHitZones.Value) BallisticsController.ModifyDamageByZone(__instance, ref damageInfo, partHit, __instance.HealthController.GetBodyPartHealth(bodyPartType).Maximum);
+                if (PluginConfig.EnableBodyHitZones.Value) BallisticsController.ModifyDamageByZone(__instance, partHit, __instance.HealthController.GetBodyPartHealth(bodyPartType).Maximum,  isBluntDamage, ref damageInfo);
   
                 float KE = 1f;
                 AmmoTemplate ammoTemp = damageInfo.SourceId == null || damageInfo.DamageType == EDamageType.Melee ? null : Utils.GetItemTemplate<AmmoTemplate>(damageInfo.SourceId);
@@ -381,7 +389,7 @@ namespace RealismMod
                     BallisticsController.PlayBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
 
-                bool doSpalling = !isZombie && BallisticsController.ShouldDoSpalling(isBuckshot, ammoTemp, damageInfo, bodyPartType);
+                bool doSpalling = !isZombie && BallisticsController.ShouldDoSpalling(isBuckshot, ammoTemp, damageInfo, bodyPartType, isBluntDamage);
 
                 bool hasArmArmor = false;
                 bool hasLegProtection = false;
@@ -411,6 +419,18 @@ namespace RealismMod
                     Logger.LogWarning("========================= ");
                 }
 
+            }
+        }
+
+
+        [PatchPostfix]
+        private static void Postfix(Player __instance, ref DamageInfo damageInfo)
+        {
+            if (damageInfo.DamageType == EDamageType.Blunt || !string.IsNullOrEmpty(damageInfo.BlockedBy))
+            {
+                damageInfo.BleedBlock = true;
+                damageInfo.HeavyBleedingDelta = -1f;
+                damageInfo.LightBleedingDelta = -1f;
             }
         }
     }
@@ -804,8 +824,9 @@ namespace RealismMod
                     if (PluginConfig.EnableBallisticsLogging.Value) Logger.LogWarning("Melee Blocked");
                     if (!isHead) damageInfo.Damage = totaldamage + (damageInfo.Damage / 10f);
                     else damageInfo.Damage = totaldamage;
-                    damageInfo.HeavyBleedingDelta = 0f;
-                    damageInfo.LightBleedingDelta = 0f;
+                    damageInfo.BleedBlock = true;
+                    damageInfo.HeavyBleedingDelta = -1f;
+                    damageInfo.LightBleedingDelta = -1f;
                 }
             }
             else if (roundPenetrated)
@@ -825,8 +846,9 @@ namespace RealismMod
 
             if (!roundPenetrated)
             {
-                damageInfo.HeavyBleedingDelta = 0f;
-                damageInfo.LightBleedingDelta = 0f;
+                damageInfo.BleedBlock = true;
+                damageInfo.HeavyBleedingDelta = -1f;
+                damageInfo.LightBleedingDelta = -1f;
             }
 
             damageInfo.StaminaBurnRate = (totaldamage / 100f) * 2f;
