@@ -10,7 +10,6 @@ namespace RealismMod
 {
     public class ShootController
     {
-
         public static Vector2 RecoilRotation { get { return _currentRotation; } }
         public static bool IsFiring = false;
         public static bool IsFiringDeafen = false;

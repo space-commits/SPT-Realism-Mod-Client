@@ -338,7 +338,7 @@ namespace RealismMod
 
                 float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
 
-                __instance.RecoilStableShotIndex = WeaponStats.IsStocklessPistol ? 2 : 1; 
+                __instance.RecoilStableShotIndex = WeaponStats.IsStocklessPistol ? 2 : 1;
                 __instance.HandRotationRecoil.RecoilReturnTrajectoryOffset = template.RecoilReturnPathOffsetHandRotation * PluginConfig.AfterRecoilRandomness.Value;
                 __instance.HandRotationRecoil.StableAngleIncreaseStep = template.RecoilStableAngleIncreaseStep;
                 __instance.HandRotationRecoil.AfterRecoilOffsetVerticalRange = Vector2.zero; // template.PostRecoilVerticalRangeHandRotation * Plugin.AfterRecoilRandomness.Value;
@@ -348,18 +348,10 @@ namespace RealismMod
 
                 __instance.HandRotationRecoil.ReturnTrajectoryDumping = template.RecoilReturnPathDampingHandRotation ;
                 __instance.HandRotationRecoilEffect.Damping = template.RecoilDampingHandRotation * PluginConfig.RecoilDampingMulti.Value; 
-                __instance.HandRotationRecoil.CategoryIntensityMultiplier =  template.RecoilCategoryMultiplierHandRotation * PluginConfig.RecoilIntensity.Value * stockedPistolFactor; 
+                __instance.HandRotationRecoil.CategoryIntensityMultiplier =  template.RecoilCategoryMultiplierHandRotation * PluginConfig.RecoilIntensity.Value * stockedPistolFactor;
 
                 float totalVRecoilDelta = Mathf.Max(0f, (1f + WeaponStats.VRecoilDelta) * (1f - recoilSuppressionX - recoilSuppressionY * recoilSuppressionFactor));
                 float totalHRecoilDelta = Mathf.Max(0f, (1f + WeaponStats.HRecoilDelta) * (1f - recoilSuppressionX - recoilSuppressionY * recoilSuppressionFactor));
-
-
-                //this may not be the right reference
-                //need to figure out a sensible way to represent recoil of underbarrel
-                /*                if (firearmController.Weapon.IsUnderBarrelDeviceActive) 
-                                {
-                                }
-                */
 
                 __instance.BasicRecoilRotationStrengthRange = new Vector2(0.95f, 1.05f); //should mess around with this, consider making it unique per weapon
                 __instance.BasicRecoilPositionStrengthRange = new Vector2(0.95f, 1.05f); //should mess around with this
@@ -380,6 +372,15 @@ namespace RealismMod
                 ShootController.BaseTotalHandDamping = (float)Math.Round(WeaponStats.TotalRecoilHandDamping * PluginConfig.HandsDampingMulti.Value, 3);
                 WeaponStats.TotalWeaponWeight = firearmController.Weapon.TotalWeight;
                 WeaponStats.TotalWeaponLength = firearmController.Item.CalculateCellSize().X;
+
+                __instance.HandRotationRecoil.MountVerticalRecoilMultiplier = template.MountVerticalRecoilMultiplier;
+                __instance.HandRotationRecoil.MountHorizontalRecoilMultiplier = template.MountHorizontalRecoilMultiplier;
+
+                if (firearmController != null && firearmController.HasBipod)
+                {
+                    __instance.HandRotationRecoil.BipodRecoilMultiplier = firearmController.Bipod.BipodRecoilMultiplier;
+                }
+
                 if (WeaponStats.WeapID != template._id)
                 {
                     StanceController.DidWeaponSwap = true;
@@ -445,7 +446,6 @@ namespace RealismMod
             }
         }
 
-
         private static float PistolShotFactor(int shot)
         {
             switch (shot)
@@ -473,9 +473,32 @@ namespace RealismMod
             }
         }
 
-        public static float RifleShotModifier(int shotCount)
+        private static float RifleShotModifier(int shotCount)
         {
             return 0.95f + (shotCount * 0.05f);
+        }
+
+        private static void DoZeroSift(FirearmController firearmController, float totalCamRecoil) 
+        {
+            float gunFactor = ZeroShiftGunFactor(WeaponStats._WeapClass, firearmController.Weapon.TemplateId);
+            float shiftRecoilFactor = (ShootController.FactoredTotalVRecoil + ShootController.FactoredTotalHRecoil) * (1f + totalCamRecoil) * gunFactor;
+            float scopeFactor = ((1f - WeaponStats.ScopeAccuracyFactor) * 2f) + (shiftRecoilFactor * 0.1f) * 0.15f;
+
+            int rnd = UnityEngine.Random.Range(1, 21);
+            if (scopeFactor > rnd)
+            {
+                float offsetFactor = scopeFactor * 0.015f;
+                float offsetX = Random.Range(-offsetFactor, offsetFactor);
+                float offsetY = Random.Range(-offsetFactor, offsetFactor);
+                WeaponStats.ZeroRecoilOffset = new Vector2(offsetX, offsetY);
+                if (WeaponStats.ScopeID != null && WeaponStats.ScopeID != "")
+                {
+                    if (WeaponStats.ZeroOffsetDict.ContainsKey(WeaponStats.ScopeID))
+                    {
+                        WeaponStats.ZeroOffsetDict[WeaponStats.ScopeID] = WeaponStats.ZeroRecoilOffset;
+                    }
+                }
+            }
         }
 
         [PatchPrefix]
@@ -486,6 +509,7 @@ namespace RealismMod
 
             if (player != null && player.IsYourPlayer)
             {
+
                 //Conditional recoil modifiers 
                 float totalPlayerWeight = WeaponStats.IsStocklessPistol || (!WeaponStats.HasShoulderContact && !WeaponStats.IsPistol) ? 0f : PlayerValues.TotalModifiedWeightMinusWeapon;
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 650f);
@@ -579,25 +603,7 @@ namespace RealismMod
                 //Calculate offest for zero shift
                 if (WeaponStats.ScopeAccuracyFactor < 0f)
                 {
-                    float gunFactor = ZeroShiftGunFactor(WeaponStats._WeapClass, firearmController.Weapon.TemplateId);
-                    float shiftRecoilFactor = (ShootController.FactoredTotalVRecoil + ShootController.FactoredTotalHRecoil) * (1f + totalCamRecoil) * gunFactor;
-                    float scopeFactor = ((1f - WeaponStats.ScopeAccuracyFactor) * 2f) + (shiftRecoilFactor * 0.1f) * 0.15f;
-
-                    int rnd = UnityEngine.Random.Range(1, 21);
-                    if (scopeFactor > rnd)
-                    {
-                        float offsetFactor = scopeFactor * 0.015f;
-                        float offsetX = Random.Range(-offsetFactor, offsetFactor);
-                        float offsetY = Random.Range(-offsetFactor, offsetFactor);
-                        WeaponStats.ZeroRecoilOffset = new Vector2(offsetX, offsetY);
-                        if (WeaponStats.ScopeID != null && WeaponStats.ScopeID != "")
-                        {
-                            if (WeaponStats.ZeroOffsetDict.ContainsKey(WeaponStats.ScopeID))
-                            {
-                                WeaponStats.ZeroOffsetDict[WeaponStats.ScopeID] = WeaponStats.ZeroRecoilOffset;
-                            }
-                        }
-                    }
+                    DoZeroSift(firearmController, totalCamRecoil);
                 }
 
                 return false;

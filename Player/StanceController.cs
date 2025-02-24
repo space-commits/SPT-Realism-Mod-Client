@@ -782,7 +782,8 @@ namespace RealismMod
                 if (ShootController.IsFiring) //stnace specific firing check is too slow
                 {
                     bool rememberStance = PluginConfig.RememberStanceFiring.Value && IsAiming;
-                    bool keepStance = rememberStance || ((CurrentStance == EStance.ActiveAiming && !IsAiming) || CurrentStance == EStance.ShortStock);
+                    bool isActiveAim = CurrentStance == EStance.ActiveAiming && !IsAiming;
+                    bool keepStance = rememberStance || (isActiveAim || CurrentStance == EStance.ShortStock || CurrentStance == EStance.PistolCompressed);
 
                     if (!keepStance)
                     {

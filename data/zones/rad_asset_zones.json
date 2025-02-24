@@ -1,12 +1,153 @@
 {
-    "FactoryAssetZones": [],
+    "FactoryAssetZones": [
+        {
+            "spawnChance": 0.75,
+            "zones": [
+                {
+                    "name": "Courtyard_dynamicquest",
+                    "strength": 300,
+                    "blockNav": true,
+                    "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
+                    "position": {"x":27.72413,"y":1.817436,"z":59.57201},
+                    "rotation": {"x":0,"y":0.391432,"z":0},
+                    "size": {"x":6,"y":4.285176,"z":8}
+                },
+                {
+                    "name": "Courtyard1",
+                    "strength": 30,
+                    "blockNav": true,
+                    "usesDistanceFalloff": true,
+                    "position": {"x":23.72413,"y":1.817436,"z":59.57201},
+                    "rotation": {"x":0,"y":0.391432,"z":0},
+                    "size": {"x":3.231853,"y":4.285176,"z":4.955511}
+                },
+                {
+                    "name": "Courtyard2",
+                    "strength": 30,
+                    "blockNav": true,
+                    "usesDistanceFalloff": true,
+                    "position": {"x":26.65346,"y":2.115886,"z":63.43224},
+                    "rotation": {"x":0,"y":298.331,"z":0},
+                    "size": {"x":9.35568,"y":2.596529,"z":3.813522}
+                },
+                {
+                    "name": "Courtyard3",
+                    "strength": 30,
+                    "blockNav": true,
+                    "usesDistanceFalloff": true,
+                    "position": {"x":20.92828,"y":2.400393,"z":62.91084},
+                    "rotation": {"x":0,"y":298.331,"z":0},
+                    "size": {"x":5.219493,"y":2.682731,"z":5.730433}
+                },
+                {
+                    "name": "Courtyard4",
+                    "strength": 30,
+                    "blockNav": true,
+                    "usesDistanceFalloff": true,
+                    "position": {"x":23.63554,"y":2.492681,"z":65.4992},
+                    "rotation": {"x":0,"y":270.5074,"z":0},
+                    "size": {"x":3.396745,"y":2.365652,"z":4.88796}
+                }
+            ],
+            "assets": [
+                {
+                    "assetName": "RedForkLift",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {"x":23.70996,"y":1.109977,"z":57.89249},
+                    "rotation": {"x":270.9974,"y":190.863,"z":259.4405}
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {"x":23.80279,"y":1.174328,"z":59.75138},
+                    "rotation": {"x":271.0187,"y":146.1709,"z":303.7905}
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {"x":20.31866,"y":1.135297,"z":62.05239},
+                    "rotation": {"x":270.4789,"y":232.5313,"z":49.96267}
+                },
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {"x":26.72978,"y":2.070488,"z":58.08673},
+                    "rotation": {"x":347.9569,"y":186.9042,"z":350.848}
+                },
+                {
+                    "assetName": "LabsBarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {"x":26.94953,"y":1.105119,"z":63.28744},
+                    "rotation": {"x":0,"y":354.5966,"z":0}
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": true,
+                    "position": {"x":21.1466,"y":1.125673,"z":63.56946},
+                    "rotation": {"x":271.295,"y":331.3029,"z":-0.0001133318}
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": true,
+                    "position": {"x":22.09917,"y":1.434523,"z":63.35507},
+                    "rotation": {"x":0,"y":333.2424,"z":0}
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {"x":28.34316,"y":1.115198,"z":47.38762},
+                    "rotation": {"x":0,"y":266.2557,"z":0}
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {"x":28.21725,"y":2.189969,"z":47.36443},
+                    "rotation": {"x":0,"y":91.29225,"z":0}
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {"x":14.19064,"y":2.067492,"z":45.84887},
+                    "rotation": {"x":85.94618,"y":181.2246,"z":2.38229}
+                }
+            ],
+            "loot": []
+        }
+    ],
     "CustomsAssetZones": [
         {
             "spawnChance": 0.3,
             "zones": [
                 {
                     "name": "CustomsFactoryCheckpoint_dynamicquest",
-                    "strength": 17,
+                    "strength": 18,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "analysable": {
@@ -262,7 +403,7 @@
                         "z": 0
                     },
                     "size": {
-                        "x": -10.00241,
+                        "x": 10.00241,
                         "y": 5.153305,
                         "z": 15.06726
                     }
@@ -297,7 +438,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic1",
-                    "strength": 25,
+                    "strength": 28,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -318,7 +459,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic2",
-                    "strength": 25,
+                    "strength": 30,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -381,7 +522,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic5",
-                    "strength": 25,
+                    "strength": 30,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -402,7 +543,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic6",
-                    "strength": 25,
+                    "strength": 30,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -423,7 +564,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic7",
-                    "strength": 25,
+                    "strength": 30,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -444,7 +585,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic8",
-                    "strength": 25,
+                    "strength": 30,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -465,7 +606,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic9",
-                    "strength": 25,
+                    "strength": 30,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -1076,7 +1217,7 @@
                 },
                 {
                     "name": "CutomsElbow1",
-                    "strength": 25,
+                    "strength": 32,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -1097,7 +1238,7 @@
                 },
                 {
                     "name": "CutomsElbow2",
-                    "strength": 30,
+                    "strength": 32,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -1118,7 +1259,7 @@
                 },
                 {
                     "name": "CutomsElbowBarrelPile",
-                    "strength": 18,
+                    "strength": 24,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -2248,7 +2389,7 @@
             "spawnChance": 0.3,
             "zones": [
                 {
-                    "name": "ShorelineGasBridgeGap_dynamicquest",
+                    "name": "ShorelineGasBridge_dynamicquest",
                     "strength": 2000.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
@@ -2277,7 +2418,7 @@
                 },
                 {
                     "name": "ShorelineGasBridgeGap",
-                    "strength": 18,
+                    "strength": 15,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -2298,7 +2439,7 @@
                 },
                 {
                     "name": "ShorelineGasBridgeBridge",
-                    "strength": 25,
+                    "strength": 30,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -2798,24 +2939,24 @@
                         "noRequirement": false
                     },
                     "position": {
-                        "x": -283.6577,
-                        "y": -58.10266,
-                        "z": 445.6247
+                        "x": -206.0792,
+                        "y": -39.29873,
+                        "z": 144.7998
                     },
                     "rotation": {
                         "x": 0,
-                        "y": 96.49476,
+                        "y": 180.0601,
                         "z": 0
                     },
                     "size": {
-                        "x": 13.19904,
-                        "y": 3.787305,
-                        "z": 17.67786
+                        "x": 17,
+                        "y": 3,
+                        "z": 8
                     }
                 },
                 {
                     "name": "ShorelinePowerBridge",
-                    "strength": 25,
+                    "strength": 30,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -3328,12 +3469,12 @@
                     "size": {
                         "x": 16.93663,
                         "y": 4.403505,
-                        "z": 3.267873
+                        "z": 5
                     }
                 },
                 {
                     "name": "ShorelineWaterfallBridge1",
-                    "strength": 25,
+                    "strength": 30,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -3354,7 +3495,7 @@
                 },
                 {
                     "name": "ShorelineWaterfallBridge2",
-                    "strength": 15,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -4100,7 +4241,7 @@
                 },
                 {
                     "name": "InterchangeMedAreaDynamic1",
-                    "strength": 25,
+                    "strength": 33,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -4121,7 +4262,7 @@
                 },
                 {
                     "name": "InterchangeMedAreaDynamic2",
-                    "strength": 25,
+                    "strength": 33,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -4142,7 +4283,7 @@
                 },
                 {
                     "name": "InterchangeMedAreaDynamic3",
-                    "strength": 25,
+                    "strength": 33,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -4163,7 +4304,7 @@
                 },
                 {
                     "name": "InterchangeMedAreaDynamic4",
-                    "strength": 25,
+                    "strength": 33,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -4184,7 +4325,7 @@
                 },
                 {
                     "name": "InterchangeMedAreaDynamic5",
-                    "strength": 25,
+                    "strength": 33,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -4198,7 +4339,7 @@
                         "z": 0
                     },
                     "size": {
-                        "x": -15.49116,
+                        "x": 15.49116,
                         "y": 4.979191,
                         "z": 16.77523
                     }
@@ -5560,7 +5701,7 @@
                 },
                 {
                     "name": "InterchangeIkeaRoad",
-                    "strength": 25,
+                    "strength": 27,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -6257,7 +6398,7 @@
                 },
                 {
                     "name": "InterhangeOliBackDynamic1",
-                    "strength": 18,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -6278,7 +6419,7 @@
                 },
                 {
                     "name": "InterhangeOliBackDynamic2",
-                    "strength": 18,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
