@@ -135,7 +135,14 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
                 ValueHandler rotationFrameSpan = (ValueHandler)rotationFrameSpanField.GetValue(__instance);
-                float gearPenalty = GearController.HasRespirator ? 0.45f : GearController.HasGasMask ? 0.3f * (1f + player.Skills.EnduranceBuffRestoration.Value) : GearController.FSIsActive ? 0.5f * (1f + player.Skills.HeavyVestMoveSpeedPenaltyReduction.Value) : GearController.NVGIsActive ? 0.6f : 1f;
+                float enduranceFactor = 1f + player.Skills.EnduranceBuffRestoration.Value;
+                float armorSkillFactor = 1f + player.Skills.HeavyVestMoveSpeedPenaltyReduction.Value;
+
+                float gearPenalty = 
+                    GearController.HasRespirator ? 0.25f * enduranceFactor : 
+                    GearController.HasGasMask ? 0.3f * enduranceFactor : 
+                    GearController.FSIsActive && GearController.GearBlocksMouth ? 0.5f * armorSkillFactor :
+                    GearController.NVGIsActive ? 0.6f : 1f;
                 float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - ((WeaponStats.ErgoFactor / 100f) * (1f - PlayerValues.StrengthWeightBuff)), 0.15f);
                 float playerWeightFactor = PlayerValues.TotalModifiedWeightMinusWeapon >= 50f ? 1f - ((PlayerValues.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerValues.StrengthWeightBuff)) : 1f; //doubling up because BSG's calcs are shit
                 float slopeFactor = PluginConfig.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;

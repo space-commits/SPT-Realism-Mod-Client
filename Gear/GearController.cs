@@ -19,9 +19,12 @@ namespace RealismMod
         public static bool HasGasFilter { get; private set; } = false;
         public static bool HasRespirator { get; private set; } = false;
         public static bool FSIsActive { get; set; } = false;
+        public static bool GearBlocksMouth { get; set; } = false;
         public static bool NVGIsActive { get; set; } = false;
         public static bool HasGasAnalyser { get; set; } = false;
         public static bool HasGeiger { get; set; } = false;
+        public static bool GearAllowsADS { get; set; } = true;
+        public static float GearReloadMulti { get; set; } = 1f;
 
         public static EquipmentSlot[] MainInventorySlots =
         {
@@ -478,50 +481,45 @@ namespace RealismMod
             return reloadSpeed;
         }
 
-        public static bool GetFacecoverADS(Player player)
+        public static void GetFacecoverADS(Player player)
         {
             Item faceCover = player.Equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
-
+            GearAllowsADS = true;
+            GearBlocksMouth = false;
             if (faceCover != null)
             {
                 var gearStats = TemplateStats.GetDataObj<Gear>(TemplateStats.GearStats, faceCover.TemplateId);
-                return gearStats.AllowADS;
-            }
-            else
-            {
-                return true;
+                GearAllowsADS = gearStats.AllowADS;
             }
         }
 
         public static void SetGearParamaters(Player player)
         {
             float reloadMulti = 1f;
-            bool allowADS = true;
             List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
             player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
 
             reloadMulti *= GetGearReloadSpeed(player, [EquipmentSlot.ArmBand, EquipmentSlot.TacticalVest]);
-            allowADS = GetFacecoverADS(player);
-
+            GetFacecoverADS(player);
+        
             foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
             {
+                //should I not continue instead of breaking?
+                //vest and facecover have been checked already, skip them
                 if (armorComponent.Item.Template.ParentId == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template.ParentId == "5a341c4686f77469e155819e")
                 {
-                    break;
+                    continue;
                 }
 
                 var gearStats = TemplateStats.GetDataObj<Gear>(TemplateStats.GearStats, armorComponent.Item.TemplateId);
                 reloadMulti *= gearStats.ReloadSpeedMulti;
                 ArmorTemplate armorTemplate = armorComponent.Template as ArmorTemplate;
 
-                if (!gearStats.AllowADS)
-                {
-                    allowADS = false;
-                }
+                if (!gearStats.AllowADS) GearAllowsADS = false;
+                if (gearStats.BlocksMouth) GearBlocksMouth = true;
             }
 
-            PlayerValues.GearReloadMulti = reloadMulti;
-            PlayerValues.GearAllowsADS = allowADS;
+            GearReloadMulti = reloadMulti;
         }
     }
 }

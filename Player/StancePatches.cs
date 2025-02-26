@@ -567,16 +567,6 @@ namespace RealismMod
 
         private static bool CheckForCoverCollision(EBracingDirection coverDir, Vector3 start, Vector3 direction)
         {
-
-            //fills the gaps
-            Collider[] hitColliders = Physics.OverlapSphere(start, 0.3f, LayerMaskClass.HighPolyWithTerrainMask);
-            foreach (Collider collider in hitColliders)
-            {
-                SetMountingStatus(coverDir);
-                StanceController.CoverWiggleDirection = GetWiggleDir(coverDir);
-                return true;
-            }
-
             RaycastHit raycastHit;
             if (Physics.Linecast(start, direction, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS))
             {
@@ -757,7 +747,6 @@ namespace RealismMod
         private static bool PatchPrefix(Player.FirearmController __instance)
         {
             Player player = (Player)playerField.GetValue(__instance);
-
             if (player.IsYourPlayer && (StanceController.IsMounting || StanceController.IsColliding))
             {
                 return false;
@@ -808,7 +797,6 @@ namespace RealismMod
         private static void Prefix(Player.FirearmController __instance)
         {
             Player player = (Player)playerField.GetValue(__instance);
-
             if (player.IsYourPlayer)
             {
                 if (StanceController.CurrentStance == EStance.PatrolStance) 

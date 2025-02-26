@@ -842,7 +842,7 @@ namespace RealismMod
             if (PlayerValues.IsMagReloading == true)
             {
                 float totalReloadSpeed = Mathf.Clamp(WeaponStats.NewMagReloadSpeed * PlayerValues.ReloadSkillMulti *
-                    PlayerValues.ReloadInjuryMulti * PlayerValues.GearReloadMulti * StanceController.HighReadyManipBuff *
+                    PlayerValues.ReloadInjuryMulti * GearController.GearReloadMulti * StanceController.HighReadyManipBuff *
                     StanceController.ActiveAimManipBuff * PlayerValues.RemainingArmStamReloadFactor * Plugin.RealHealthController.AdrenalineReloadBonus,
                     ReloadController.MinimumReloadSpeed, ReloadController.MaxReloadSpeed);
                 __instance.SetAnimationSpeed(totalReloadSpeed);
@@ -853,7 +853,7 @@ namespace RealismMod
                     Logger.LogWarning("Total Reload Speed = " + totalReloadSpeed);
                     Logger.LogWarning("ReloadSkillMulti = " + PlayerValues.ReloadSkillMulti);
                     Logger.LogWarning("ReloadInjuryMulti = " + PlayerValues.ReloadInjuryMulti);
-                    Logger.LogWarning("GearReloadMulti = " + PlayerValues.GearReloadMulti);
+                    Logger.LogWarning("GearReloadMulti = " + GearController.GearReloadMulti);
                     Logger.LogWarning("HighReadyManipBuff = " + StanceController.HighReadyManipBuff);
                     Logger.LogWarning("RemainingArmStamPercReload = " + (Mathf.Max(PlayerValues.RemainingArmStamReloadFactor, 0.75f)));
                     Logger.LogWarning("NewMagReloadSpeed = " + WeaponStats.NewMagReloadSpeed);

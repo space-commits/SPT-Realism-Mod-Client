@@ -39,10 +39,6 @@ namespace RealismMod
 
         public static bool IsAllowedADS = true;
 
-        public static bool GearAllowsADS = true;
-
-        public static float GearReloadMulti = 1f;
-
         public static float BaseSprintSpeed = 1f;
 
         public static EnvironmentType EnviroType = EnvironmentType.Outdoor;
