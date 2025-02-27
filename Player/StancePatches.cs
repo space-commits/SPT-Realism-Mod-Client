@@ -1,4 +1,5 @@
-﻿using Comfort.Common;
+﻿using ChartAndGraph;
+using Comfort.Common;
 using EFT;
 using EFT.Animations;
 using EFT.Ballistics;
@@ -522,6 +523,9 @@ namespace RealismMod
         private static Vector3 _wiggleRightDir = new Vector3(2.5f, -7.5f, -5f) * 0.5f;
         private static Vector3 _wiggleDownDir = new Vector3(7.5f, 2.5f, -5f) * 0.5f;
 
+        private static int PlayerMask = LayerMask.NameToLayer("Player");
+
+
         protected override MethodBase GetTargetMethod()
         {
             _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
@@ -565,15 +569,31 @@ namespace RealismMod
             return false;
         }
 
-        private static bool CheckForCoverCollision(EBracingDirection coverDir, Vector3 start, Vector3 direction)
+        private static bool CheckForCoverCollision(EBracingDirection coverDir, Vector3 start, Vector3 direction, Vector3 spherePos, float radius)
         {
             RaycastHit raycastHit;
             if (Physics.Linecast(start, direction, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS))
             {
-                SetMountingStatus(coverDir);
-                StanceController.CoverWiggleDirection = GetWiggleDir(coverDir);
-                return true;
+                if (raycastHit.collider.gameObject.layer != PlayerMask)
+                {
+                    SetMountingStatus(coverDir);
+                    StanceController.CoverWiggleDirection = GetWiggleDir(coverDir);
+                    return true;
+                }
+         
             }
+
+            Collider[] hitColliders = Physics.OverlapSphere(spherePos, radius, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS);
+            foreach (var hitCollider in hitColliders)
+            {
+                if (hitCollider.gameObject.layer != PlayerMask)
+                {
+                    SetMountingStatus(coverDir);
+                    StanceController.CoverWiggleDirection = GetWiggleDir(coverDir);
+                    return true;
+                }
+            }
+
             return false;
         }
 
@@ -592,6 +612,10 @@ namespace RealismMod
                 Vector3 startLeft = weapTransform.position + weapTransform.TransformDirection(_startLeftDir);
                 Vector3 startRight = weapTransform.position + weapTransform.TransformDirection(_startRightDir);
 
+                Vector3 sphereDown = weapTransform.position + weapTransform.TransformDirection(new Vector3(0f, -0.45f, -0.1f));
+                Vector3 sphereLeft = weapTransform.position + weapTransform.TransformDirection(new Vector3(0.05f, -0.5f, -0.065f));
+                Vector3 sphereRight = weapTransform.position + weapTransform.TransformDirection(new Vector3(-0.05f, -0.5f, -0.065f));
+
                 Vector3 forwardDirection = startDown - linecastDirection * ln;
                 Vector3 leftDirection = startLeft - linecastDirection * ln;
                 Vector3 rightDirection = startRight - linecastDirection * ln;
@@ -599,16 +623,19 @@ namespace RealismMod
                 if (PluginConfig.EnableGeneralLogging.Value)
                 {
                     DebugGizmos.SingleObjects.Line(startDown, forwardDirection, Color.red, 0.02f, true, 0.3f, true);
+                    DebugGizmos.SingleObjects.Sphere(sphereDown, 0.1f, Color.red, true, 0.3f);
                     DebugGizmos.SingleObjects.Line(startLeft, leftDirection, Color.green, 0.02f, true, 0.3f, true);
+                    DebugGizmos.SingleObjects.Sphere(sphereLeft, 0.1f, Color.green, true, 0.3f);
                     DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);
+                    DebugGizmos.SingleObjects.Sphere(sphereRight, 0.1f, Color.yellow, true, 0.3f);
                 }
 
                 if (PluginConfig.OverrideMounting.Value && Plugin.ServerConfig.enable_stances)
                 {
                     if (IsBracingProne(player) ||
-                    CheckForCoverCollision(EBracingDirection.Top, startDown, forwardDirection) ||
-                    CheckForCoverCollision(EBracingDirection.Left, startLeft, leftDirection) ||
-                    CheckForCoverCollision(EBracingDirection.Right, startRight, rightDirection))
+                    CheckForCoverCollision(EBracingDirection.Top, startDown, forwardDirection, sphereDown, 0.045f) ||
+                    CheckForCoverCollision(EBracingDirection.Left, startLeft, leftDirection, sphereLeft, 0.09f) ||
+                    CheckForCoverCollision(EBracingDirection.Right, startRight, rightDirection, sphereRight, 0.09f))
                     {
                         return;
                     }
@@ -682,7 +709,8 @@ namespace RealismMod
                         }
                     }
 
-                    if (WeaponStats.HasBayonet || (_allowedMats.Contains(hitBalls.TypeOfMaterial) && !shouldSkipHit))
+                    bool isAllowableHit = _allowedMats.Contains(hitBalls.TypeOfMaterial) && !shouldSkipHit;
+                    if ((WeaponStats.HasBayonet || isAllowableHit) && raycastHit.collider.gameObject.layer != PlayerMask)
                     {
                         Vector3 position = fc.CurrentFireport.position;
                         Vector3 vector = fc.WeaponDirection;

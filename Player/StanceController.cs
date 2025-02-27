@@ -292,7 +292,7 @@ namespace RealismMod
                     float accuracy = fc.Item.GetTotalCenterOfImpact(false); //forces accuracy to update
                     AccessTools.Field(typeof(Player.FirearmController), "float_3").SetValue(fc, accuracy); //update weapon accuracy
                     player.ProceduralWeaponAnimation.UpdateTacticalReload(); //gives better chamber animations
-                    player.MovementContext.PlayerAnimator.SetProneBipodMount(player.MovementContext.IsInPronePose && WeaponStats.BipodIsDeployed && value);
+                    //player.MovementContext.PlayerAnimator.SetProneBipodMount(player.MovementContext.IsInPronePose && WeaponStats.BipodIsDeployed && value); //this causes camera to detatch from weapon, could be a good effect if I could get camera to follow it.
                     fc.FirearmsAnimator.SetMounted(value);
                     //player.ProceduralWeaponAnimation.SetMountingData(value, BracingDirection == EBracingDirection.Top);
                 }
