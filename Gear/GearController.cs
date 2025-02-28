@@ -1,4 +1,5 @@
 ﻿using EFT;
+using EFT.Communications;
 using EFT.InventoryLogic;
 using EFT.UI;
 using System;
@@ -164,12 +165,16 @@ namespace RealismMod
             if (itemAddress != null)
             {
                 GStruct446<GClass3132> operation = InteractionsHandlerClass.Move(item, itemAddress, player.InventoryController, true);
-                if (operation.Succeeded) 
+                if (operation.Succeeded)
                 {
                     ItemUiContext.smethod_0(player.InventoryController, item, operation, null);
                     Gear gear = TemplateStats.GetDataObj<Gear>(TemplateStats.GearStats, item.TemplateId);
                     if (!string.IsNullOrWhiteSpace(gear.MaskToUse)) DoInteractionAnimation(player, EInteraction.FaceshieldOnGear);
                     return;
+                }
+                else 
+                {
+                    NotificationManagerClass.DisplayWarningNotification("Face Cover/Glasses Slot Not Empty");
                 }
             }
         }
@@ -191,14 +196,15 @@ namespace RealismMod
         private static void RemoveGasMask(Item item, Player player)
         {
             ItemAddress address = _gasMaskStartingAddress;
-
+            bool succeeded = true;
             //if stored address is null or the operation using stored address fails, try again with a different address
             if (address == null || !TryRemoveGasMask(item, player, address)) 
             {
                 address = TryFindAddressForMask(player, item);
                 if (address == null) return;
-                TryRemoveGasMask(item, player, address);
+                succeeded = TryRemoveGasMask(item, player, address);
             }
+            if (!succeeded) NotificationManagerClass.DisplayWarningNotification("Can't Find Space For Gas Mask");
         }
 
         public static void DoInteractionAnimation(Player player, EInteraction interaction)
@@ -209,6 +215,8 @@ namespace RealismMod
 
         public static void ToggleGasMask(Player player)
         {
+            bool animatorBusy = player.InventoryController.IsChangingWeapon || player.MovementContext.StationaryWeapon != null || player.MovementContext.IsAnimatorInteractionOn;
+            if (PlayerValues.IsSprinting || animatorBusy || PlayerValues.IsInReloadOpertation) return; //toggling this while sprinting breaks shit
             var faceCoverSlot = player?.Inventory?.Equipment?.GetSlot(EquipmentSlot.FaceCover);
             if (faceCoverSlot != null)
             {
