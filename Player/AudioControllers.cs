@@ -136,8 +136,8 @@ namespace RealismMod
         private AudioSource _geigerAudioSource;
         private AudioSource _toggleDeviceSource;
 
-        private const float GAS_DELAY = 5f;
-        private const float RAD_DELAY = 4f;
+        private const float GAS_DELAY = 4f;
+        private const float RAD_DELAY = 3f;
         private const float GAS_DEVICE_VOLUME = 0.28f;
         private const float GEIGER_VOLUME = 0.32f;
         private const float BASE_BREATH_VOLUME = 0.3f;
@@ -304,7 +304,7 @@ namespace RealismMod
         private float GeRadDelayTime()
         {
             if (Plugin.RealHealthController.PlayerHazardBridge == null) return 1f;
-            if (HazardTracker.BaseTotalRadiationRate >= 0.15f) return 0f;
+            if (HazardTracker.BaseTotalRadiationRate >= 0.14f) return 0f;
             float radRate = HazardTracker.BaseTotalRadiationRate;
             float delay = RAD_DELAY * (1f - Mathf.Pow(radRate, 0.35f));
             return delay;
@@ -412,19 +412,19 @@ namespace RealismMod
         {
             switch (radLevel)
             {
-                case <= 0.02f:
+                case <= 0.015f:
                     return new string[] { "geiger1.wav", "geiger1_1.wav", "geiger1_2.wav", "geiger1_3.wav" };
-                case <= 0.04f:
+                case <= 0.03f:
                     return new string[] { "geiger2.wav", "geiger2_1.wav", "geiger2_2.wav", "geiger2_3.wav" };
-                case <= 0.08f:
+                case <= 0.06f:
                     return new string[] { "geiger3.wav", "geiger3_1.wav", "geiger3_2.wav", "geiger3_3.wav" };
-                case <= 0.14f:
+                case <= 0.1f:
                     return new string[] { "geiger4.wav", "geiger4_1.wav", "geiger4_2.wav", "geiger4_3.wav" };
-                case <= 0.2f:
+                case <= 0.14f:
                     return new string[] { "geiger5.wav", "geiger5_1.wav", "geiger5_2.wav", "geiger5_3.wav" };
-                case <= 0.3f:
+                case <= 0.2f:
                     return new string[] { "geiger6.wav", "geiger6_1.wav", "geiger6_2.wav", "geiger6_3.wav" };
-                case > 0.3f:
+                case > 0.2f:
                     return new string[] { "geiger7.wav", "geiger7_1.wav", "geiger7_2.wav", "geiger7_3.wav" };
                 default:
                     return null;

@@ -466,8 +466,8 @@ namespace RealismMod
 
             WeaponStats.IsPistol = __instance.WeapClass == "pistol";
             WeaponStats.IsMachinePistol = weapType == "smg_pistol" && !hasShoulderContact;
-            WeaponStats.IsStocklessPistol = !hasShoulderContact && WeaponStats.IsPistol ? true : false;
-            WeaponStats.IsStockedPistol = hasShoulderContact && WeaponStats.IsPistol ? true : false;
+            WeaponStats.IsStocklessPistol = !hasShoulderContact && WeaponStats.IsPistol;
+            WeaponStats.IsStockedPistol = hasShoulderContact && WeaponStats.IsPistol;
 
             float totalLoudness = ((currentLoudness / 80) + 1f) * StatCalc.CaliberLoudnessFactor(caliber);
 
@@ -480,7 +480,7 @@ namespace RealismMod
   
             float pureRecoilDelta = ((baseVRecoil + baseHRecoil) - pureRecoil) / ((baseVRecoil + baseHRecoil) * -1f);
             WeaponStats.TotalModDuraBurn = modBurnRatio;
-            WeaponStats.TotalMalfChance = Mathf.Max(currentMalfChance, baseMalfChance * 0.35f);
+            WeaponStats.TotalMalfChance = Mathf.Max(currentMalfChance, baseMalfChance);
             WeaponStats.MalfChanceDelta = (baseMalfChance - WeaponStats.TotalMalfChance) / baseMalfChance;
             DeafenController.GunDeafFactor = totalLoudness;
             WeaponStats.CanCycleSubs = canCycleSubs;

@@ -1,84 +1,5 @@
 {
-    "FactoryRadZones": [
-        {
-            "spawnChance": 1.0,
-            "zones": [
-                {
-                    "name": "FactoryGate0",
-                    "strength": 20.0,
-                    "blockNav": true,
-                    "usesDistanceFalloff": true,
-                    "position": {
-                        "x": -60.0,
-                        "y": 1.0,
-                        "z": 56.5
-                    },
-                    "rotation": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "size": {
-                        "x": 13.0,
-                        "y": 4.0,
-                        "z": 10.0
-                    }
-                }
-            ]
-        },
-        {
-            "spawnChance": 1.0,
-            "zones": [
-                {
-                    "name": "FactoryBarrels",
-                    "strength": 10.0,
-                    "blockNav": true,
-                    "usesDistanceFalloff": true,
-                    "position": {
-                        "x": 56.5,
-                        "y": -1,
-                        "z": -27.39656
-                    },
-                    "rotation": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "size": {
-                        "x": 9.0,
-                        "y": 11.0,
-                        "z": 5.0
-                    }
-                }
-            ]
-        },
-        {
-            "spawnChance": 1.0,
-            "zones": [
-                {
-                    "name": "FactoryCellars",
-                    "strength": 27.0,
-                    "blockNav": true,
-                    "usesDistanceFalloff": true,
-                    "position": {
-                        "x": 71.0,
-                        "y": -4.0,
-                        "z": -28.8
-                    },
-                    "rotation": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "size": {
-                        "x": 20.0,
-                        "y": 7.0,
-                        "z": 2.5
-                    }
-                }
-            ]
-        }
-    ],
+    "FactoryRadZones": [],
     "CustomsRadZones": [
         {
             "spawnChance": 1.0,
@@ -1446,7 +1367,7 @@
             "spawnChance": 1.0,
             "zones": [
                 {
-                    "name": "WooodsMarked1",
+                    "name": "WoodsMarkedVillage",
                     "strength": 50.0,
                     "blockNav": false,
                     "usesDistanceFalloff": true,

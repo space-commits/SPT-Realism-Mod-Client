@@ -1,4 +1,5 @@
-﻿using Comfort.Common;
+﻿using ChartAndGraph;
+using Comfort.Common;
 using EFT;
 using EFT.Animations;
 using EFT.Ballistics;
@@ -522,6 +523,9 @@ namespace RealismMod
         private static Vector3 _wiggleRightDir = new Vector3(2.5f, -7.5f, -5f) * 0.5f;
         private static Vector3 _wiggleDownDir = new Vector3(7.5f, 2.5f, -5f) * 0.5f;
 
+        private static int PlayerMask = LayerMask.NameToLayer("Player");
+
+
         protected override MethodBase GetTargetMethod()
         {
             _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
@@ -565,29 +569,106 @@ namespace RealismMod
             return false;
         }
 
-        private static bool CheckForCoverCollision(EBracingDirection coverDir, Vector3 start, Vector3 direction, out RaycastHit raycastHit, RaycastHit[] raycastArr, Func<RaycastHit, bool> isHitIgnoreTest, string weapClass)
+        private static bool CheckForCoverCollision(EBracingDirection coverDir, Vector3 start, Vector3 direction, Vector3 spherePos, float radius)
         {
-            if (EFTPhysicsClass.Linecast(start, direction, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastArr, isHitIgnoreTest))
+            RaycastHit raycastHit;
+            if (Physics.Linecast(start, direction, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS))
             {
-           /*     if (!StanceController.IsMounting) 
+                if (raycastHit.collider.gameObject.layer != PlayerMask)
                 {
-                    StanceController.MountPos = raycastHit.point + raycastHit.normal * PluginConfig.test9.Value;
-                    StanceController.MountDir = Utils.GetYourPlayer().PlayerBones.weaponMountingView.GridRoot.forward;
-                }*/
-                SetMountingStatus(coverDir);
-                StanceController.CoverWiggleDirection = GetWiggleDir(coverDir);
-                return true;
+                    SetMountingStatus(coverDir);
+                    StanceController.CoverWiggleDirection = GetWiggleDir(coverDir);
+                    return true;
+                }
+         
             }
+
+            Collider[] hitColliders = Physics.OverlapSphere(spherePos, radius, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS);
+            foreach (var hitCollider in hitColliders)
+            {
+                if (hitCollider.gameObject.layer != PlayerMask)
+                {
+                    SetMountingStatus(coverDir);
+                    StanceController.CoverWiggleDirection = GetWiggleDir(coverDir);
+                    return true;
+                }
+            }
+
             return false;
         }
 
-        private static void DoMelee(Player.FirearmController fc, float ln, Player player)
+        private static void DetectBracing(FirearmController fc, Player player, float ln) 
+        {
+            _timer += 1;
+            if (_timer >= 60)
+            {
+                _timer = 0;
+                Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
+                Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
+
+                Vector3 downDir = WeaponStats.BipodIsDeployed ? new Vector3(_startDownDir.x, _startDownDir.y, _startDownDir.z + -0.21f) : _startDownDir;
+
+                Vector3 startDown = weapTransform.position + weapTransform.TransformDirection(downDir);
+                Vector3 startLeft = weapTransform.position + weapTransform.TransformDirection(_startLeftDir);
+                Vector3 startRight = weapTransform.position + weapTransform.TransformDirection(_startRightDir);
+
+                Vector3 sphereDown = weapTransform.position + weapTransform.TransformDirection(new Vector3(0f, -0.45f, -0.1f));
+                Vector3 sphereLeft = weapTransform.position + weapTransform.TransformDirection(new Vector3(0.05f, -0.5f, -0.065f));
+                Vector3 sphereRight = weapTransform.position + weapTransform.TransformDirection(new Vector3(-0.05f, -0.5f, -0.065f));
+
+                Vector3 forwardDirection = startDown - linecastDirection * ln;
+                Vector3 leftDirection = startLeft - linecastDirection * ln;
+                Vector3 rightDirection = startRight - linecastDirection * ln;
+
+                if (PluginConfig.EnableGeneralLogging.Value)
+                {
+                    DebugGizmos.SingleObjects.Line(startDown, forwardDirection, Color.red, 0.02f, true, 0.3f, true);
+                    DebugGizmos.SingleObjects.Sphere(sphereDown, 0.1f, Color.red, true, 0.3f);
+                    DebugGizmos.SingleObjects.Line(startLeft, leftDirection, Color.green, 0.02f, true, 0.3f, true);
+                    DebugGizmos.SingleObjects.Sphere(sphereLeft, 0.1f, Color.green, true, 0.3f);
+                    DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);
+                    DebugGizmos.SingleObjects.Sphere(sphereRight, 0.1f, Color.yellow, true, 0.3f);
+                }
+
+                if (PluginConfig.OverrideMounting.Value && Plugin.ServerConfig.enable_stances)
+                {
+                    if (IsBracingProne(player) ||
+                    CheckForCoverCollision(EBracingDirection.Top, startDown, forwardDirection, sphereDown, 0.045f) ||
+                    CheckForCoverCollision(EBracingDirection.Left, startLeft, leftDirection, sphereLeft, 0.09f) ||
+                    CheckForCoverCollision(EBracingDirection.Right, startRight, rightDirection, sphereRight, 0.09f))
+                    {
+                        return;
+                    }
+                }
+                StanceController.IsBracing = false;
+            }
+
+            if (StanceController.IsBracing || StanceController.IsMounting)
+            {
+                float mountOrientationBonus = StanceController.BracingDirection == EBracingDirection.Top ? 0.75f : 1f;
+                float mountingRecoilLimit = StanceController.TreatWeaponAsPistolStance ? 0.25f : 0.75f;
+                float recoilBonus =
+                    StanceController.IsMounting && fc.Weapon.IsBeltMachineGun && WeaponStats.BipodIsDeployed ? 0.4f :
+                    StanceController.IsMounting && fc.Weapon.IsBeltMachineGun ? 0.75f :
+                    StanceController.IsMounting && WeaponStats.BipodIsDeployed ? 0.45f :
+                    StanceController.IsMounting ? 0.85f :
+                    0.95f;
+                float swayBonus = StanceController.IsMounting && WeaponStats.BipodIsDeployed ? 0.05f : StanceController.IsMounting ? 0.35f : 0.65f;
+                StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, recoilBonus * mountOrientationBonus, 0.04f);
+                StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, swayBonus * mountOrientationBonus, 0.04f);
+            }
+            else
+            {
+                StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 1f, 0.05f);
+                StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 1f, 0.05f);
+            }
+        }
+
+        private static void DoMelee(FirearmController fc, Player player, float ln)
         {
             if (!PlayerValues.IsSprinting && StanceController.CurrentStance == EStance.Melee && StanceController.CanDoMeleeDetection && !StanceController.MeleeHitSomething)
             {
                 Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
-                RaycastHit[] raycastArr = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
-                Func<RaycastHit, bool> isHitIgnoreTest = (Func<RaycastHit, bool>)_hitIgnoreField.GetValue(fc);
                 Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
                 Vector3 startMeleeDir = new Vector3(0, -0.5f, -0.025f); 
                 Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(startMeleeDir);
@@ -600,7 +681,7 @@ namespace RealismMod
 
                 BallisticCollider hitBalls = null;
                 RaycastHit raycastHit;
-                if (EFTPhysicsClass.Linecast(meleeStart, meleeDir, out raycastHit, CollisionLayerClass.HitMask, false, raycastArr, isHitIgnoreTest))
+                if (Physics.Linecast(meleeStart, meleeDir, out raycastHit, CollisionLayerClass.HitMask))
                 {
                     Collider col = raycastHit.collider;
                     BaseBallistic baseballComp = col.GetComponent<BaseBallistic>();
@@ -628,7 +709,8 @@ namespace RealismMod
                         }
                     }
 
-                    if (WeaponStats.HasBayonet || (_allowedMats.Contains(hitBalls.TypeOfMaterial) && !shouldSkipHit))
+                    bool isAllowableHit = _allowedMats.Contains(hitBalls.TypeOfMaterial) && !shouldSkipHit;
+                    if ((WeaponStats.HasBayonet || isAllowableHit) && raycastHit.collider.gameObject.layer != PlayerMask)
                     {
                         Vector3 position = fc.CurrentFireport.position;
                         Vector3 vector = fc.WeaponDirection;
@@ -673,67 +755,8 @@ namespace RealismMod
             Player player = (Player)_playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                DoMelee(__instance, ln, player);
-  
-                _timer += 1;
-                if (_timer >= 60)
-                {
-                    _timer = 0;
-                    RaycastHit[] raycastArr = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
-                    Func<RaycastHit, bool> isHitIgnoreTest = (Func<RaycastHit, bool>)_hitIgnoreField.GetValue(__instance);
-                    Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
-                    Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
-
-                    string weapClass = __instance.Item.WeapClass;
-
-                    Vector3 downDir = WeaponStats.BipodIsDeployed ? new Vector3(_startDownDir.x, _startDownDir.y, _startDownDir.z + -0.21f) : _startDownDir;
-
-                    Vector3 startDown = weapTransform.position + weapTransform.TransformDirection(downDir);
-                    Vector3 startLeft = weapTransform.position + weapTransform.TransformDirection(_startLeftDir);
-                    Vector3 startRight = weapTransform.position + weapTransform.TransformDirection(_startRightDir);
-
-                    Vector3 forwardDirection = startDown - linecastDirection * ln;
-                    Vector3 leftDirection = startLeft - linecastDirection * ln;
-                    Vector3 rightDirection = startRight - linecastDirection * ln;
-
-                    /*                    DebugGizmos.SingleObjects.Line(startDown, forwardDirection, Color.red, 0.02f, true, 0.3f, true);
-                                        DebugGizmos.SingleObjects.Line(startLeft, leftDirection, Color.green, 0.02f, true, 0.3f, true);
-                                        DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);*/
-        
-                    RaycastHit raycastHit;
-
-                    if (PluginConfig.OverrideMounting.Value && Plugin.ServerConfig.enable_stances) 
-                    {
-                        if (IsBracingProne(player) ||
-                        CheckForCoverCollision(EBracingDirection.Top, startDown, forwardDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass) ||
-                        CheckForCoverCollision(EBracingDirection.Left, startLeft, leftDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass) ||
-                        CheckForCoverCollision(EBracingDirection.Right, startRight, rightDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass))
-                        {
-                            return;
-                        }
-                    }
-                    StanceController.IsBracing = false;
-                }
-
-                if (StanceController.IsBracing || StanceController.IsMounting) 
-                {
-                    float mountOrientationBonus = StanceController.BracingDirection == EBracingDirection.Top ? 0.75f : 1f;
-                    float mountingRecoilLimit = StanceController.TreatWeaponAsPistolStance ? 0.25f : 0.75f;
-                    float recoilBonus = 
-                        StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun && WeaponStats.BipodIsDeployed ? 0.4f :
-                        StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun ? 0.75f :
-                        StanceController.IsMounting && WeaponStats.BipodIsDeployed ? 0.45f :
-                        StanceController.IsMounting ? 0.85f :
-                        0.95f;
-                    float swayBonus = StanceController.IsMounting && WeaponStats.BipodIsDeployed ? 0.05f : StanceController.IsMounting ? 0.35f : 0.65f;
-                    StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, recoilBonus * mountOrientationBonus, 0.04f);
-                    StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, swayBonus * mountOrientationBonus, 0.04f);
-                }
-                else
-                {
-                    StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 1f, 0.05f);
-                    StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 1f, 0.05f);
-                }
+                DoMelee(__instance, player, ln);
+                DetectBracing(__instance, player, ln);
             }
         }
     }
@@ -752,7 +775,6 @@ namespace RealismMod
         private static bool PatchPrefix(Player.FirearmController __instance)
         {
             Player player = (Player)playerField.GetValue(__instance);
-
             if (player.IsYourPlayer && (StanceController.IsMounting || StanceController.IsColliding))
             {
                 return false;
@@ -803,7 +825,6 @@ namespace RealismMod
         private static void Prefix(Player.FirearmController __instance)
         {
             Player player = (Player)playerField.GetValue(__instance);
-
             if (player.IsYourPlayer)
             {
                 if (StanceController.CurrentStance == EStance.PatrolStance) 

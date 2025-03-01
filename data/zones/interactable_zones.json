@@ -1,0 +1,457 @@
+{
+    "FactoryZones": [
+        {
+            "spawnChance": 1.0,
+            "InteractableGroup": {
+                "enabledBy": [],
+                "disabledBy": [],
+                "ExfilsToBlock": [
+                    "Cellars",
+                    "Gate 0",
+                    "Gate m"
+                ]
+            },
+            "zones": [
+                {
+                    "name": "FinalValve",
+                    "strength": 1,
+                    "blockNav": false,
+                    "usesDistanceFalloff": false,
+                    "Interactable": {
+                        "InteractionType": "Valve",
+                        "CompletionStep": 7,
+                        "StartingState": "On",
+                        "DesiredEndState": "Off",
+                        "TargeObject": "Valve_red_01_A_COLLIDER",
+                        "EIneractableAction": [
+                            "On",
+                            "Off"
+                        ],
+                        "ZoneNames": [
+                            "FactoryTent",
+                            "FactoryTent_buffeZone",
+                            "FactoryGate0",
+                            "FactoryGate0_buffeZone"
+                        ],
+                        "PartialCompletionModifier": 1,
+                        "FullCompletionModifer": 0,
+                        "Randomize": false
+                    },
+                    "position": {
+                        "x": 12.48804,
+                        "y": -1.841735,
+                        "z": 42.41469
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0.7481648,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 0.3918975,
+                        "y": 0.576367,
+                        "z": 0.3400647
+                    }
+                },
+                {
+                    "name": "PuzzleBlueValve1",
+                    "strength": 1,
+                    "blockNav": false,
+                    "usesDistanceFalloff": false,
+                    "Interactable": {
+                        "InteractionType": "Valve",
+                        "CompletionStep": 0,
+                        "StartingState": "Off",
+                        "DesiredEndState": "On",
+                        "TargeObject": "Valve_blue_01_A_COLLIDER",
+                        "EIneractableAction": [
+                            "On",
+                            "Off"
+                        ],
+                        "ZoneNames": [],
+                        "PartialCompletionModifier": 1,
+                        "FullCompletionModifer": 0,
+                        "Randomize": true
+                    },
+                    "position": {
+                        "x": 16.54963,
+                        "y": -1.305792,
+                        "z": 42.5359
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0.7481648,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 0.1903748,
+                        "y": 0.253344,
+                        "z": 0.1453282
+                    }
+                },
+                {
+                    "name": "PuzzleBlueValve2",
+                    "strength": 1,
+                    "blockNav": false,
+                    "usesDistanceFalloff": false,
+                    "Interactable": {
+                        "InteractionType": "Valve",
+                        "CompletionStep": 0,
+                        "StartingState": "Off",
+                        "DesiredEndState": "Off",
+                        "TargeObject": "Valve_blue_01_A_COLLIDER",
+                        "EIneractableAction": [
+                            "On",
+                            "Off"
+                        ],
+                        "ZoneNames": [],
+                        "PartialCompletionModifier": 1,
+                        "FullCompletionModifer": 0,
+                        "Randomize": true
+                    },
+                    "position": {
+                        "x": 13.71257,
+                        "y": -1.305792,
+                        "z": 42.57315
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0.7481648,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 0.1903748,
+                        "y": 0.253344,
+                        "z": 0.1453282
+                    }
+                },
+                {
+                    "name": "PuzzleSmallRedValve",
+                    "strength": 1,
+                    "blockNav": false,
+                    "usesDistanceFalloff": false,
+                    "Interactable": {
+                        "InteractionType": "Valve",
+                        "CompletionStep": 6,
+                        "StartingState": "On",
+                        "DesiredEndState": "Off",
+                        "TargeObject": "Valve_red_01_A_COLLIDER",
+                        "EIneractableAction": [
+                            "On",
+                            "Off"
+                        ],
+                        "ZoneNames": [],
+                        "PartialCompletionModifier": 1,
+                        "FullCompletionModifer": 0,
+                        "Randomize": false
+                    },
+                    "position": {
+                        "x": 15.79934,
+                        "y": -1.305792,
+                        "z": 42.54576
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0.7481648,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 0.1903748,
+                        "y": 0.253344,
+                        "z": 0.1453282
+                    }
+                },
+                {
+                    "name": "CellarValve",
+                    "strength": 1,
+                    "blockNav": false,
+                    "usesDistanceFalloff": false,
+                    "Interactable": {
+                        "InteractionType": "Valve",
+                        "CompletionStep": 0,
+                        "StartingState": "On",
+                        "DesiredEndState": "Off",
+                        "TargeObject": "Valve_red_01_A_COLLIDER",
+                        "EIneractableAction": [
+                            "On",
+                            "Off"
+                        ],
+                        "ZoneNames": [
+                            "FactoryCellar",
+                            "FactoryCellar_buffeZone"
+                        ],
+                        "PartialCompletionModifier": 0.4,
+                        "FullCompletionModifer": 0,
+                        "Randomize": true
+                    },
+                    "position": {
+                        "x": 32.266,
+                        "y": -1.697467,
+                        "z": -35.33285
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 270.1412,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 0.1182822,
+                        "y": 0.4471788,
+                        "z": 0.4198889
+                    }
+                },
+                {
+                    "name": "WaterValve",
+                    "strength": 1,
+                    "blockNav": false,
+                    "usesDistanceFalloff": false,
+                    "Interactable": {
+                        "InteractionType": "Valve",
+                        "CompletionStep": 0,
+                        "StartingState": "On",
+                        "DesiredEndState": "Off",
+                        "TargeObject": "Valve_red_01_A_COLLIDER",
+                        "EIneractableAction": [
+                            "On",
+                            "Off"
+                        ],
+                        "ZoneNames": [
+                            "FactoryWaterBasement",
+                            "FactoryWaterBasement_buffeZone"
+                        ],
+                        "PartialCompletionModifier": 0.3,
+                        "FullCompletionModifer": 0,
+                        "Randomize": true
+                    },
+                    "position": {
+                        "x": -1.380677,
+                        "y": -3.042758,
+                        "z": -35.00182
+                    },
+                    "rotation": {
+                        "x": 326.3878,
+                        "y": 179.6326,
+                        "z": 357.7763
+                    },
+                    "size": {
+                        "x": 0.5012317,
+                        "y": 0.2362315,
+                        "z": 0.4593265
+                    }
+                },
+                {
+                    "name": "MainExtractTanksValve",
+                    "strength": 1,
+                    "blockNav": false,
+                    "usesDistanceFalloff": false,
+                    "Interactable": {
+                        "InteractionType": "Valve",
+                        "CompletionStep": 0,
+                        "StartingState": "Off",
+                        "DesiredEndState": "On",
+                        "TargeObject": "Valve_red_01_A_COLLIDER",
+                        "EIneractableAction": [
+                            "On",
+                            "Off"
+                        ],
+                        "ZoneNames": [
+                            "FactoryTanksByMainExtract",
+                            "FactoryTanksByMainExtract_buffeZone"
+                        ],
+                        "PartialCompletionModifier": 0.3,
+                        "FullCompletionModifer": 0,
+                        "Randomize": true
+                    },
+                    "position": {
+                        "x": 21.06343,
+                        "y": -1.595266,
+                        "z": -11.80214
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 92.37462,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 0.3493687,
+                        "y": 0.3908383,
+                        "z": 0.2524496
+                    }
+                },
+                {
+                    "name": "TanksValve",
+                    "strength": 1,
+                    "blockNav": false,
+                    "usesDistanceFalloff": false,
+                    "Interactable": {
+                        "InteractionType": "Valve",
+                        "CompletionStep": 0,
+                        "StartingState": "Off",
+                        "DesiredEndState": "On",
+                        "TargeObject": "Valve_red_01_A_COLLIDER",
+                        "EIneractableAction": [
+                            "On",
+                            "Off"
+                        ],
+                        "ZoneNames": [
+                            "FactoryTanksArea",
+                            "FactoryTanksArea_buffeZone"
+                        ],
+                        "PartialCompletionModifier": 0.3,
+                        "FullCompletionModifer": 0,
+                        "Randomize": true
+                    },
+                    "position": {
+                        "x": 21.39949,
+                        "y": -1.562073,
+                        "z": 12.25433
+                    },
+                    "rotation": {
+                        "x": 30.89197,
+                        "y": 182.354,
+                        "z": 3.659725
+                    },
+                    "size": {
+                        "x": 0.3928967,
+                        "y": 0.3822721,
+                        "z": 0.1286725
+                    }
+                }
+            ]
+        }
+    ],
+    "CustomsZones": [],
+    "GZZones": [],
+    "ShorelineZones": [],
+    "StreetsZones": [],
+    "LabsZones": [
+        {
+            "spawnChance": 1.0,
+            "InteractableGroup": {
+                "enabledBy": [],
+                "disabledBy": [],
+                "ExfilsToBlock": []
+            },
+            "zones": [
+                {
+                    "name": "ButtonUnderneathWeaponTesting",
+                    "strength": 1,
+                    "blockNav": false,
+                    "usesDistanceFalloff": false,
+                    "Interactable": {
+                        "InteractionType": "Button",
+                        "CompletionStep": 2,
+                        "StartingState": "Off",
+                        "DesiredEndState": "On",
+                        "TargeObject": "",
+                        "EIneractableAction": [
+                            "On",
+                            "Off"
+                        ],
+                        "ZoneNames": [
+                            "Labs-5"
+                        ],
+                        "PartialCompletionModifier": 1,
+                        "FullCompletionModifer": 0.35,
+                        "Randomize": false
+                    },
+                    "position": {
+                        "x": -197.391,
+                        "y": -2.286019,
+                        "z": -327.4903
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 270.6422,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 0.304347,
+                        "y": 0.3487433,
+                        "z": 0.2283442
+                    }
+                },
+                {
+                    "name": "Button1",
+                    "strength": 1,
+                    "blockNav": false,
+                    "usesDistanceFalloff": false,
+                    "Interactable": {
+                        "InteractionType": "Button",
+                        "CompletionStep": 0,
+                        "StartingState": "Off",
+                        "DesiredEndState": "On",
+                        "TargeObject": "",
+                        "EIneractableAction": [
+                            "On",
+                            "Off"
+                        ],
+                        "ZoneNames": [
+                            "Labs-3"
+                        ],
+                        "PartialCompletionModifier": 0.5,
+                        "FullCompletionModifer": 0.25,
+                        "Randomize": false
+                    },
+                    "position": {
+                        "x": -242.1424,
+                        "y": -2.279052,
+                        "z": -299.188
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 179.9621,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 0.2277708,
+                        "y": 0.3109296,
+                        "z": 1.064177
+                    }
+                },
+                {
+                    "name": "Button2",
+                    "strength": 1,
+                    "blockNav": false,
+                    "usesDistanceFalloff": false,
+                    "Interactable": {
+                        "InteractionType": "Button",
+                        "CompletionStep": 0,
+                        "StartingState": "Off",
+                        "DesiredEndState": "On",
+                        "TargeObject": "",
+                        "EIneractableAction": [
+                            "On",
+                            "Off"
+                        ],
+                        "ZoneNames": [
+                            "Labs-4"
+                        ],
+                        "PartialCompletionModifier": 0.5,
+                        "FullCompletionModifer": 0.25,
+                        "Randomize": false
+                    },
+                    "position": {
+                        "x": -265.3493,
+                        "y": -2.234303,
+                        "z": -350.4104
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 178.2573,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 0.328317,
+                        "y": 0.4585844,
+                        "z": 0.8459213
+                    }
+                }
+            ]
+        }
+    ],
+    "InterchangeZone": [],
+    "LighthouseZones": [],
+    "WoodsZones": [],
+    "ReserveZones": []
+}

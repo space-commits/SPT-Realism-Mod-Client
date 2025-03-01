@@ -292,7 +292,7 @@ namespace RealismMod
                     float accuracy = fc.Item.GetTotalCenterOfImpact(false); //forces accuracy to update
                     AccessTools.Field(typeof(Player.FirearmController), "float_3").SetValue(fc, accuracy); //update weapon accuracy
                     player.ProceduralWeaponAnimation.UpdateTacticalReload(); //gives better chamber animations
-                    player.MovementContext.PlayerAnimator.SetProneBipodMount(player.MovementContext.IsInPronePose && WeaponStats.BipodIsDeployed && value);
+                    //player.MovementContext.PlayerAnimator.SetProneBipodMount(player.MovementContext.IsInPronePose && WeaponStats.BipodIsDeployed && value); //this causes camera to detatch from weapon, could be a good effect if I could get camera to follow it.
                     fc.FirearmsAnimator.SetMounted(value);
                     //player.ProceduralWeaponAnimation.SetMountingData(value, BracingDirection == EBracingDirection.Top);
                 }
@@ -782,7 +782,8 @@ namespace RealismMod
                 if (ShootController.IsFiring) //stnace specific firing check is too slow
                 {
                     bool rememberStance = PluginConfig.RememberStanceFiring.Value && IsAiming;
-                    bool keepStance = rememberStance || ((CurrentStance == EStance.ActiveAiming && !IsAiming) || CurrentStance == EStance.ShortStock);
+                    bool isActiveAim = CurrentStance == EStance.ActiveAiming && !IsAiming;
+                    bool keepStance = rememberStance || (isActiveAim || CurrentStance == EStance.ShortStock || CurrentStance == EStance.PistolCompressed);
 
                     if (!keepStance)
                     {
@@ -1707,17 +1708,17 @@ namespace RealismMod
 
             //rotation
             bool isMountedWithBipod = WeaponStats.BipodIsDeployed && StanceController.IsMounting;
-            bool doCantedOffset = Mathf.Abs(pwa.CurrentScope.Rotation) >= EFTHardSettings.Instance.SCOPE_ROTATION_THRESHOLD && StanceController.IsAiming;
-            bool doMaskOffset = !doCantedOffset && !isMountedWithBipod && (GearController.HasGasMask || GearController.FSIsActive) && !WeaponStats.WeaponCanFSADS && pwa.IsAiming && WeaponStats.HasShoulderContact && !WeaponStats.IsStocklessPistol && !WeaponStats.IsMachinePistol;
+            bool doCantedSightOffset = Mathf.Abs(pwa.CurrentScope.Rotation) >= EFTHardSettings.Instance.SCOPE_ROTATION_THRESHOLD && StanceController.IsAiming;
+            bool doMaskOffset = !doCantedSightOffset && !isMountedWithBipod && (GearController.HasGasMask || (GearController.FSIsActive && GearController.GearBlocksMouth)) && !WeaponStats.WeaponCanFSADS && pwa.IsAiming && WeaponStats.HasShoulderContact && !WeaponStats.IsStocklessPistol && !WeaponStats.IsMachinePistol;
             bool doLongMagOffset = WeaponStats.HasLongMag && player.IsInPronePose && !isMountedWithBipod;
             float cantedOffsetBase = -0.41f;
-            float magOffset = doCantedOffset ? 0f : doLongMagOffset && !pwa.IsAiming ? -0.35f : doLongMagOffset && pwa.IsAiming ? -0.12f : 0f;
+            float magOffset = doCantedSightOffset ? 0f : doLongMagOffset && !pwa.IsAiming ? -0.35f : doLongMagOffset && pwa.IsAiming ? -0.12f : 0f;
             float ergoOffset = WeaponStats.ErgoFactor * -0.001f;
             float poseRotOffset = (1f - player.MovementContext.PoseLevel) * -0.03f;
             poseRotOffset += player.IsInPronePose ? -0.03f : 0f;
             float maskFactor = doMaskOffset ? -0.025f + ergoOffset : 0f;
             float baseRotOffset = pwa.IsAiming || StanceController.IsMounting || StanceController.IsBracing ? 0f : poseRotOffset + ergoOffset;
-            float cantedSightOffset = doCantedOffset ? cantedOffsetBase : 0f;
+            float cantedSightOffset = doCantedSightOffset ? cantedOffsetBase : 0f;
 
             float rotX = 0f;
             float rotY = Mathf.Clamp(baseRotOffset + maskFactor + magOffset, -0.5f, 0f) + cantedSightOffset;

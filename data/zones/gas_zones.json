@@ -1,13 +1,45 @@
 {
     "FactoryGasZones": [
         {
-            "spawnChance": 0.5,
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "FactoryGate0",
+                    "strength": 80.0,
+                    "blockNav": true,
+                    "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
+                    "VisParticleRate": 40,
+                    "position": {
+                        "x": -58.33056,
+                        "y": 2.550519,
+                        "z": 55.94485
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 268.9662,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 6.43313,
+                        "y": 3.030291,
+                        "z": 21.92288
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1,
             "zones": [
                 {
                     "name": "FactoryTent",
                     "strength": 25.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 1.5,
+                    "VisParticleRate": 35,
+                    "VisSpeedModi": 2,
+                    "visZoneSizeMulti": 1.1,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -15,7 +47,7 @@
                     },
                     "position": {
                         "x": -17.5,
-                        "y": 0.35,
+                        "y": 2,
                         "z": -41.4
                     },
                     "rotation": {
@@ -26,7 +58,7 @@
                     "size": {
                         "x": 6.5,
                         "y": 4.0,
-                        "z": 38.0
+                        "z": 40.0
                     }
                 }
             ],
@@ -70,13 +102,16 @@
             ]
         },
         {
-            "spawnChance": 0.15,
+            "spawnChance": 1.0,
             "zones": [
                 {
-                    "name": "FactoryBasement",
-                    "strength": 110.0,
+                    "name": "FactoryWaterBasement",
+                    "strength": 70.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
+                    "VisOpacityModi": 2,
+                    "VisParticleRate": 55,
                     "position": {
                         "x": -6.0,
                         "y": -3.6,
@@ -96,13 +131,16 @@
             ]
         },
         {
-            "spawnChance": 0.15,
+            "spawnChance": 1,
             "zones": [
                 {
-                    "name": "FactoryTanks",
-                    "strength": 35.0,
+                    "name": "FactoryTanksArea",
+                    "strength": 32.5,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 2,
+                    "VisParticleRate": 50,
+                    "VisSpeedModi": 2,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -119,9 +157,44 @@
                         "z": 0.0
                     },
                     "size": {
-                        "x": 35.0,
+                        "x": 38.0,
                         "y": 3.0,
-                        "z": 12.0
+                        "z": 12
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1,
+            "zones": [
+                {
+                    "name": "FactoryExposedTank",
+                    "strength": 15.0,
+                    "blockNav": true,
+                    "usesDistanceFalloff": true,
+                    "VisOpacityModi": 2,
+                    "VisParticleRate": 16,
+                    "VisSpeedModi": 2,
+                    "visZoneSizeMulti": 1.25,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [],
+                        "noRequirement": true
+                    },
+                    "position": {
+                        "x": -4.278955,
+                        "y": -1.427074,
+                        "z": 16.5095
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 8.496026,
+                        "y": 4.314496,
+                        "z": 7.346806
                     }
                 }
             ]
@@ -131,9 +204,11 @@
             "zones": [
                 {
                     "name": "FactoryVitamins",
-                    "strength": 15.0,
+                    "strength": 25.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.75,
+                    "VisParticleRate": 10,
                     "position": {
                         "x": 24.7,
                         "y": 8.3,
@@ -153,156 +228,179 @@
             ]
         },
         {
-            "spawnChance": 1.0,
+            "spawnChance": 1,
             "zones": [
                 {
-                    "name": "FactoryPumpRoom",
-                    "strength": 15.0,
+                    "name": "FactoryCrash1",
+                    "strength": 35.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 1,
+                    "VisParticleRate": 15,
+                    "VisSpeedModi": 2,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
                         "noRequirement": true
                     },
                     "position": {
-                        "x": 40.0,
-                        "y": 0.1,
-                        "z": -11.5
+                        "x": 12.81379,
+                        "y": 2.409422,
+                        "z": -6.531208
                     },
                     "rotation": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
+                        "x": 356.8341,
+                        "y": 89.66108,
+                        "z": -1.068848
                     },
                     "size": {
-                        "x": 5.5,
-                        "y": 2.0,
-                        "z": 9.5
+                        "x": 7.89787,
+                        "y": 4.235707,
+                        "z": 7.916856
                     }
-                }
-            ],
-            "loot": [
+                },
                 {
-                    "type": "",
-                    "lootOverride": {
-                        "66fd588956f73c4f38dd07ae": 100
+                    "name": "FactoryCrash2",
+                    "strength": 35.0,
+                    "blockNav": true,
+                    "usesDistanceFalloff": true,
+                    "VisOpacityModi": 1,
+                    "VisParticleRate": 15,
+                    "VisSpeedModi": 2,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [],
+                        "noRequirement": true
                     },
-                    "odds": 65,
-                    "randomizeRotation": true,
                     "position": {
-                        "x": 39.77051,
-                        "y": 0.8548716,
-                        "z": -15.26871
+                        "x": -5.707,
+                        "y": 2.152529,
+                        "z": -27.34132
                     },
                     "rotation": {
                         "x": 0,
-                        "y": 247.577,
+                        "y": 92.73984,
                         "z": 0
-                    }
-                }
-            ]
-        },
-        {
-            "spawnChance": 0.025,
-            "zones": [
-                {
-                    "name": "FactoryCrashRoom",
-                    "strength": 165.0,
-                    "blockNav": false,
-                    "usesDistanceFalloff": true,
-                    "position": {
-                        "x": 7.0,
-                        "y": -0.5,
-                        "z": -19.0
-                    },
-                    "rotation": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
                     },
                     "size": {
-                        "x": 60.0,
-                        "y": 5.5,
-                        "z": 35.5
+                        "x": 9.629996,
+                        "y": 3.608712,
+                        "z": 8.636473
                     }
-                }
-            ]
-        },
-        {
-            "zones": [
+                },
                 {
-                    "name": "FactoryMechanicTunnel",
-                    "spawnChance": 0.05,
-                    "strength": 110.0,
+                    "name": "FactoryCrash3",
+                    "strength": 35.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 1,
+                    "VisParticleRate": 15,
+                    "VisSpeedModi": 2,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [],
+                        "noRequirement": true
+                    },
                     "position": {
-                        "x": -16.5,
-                        "y": -2.5,
-                        "z": 34.0
+                        "x": -2.605214,
+                        "y": 1.483384,
+                        "z": -16.47433
                     },
                     "rotation": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
+                        "x": 0,
+                        "y": 158.8986,
+                        "z": 0
                     },
                     "size": {
-                        "x": 60.0,
-                        "y": 3.0,
-                        "z": 22.0
+                        "x": 5.559856,
+                        "y": 3.479087,
+                        "z": 7.13476
                     }
                 }
             ]
         },
         {
-            "spawnChance": 0.025,
+            "spawnChance": 1.0,
             "zones": [
                 {
-                    "name": "FactoryExtractRoom",
-                    "strength": 220.0,
-                    "blockNav": false,
+                    "name": "FactoryCellar",
+                    "strength": 60.0,
+                    "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
+                    "VisParticleRate": 65,
+                    "VisOpacityModi": 2,
                     "position": {
-                        "x": 56.0,
-                        "y": 3.0,
-                        "z": -7.0
+                        "x": 62.20975,
+                        "y": -3.123563,
+                        "z": -23.79253
                     },
                     "rotation": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
+                        "x": 0,
+                        "y": 358.7099,
+                        "z": 0
                     },
                     "size": {
-                        "x": 38.0,
-                        "y": 7.0,
-                        "z": 150.0
+                        "x": 32.90185,
+                        "y": 5.272452,
+                        "z": 18.02072
                     }
                 }
             ]
         },
         {
-            "spawnChance": 0.025,
+            "spawnChance": 1.0,
             "zones": [
                 {
-                    "name": "FactorySpawn",
-                    "strength": 220.0,
-                    "blockNav": false,
+                    "name": "FactoryTanksByMainExtract",
+                    "strength": 50.0,
+                    "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
+                    "VisParticleRate": 20,
+                    "VisOpacityModi": 2,
                     "position": {
-                        "x": -22.0,
-                        "y": 2.0,
-                        "z": 49.0
+                        "x": 55.13283,
+                        "y": -1.343695,
+                        "z": 6.100966
                     },
                     "rotation": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
+                        "x": 0,
+                        "y": 269.7137,
+                        "z": 0
                     },
                     "size": {
-                        "x": 65.0,
-                        "y": 9.0,
-                        "z": 30.0
+                        "x": 16.5,
+                        "y": 2.58591,
+                        "z": 20
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "FactorySewer",
+                    "strength": 150.0,
+                    "blockNav": true,
+                    "usesDistanceFalloff": true,
+                    "VisSpeedModi": 3,
+                    "VisParticleRate": 70,
+                    "position": {
+                        "x": -26.25799,
+                        "y": -4.00285,
+                        "z": -42.75625
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 177.0831,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 9.254366,
+                        "y": 3.774888,
+                        "z": 105.8367
                     }
                 }
             ]
@@ -341,13 +439,14 @@
             ]
         },
         {
-            "spawnChance": 0.5,
+            "spawnChance": 0.35,
             "zones": [
                 {
                     "name": "CustomsWarehouse5",
                     "strength": 85.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.75,
                     "position": {
                         "x": 474.5,
                         "y": 4,
@@ -409,9 +508,11 @@
             "zones": [
                 {
                     "name": "CustomsWarehouse5Van",
-                    "strength": 36.0,
+                    "strength": 26.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisParticleRate": 8,
+                    "VisOpacityModi": 0.8,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -481,6 +582,9 @@
                     "strength": 45.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
+                    "VisParticleRate": 50,
+                    "VisOpacityModi": 1.15,
                     "position": {
                         "x": 460.0,
                         "y": 2.0,
@@ -507,6 +611,8 @@
                     "strength": 22.5,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisParticleRate": 15,
+                    "VisSpeedModi": 2,
                     "position": {
                         "x": 466.0,
                         "y": 0.0,
@@ -526,13 +632,14 @@
             ]
         },
         {
-            "spawnChance": 0.75,
+            "spawnChance": 0.7,
             "zones": [
                 {
                     "name": "CustomsCrackDen",
                     "strength": 35.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.75,
                     "position": {
                         "x": 84.401,
                         "y": 5,
@@ -626,13 +733,14 @@
             ]
         },
         {
-            "spawnChance": 0.4,
+            "spawnChance": 0.45,
             "zones": [
                 {
                     "name": "CustomsPumpWarehouse",
                     "strength": 66.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.75,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -749,16 +857,17 @@
             ]
         },
         {
-            "spawnChance": 1.0,
+            "spawnChance": 1,
             "zones": [
                 {
                     "name": "CustomsPumpRoom",
                     "strength": 55.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.75,
                     "position": {
                         "x": 612.0,
-                        "y": 1.5,
+                        "y": 3,
                         "z": -129.8
                     },
                     "rotation": {
@@ -768,7 +877,7 @@
                     },
                     "size": {
                         "x": 23.5,
-                        "y": 6.5,
+                        "y": 8.5,
                         "z": 15.0
                     }
                 }
@@ -782,6 +891,7 @@
                     "strength": 77.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.85,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -810,7 +920,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 35,
+                    "odds": 30,
                     "randomizeRotation": true,
                     "position": {
                         "x": 412.0856,
@@ -828,7 +938,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 35,
+                    "odds": 30,
                     "randomizeRotation": true,
                     "position": {
                         "x": 389.8264,
@@ -864,7 +974,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 35,
+                    "odds": 30,
                     "randomizeRotation": true,
                     "position": {
                         "x": 390.2241,
@@ -900,7 +1010,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 35,
+                    "odds": 30,
                     "randomizeRotation": true,
                     "position": {
                         "x": 415.8232,
@@ -920,9 +1030,12 @@
             "zones": [
                 {
                     "name": "CustomsRiverContainer",
-                    "strength": 10,
+                    "strength": 20,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisParticleRate": 30,
+                    "visZoneSizeMulti": 1.15,
+                    "VisSpeedModi": 2,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -947,13 +1060,14 @@
             ]
         },
         {
-            "spawnChance": 0.2,
+            "spawnChance": 0.15,
             "zones": [
                 {
                     "name": "CustomsFortBarrels",
                     "strength": 99,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": 206.0,
                         "y": 2.0,
@@ -980,6 +1094,8 @@
                     "strength": 80,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
+                    "VisParticleRate": 45,
                     "position": {
                         "x": 514.8,
                         "y": 3.0,
@@ -1006,6 +1122,8 @@
                     "strength": 80,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
+                    "VisParticleRate": 35,
                     "position": {
                         "x": 506.4,
                         "y": 3.0,
@@ -1032,6 +1150,9 @@
                     "strength": 140.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
+                    "VisParticleRate": 45,
+                    "visZoneSizeMulti": 1.1,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -1063,6 +1184,7 @@
                     "strength": 77.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.75,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -1091,7 +1213,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 30,
+                    "odds": 27,
                     "randomizeRotation": true,
                     "position": {
                         "x": 339.0341,
@@ -1109,7 +1231,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 30,
+                    "odds": 27,
                     "randomizeRotation": true,
                     "position": {
                         "x": 341.7204,
@@ -1127,7 +1249,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 30,
+                    "odds": 28,
                     "randomizeRotation": true,
                     "position": {
                         "x": 341.6727,
@@ -1145,7 +1267,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 30,
+                    "odds": 27,
                     "randomizeRotation": true,
                     "position": {
                         "x": 343.2003,
@@ -1163,7 +1285,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 30,
+                    "odds": 27,
                     "randomizeRotation": true,
                     "position": {
                         "x": 333.1381,
@@ -1181,7 +1303,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 30,
+                    "odds": 28,
                     "randomizeRotation": true,
                     "position": {
                         "x": 325.4472,
@@ -1199,7 +1321,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 30,
+                    "odds": 27,
                     "randomizeRotation": true,
                     "position": {
                         "x": 352.6747,
@@ -1217,7 +1339,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 30,
+                    "odds": 28,
                     "randomizeRotation": true,
                     "position": {
                         "x": 354.0426,
@@ -1235,7 +1357,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 30,
+                    "odds": 27,
                     "randomizeRotation": true,
                     "position": {
                         "x": 348.3693,
@@ -1253,7 +1375,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 30,
+                    "odds": 28,
                     "randomizeRotation": true,
                     "position": {
                         "x": 321.1343,
@@ -1271,7 +1393,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 30,
+                    "odds": 27,
                     "randomizeRotation": true,
                     "position": {
                         "x": 331.9443,
@@ -1296,6 +1418,9 @@
                     "strength": 250.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 2,
+                    "VisSpeedModi": 2,
+                    "VisParticleRate": 80,
                     "position": {
                         "x": 80.0,
                         "y": 15.0,
@@ -1322,6 +1447,9 @@
                     "strength": 250.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 2,
+                    "VisSpeedModi": 2,
+                    "VisParticleRate": 80,
                     "position": {
                         "x": 82.0,
                         "y": 15.0,
@@ -1348,6 +1476,9 @@
                     "strength": 175.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 2,
+                    "VisSpeedModi": 2,
+                    "VisParticleRate": 60,
                     "position": {
                         "x": -45.0,
                         "y": 25.0,
@@ -1373,9 +1504,11 @@
             "zones": [
                 {
                     "name": "ShorelinePool",
-                    "strength": 100.0,
+                    "strength": 150.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisParticleRate": 60,
+                    "VisOpacityModi": 1.05,
                     "position": {
                         "x": -185.0,
                         "y": -9.4,
@@ -1402,6 +1535,7 @@
                     "strength": 50.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": 385.0,
                         "y": -59.9,
@@ -1428,6 +1562,8 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisParticleRate": 15,
+                    "VisSpeedModi": 2,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -1454,6 +1590,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -1480,6 +1617,8 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
+                    "VisParticleRate": 50,
                     "position": {
                         "x": 240.0,
                         "y": -54.0,
@@ -1498,9 +1637,10 @@
                 },
                 {
                     "name": "ShorelineSwamp4",
-                    "strength": 100.0,
+                    "strength": 200.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
                     "position": {
                         "x": 305.0,
                         "y": -55.3,
@@ -1522,6 +1662,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
                     "position": {
                         "x": 295.0,
                         "y": -53.0,
@@ -1543,6 +1684,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
                     "position": {
                         "x": 360.0,
                         "y": -55.0,
@@ -1564,6 +1706,8 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisParticleRate": 20,
+                    "VisSpeedModi": 2,
                     "position": {
                         "x": 374.0,
                         "y": -54.0,
@@ -1585,6 +1729,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisSpeedModi": 2,
                     "position": {
                         "x": 340.0,
                         "y": -55.0,
@@ -1606,6 +1751,8 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisParticleRate": 10,
+                    "VisSpeedModi": 2,
                     "position": {
                         "x": 326.5557,
                         "y": -55.27278,
@@ -1627,6 +1774,8 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisParticleRate": 10,
+                    "VisSpeedModi": 2,
                     "position": {
                         "x": 311.7151,
                         "y": -54.89543,
@@ -1648,6 +1797,8 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisParticleRate": 14,
+                    "VisSpeedModi": 2,
                     "position": {
                         "x": 250.2841,
                         "y": -54.91777,
@@ -1674,6 +1825,7 @@
                     "strength": 15.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": -321.0,
                         "y": -3.6,
@@ -1785,6 +1937,7 @@
                     "strength": 20.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": -188.3,
                         "y": -3.7,
@@ -1867,6 +2020,7 @@
                     "strength": 80.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -1900,6 +2054,8 @@
                     "strength": 17.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
+                    "VisSpeedModi": 2,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -1987,6 +2143,7 @@
                     "strength": 25.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.25,
                     "position": {
                         "x": 137.6,
                         "y": 3.8,
@@ -2039,6 +2196,7 @@
                     "strength": 50.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -2065,6 +2223,9 @@
                     "strength": 60.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 2,
+                    "VisSpeedModi": 1.5,
+                    "VisParticleRate": 55,
                     "position": {
                         "x": -120.0,
                         "y": 10.0,
@@ -2086,6 +2247,7 @@
                     "strength": 120.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 1,
                     "position": {
                         "x": -147.0,
                         "y": 6.0,
@@ -2107,6 +2269,7 @@
                     "strength": 120.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 1,
                     "position": {
                         "x": -89.5,
                         "y": 6.0,
@@ -2325,6 +2488,8 @@
                     "strength": 120.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 1,
+                    "VisParticleRate": 55,
                     "position": {
                         "x": -135.0,
                         "y": 3.0,
@@ -2351,6 +2516,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": 53.0,
                         "y": 1.0,
@@ -2372,6 +2538,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": 60.0,
                         "y": 1.0,
@@ -2393,6 +2560,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": 45.5,
                         "y": 1.0,
@@ -2419,6 +2587,9 @@
                     "strength": 350.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 2,
+                    "VisParticleRate": 80,
+                    "VisSpeedModi": 2.5,
                     "position": {
                         "x": 208.0,
                         "y": 0.0,
@@ -3087,6 +3258,8 @@
                     "strength": 50.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "visZoneSizeMulti": 1.15,
+                    "VisParticleRate": 5,
                     "position": {
                         "x": -164.5138,
                         "y": 28.1303,
@@ -3108,6 +3281,8 @@
                     "strength": 50.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "visZoneSizeMulti": 1.15,
+                    "VisParticleRate": 5,
                     "position": {
                         "x": -185.1275,
                         "y": 28.58481,
@@ -3129,6 +3304,8 @@
                     "strength": 50.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "visZoneSizeMulti": 1.15,
+                    "VisParticleRate": 5,
                     "position": {
                         "x": -154.2543,
                         "y": 28.99461,
@@ -3150,6 +3327,8 @@
                     "strength": 50.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "visZoneSizeMulti": 1.15,
+                    "VisParticleRate": 5,
                     "position": {
                         "x": -149.3852,
                         "y": 27.50573,
@@ -3171,6 +3350,8 @@
                     "strength": 50.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "visZoneSizeMulti": 1.15,
+                    "VisParticleRate": 5,
                     "position": {
                         "x": -178.6268,
                         "y": 21.71892,
@@ -3197,6 +3378,9 @@
                     "strength": 10.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "visZoneSizeMulti": 0.9,
+                    "VisParticleRate": 10,
+                    "VisOpacityModi": 0.75,
                     "position": {
                         "x": -48.4,
                         "y": 22.0,
@@ -3223,6 +3407,9 @@
                     "strength": 50.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "visZoneSizeMulti": 1,
+                    "VisParticleRate": 10,
+                    "VisOpacityModi": 0.5,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -3328,6 +3515,8 @@
                     "strength": 20.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "visZoneSizeMulti": 0.8,
+                    "VisParticleRate": 10,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -3354,6 +3543,8 @@
                     "strength": 20.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "visZoneSizeMulti": 0.75,
+                    "VisParticleRate": 10,
                     "position": {
                         "x": 10.5,
                         "y": 28.1,
@@ -3375,6 +3566,8 @@
                     "strength": 20.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "visZoneSizeMulti": 0.7,
+                    "VisParticleRate": 10,
                     "position": {
                         "x": 11.6,
                         "y": 28.1,
@@ -3475,6 +3668,9 @@
                     "strength": 50.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "visZoneSizeMulti": 0.95,
+                    "VisParticleRate": 10,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": 23.0,
                         "y": 28.1,
@@ -3557,6 +3753,7 @@
                     "strength": 125.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "visZoneSizeMulti": 0.6,
                     "position": {
                         "x": -18.0,
                         "y": 22.0,
@@ -3716,6 +3913,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -3742,6 +3940,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -3847,6 +4046,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -3873,6 +4073,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -4086,6 +4287,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -4313,6 +4515,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -4436,6 +4639,7 @@
                     "strength": 250.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": 46.0,
                         "y": 12.0,
@@ -4574,6 +4778,7 @@
                     "strength": 10.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": -96.0,
                         "y": -15.0,
@@ -4600,6 +4805,7 @@
                     "strength": 50.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": 230.0,
                         "y": 20.0,
@@ -4626,6 +4832,7 @@
                     "strength": 25.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -4677,6 +4884,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": -185.0,
                         "y": -1.0,
@@ -4698,6 +4906,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": -205.0,
                         "y": -1.0,
@@ -4719,6 +4928,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": -185.0,
                         "y": -1.0,
@@ -4873,6 +5083,7 @@
                     "strength": 100.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": 446.5,
                         "y": -13.0,
@@ -4901,6 +5112,8 @@
                     "strength": 50.0,
                     "blockNav": false,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.75,
+                    "VisParticleRate": 15,
                     "position": {
                         "x": -68.4,
                         "y": -15.0,
@@ -4927,6 +5140,8 @@
                     "strength": 50.0,
                     "blockNav": false,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
+                    "VisParticleRate": 5,
                     "position": {
                         "x": -85.5,
                         "y": -15.0,
@@ -4950,9 +5165,10 @@
             "zones": [
                 {
                     "name": "ReserveShaft",
-                    "strength": 30.0,
+                    "strength": 60.0,
                     "blockNav": false,
                     "usesDistanceFalloff": true,
+                    "VisParticleRate": 60,
                     "position": {
                         "x": -58.9,
                         "y": -15.9,
@@ -4979,6 +5195,8 @@
                     "strength": 80.0,
                     "blockNav": false,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.75,
+                    "VisParticleRate": 20,
                     "position": {
                         "x": -70.0,
                         "y": -16.0,
@@ -5093,6 +5311,7 @@
                     "strength": 500.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": 50.0,
                         "y": -13.5,
@@ -5119,6 +5338,7 @@
                     "strength": 50.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -5150,6 +5370,7 @@
                     "strength": 50.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "analysable": {
                         "enabledBy": [],
                         "disabledBy": [],
@@ -5181,6 +5402,7 @@
                     "strength": 150.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": -66.0,
                         "y": -9.0,
@@ -5207,6 +5429,7 @@
                     "strength": 150.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": -138.0,
                         "y": -9.0,
@@ -5233,6 +5456,7 @@
                     "strength": 200.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": -134.0,
                         "y": -12.0,
@@ -5259,6 +5483,7 @@
                     "strength": 200.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": -146.0,
                         "y": -11.0,
@@ -5285,6 +5510,7 @@
                     "strength": 200.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "VisOpacityModi": 0.5,
                     "position": {
                         "x": -103.0,
                         "y": -10.0,

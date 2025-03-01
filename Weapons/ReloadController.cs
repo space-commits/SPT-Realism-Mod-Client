@@ -31,8 +31,8 @@ namespace RealismMod.Weapons
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 MagReloadSpeedModifier(weapon, magazine, false, true);
                 player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(
-                    WeaponStats.CurrentMagReloadSpeed * PlayerValues.ReloadInjuryMulti * PlayerValues.ReloadSkillMulti * 
-                    PlayerValues.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff *
+                    WeaponStats.CurrentMagReloadSpeed * PlayerValues.ReloadInjuryMulti * PlayerValues.ReloadSkillMulti *
+                    GearController.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff *
                     Plugin.RealHealthController.AdrenalineReloadBonus * (Mathf.Max(PlayerValues.RemainingArmStamFactor, 0.8f)), 0.65f, 1.35f));
             }
             else

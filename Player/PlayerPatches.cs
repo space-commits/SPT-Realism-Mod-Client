@@ -242,7 +242,7 @@ namespace RealismMod
                 PlayerValues.SprintTotalBreathIntensity = breathIntensity;
                 PlayerValues.SprintTotalHandsIntensity = inputIntensitry;
                 PlayerValues.SprintHipfirePenalty = Mathf.Min(1f + (_sprintTimer / 100f), 1.25f);
-                PlayerValues.ADSSprintMulti = Mathf.Max(1f - (_sprintTimer / 12f), 0.3f);
+                PlayerValues.ADSSprintMulti = Mathf.Max(1f - (_sprintTimer / 10f), 0.45f);
 
                 _didSprintPenalties = true;
                 _doSwayReset = false;
