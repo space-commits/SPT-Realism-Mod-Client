@@ -109,10 +109,10 @@ namespace RealismMod
             float recoilFactor = (doubleShot != 0) ? 1.5f : 1f;
 
             _recoilField.SetValue(__instance, recoilFactor + (float)ammo.ammoRec / 100f);
-            __instance.method_58(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
+            __instance.method_59(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
             if (ammo.AmmoTemplate.IsLightAndSoundShot)
             {
-                __instance.method_61(position, baseShotDirection);
+                __instance.method_62(position, baseShotDirection);
                 __instance.LightAndSoundShot(position, baseShotDirection, ammo.AmmoTemplate);
             }
 

@@ -10,7 +10,7 @@ using static EFT.Player;
 using UnityEngine;
 using InputClass1 = Class1604;
 using InputClass2 = Class1602;
-using StatusStruct = GStruct457<GInterface398>;
+using StatusStruct = GStruct455<GInterface398>;
 using ItemEventClass = EFT.InventoryLogic;
 using EFT.Animations;
 using EFT.WeaponMounting;

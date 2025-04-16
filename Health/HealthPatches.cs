@@ -623,7 +623,7 @@ namespace RealismMod
                     MedsItemClass medItem = boundItem as MedsItemClass;
                     if (boundItem != null && medItem != null)
                     {
-                        __instance.SetInHands(medItem, EBodyPart.Common, 1, new Callback<SetInHandsMedsInterface>(GControl4.Class2105.class2105_0.method_1));
+                        __instance.SetInHands(medItem, EBodyPart.Common, 1, new Callback<SetInHandsMedsInterface>(GControl4.Class2153.class2153_0.method_1));
                         callback(null);
                         return false;
                     }
