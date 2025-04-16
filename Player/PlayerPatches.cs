@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
-using WeaponSkills = EFT.SkillManager.GClass1981;
+using WeaponSkills = EFT.SkillManager.GClass2017;
 using WeaponStateClass = GClass1668;
 using EFT.AssetsManager;
 using System;

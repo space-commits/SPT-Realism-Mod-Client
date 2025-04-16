@@ -22,11 +22,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass859).GetMethod("Enqueue");
+            return typeof(GClass869).GetMethod("Enqueue");
         }
 
         [PatchPrefix]
-        static void PatchPrefix(GClass859 __instance, ref float volume)
+        static void PatchPrefix(GClass869 __instance, ref float volume)
         {
             volume *= PluginConfig.GunshotVolume.Value;
         }

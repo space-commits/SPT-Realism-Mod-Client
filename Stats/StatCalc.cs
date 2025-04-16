@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static EFT.Player;
-using WeaponSkillsClass = EFT.SkillManager.GClass1981;
+using WeaponSkillsClass = EFT.SkillManager.GClass2017;
 
 namespace RealismMod
 {

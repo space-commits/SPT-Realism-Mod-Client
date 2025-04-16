@@ -16,7 +16,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using static RealismMod.Attributes;
-using ItemWeightClass = GClass2981;
+using ItemWeightClass = GClass3050;
 
 namespace RealismMod
 {
@@ -97,7 +97,7 @@ namespace RealismMod
 
         public static async Task LoadBundle(ResourceKey[] resources)
         {
-            await Singleton<PoolManager>.Instance.LoadBundlesAndCreatePools(PoolManager.PoolsCategory.Raid, PoolManager.AssemblyType.Local, resources, JobPriority.Immediate, null, PoolManager.DefaultCancellationToken);
+            await Singleton<PoolManagerClass>.Instance.LoadBundlesAndCreatePools(PoolManagerClass.PoolsCategory.Raid, PoolManagerClass.AssemblyType.Local, resources, JobPriorityClass.Immediate, null, PoolManagerClass.DefaultCancellationToken);
         }
 
         public static Vector3 ClampVector(Vector3 value, Vector3 min, Vector3 max)

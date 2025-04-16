@@ -630,7 +630,7 @@ namespace RealismMod
                 //patrol
                 if (!ShouldBlockAllStances && Input.GetKeyDown(PluginConfig.PatrolKeybind.Value.MainKey) && PluginConfig.PatrolKeybind.Value.Modifiers.All(Input.GetKey))
                 {
-                    Utils.GetYourPlayer().method_55(0.5f);
+                    Utils.GetYourPlayer().method_58(0.5f);
                     ToggleStance(EStance.PatrolStance);
                     StoredStance = EStance.None;
                     StanceBlender.Target = 0f;
@@ -1648,7 +1648,7 @@ namespace RealismMod
         {
             if (playSound)
             {
-                player.method_55(volume);
+                player.method_60(volume);
             }
 
             NewRecoilShotEffect newRecoil = pwa.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
