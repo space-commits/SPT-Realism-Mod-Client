@@ -12,13 +12,13 @@ using System.Reflection;
 using System.Xml.Linq;
 using UnityEngine;
 using static EFT.Player;
-using ChamberWeaponClass = EFT.Player.FirearmController.GClass1789;
-using MagReloadClass = EFT.Player.FirearmController.GClass1773;
-using ReloadWeaponClass = EFT.Player.FirearmController.GClass1751;
-using StatusStruct = GStruct446<GInterface385>;
-using WeaponEventClass = EFT.Player.FirearmController.GClass1741;
-using WeaponEventHandlerClass = EFT.Player.FirearmController.GClass1740;
-using WeaponStatSubclass = EFT.Player.FirearmController.GClass1784;
+using ChamberWeaponClass = EFT.Player.FirearmController.GClass1824;
+using MagReloadClass = EFT.Player.FirearmController.GClass1808;
+using ReloadWeaponClass = EFT.Player.FirearmController.GClass1806;
+using StatusStruct = GStruct457<GInterface398>;
+using WeaponEventClass = EFT.Player.FirearmController.GClass1775;
+using WeaponEventHandlerClass = EFT.Player.FirearmController.GClass1775;
+using WeaponStatSubclass = EFT.Player.FirearmController.GClass1819;
 using EFT.Animations;
 
 namespace RealismMod

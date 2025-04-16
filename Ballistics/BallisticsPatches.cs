@@ -11,14 +11,14 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using EFTSlot = GClass3113;
-using ArmorSlot = GClass2862;
+using EFTSlot = GClass3184;
+using ArmorSlot = GClass2929;
 using Diz.Skinning;
 using EFT.UI;
 using static EFT.Player;
 using DamageInfo = DamageInfoStruct;
-using SkillManagerClass = EFT.SkillManager.GClass1981;
-using PastTimeClass = GClass1629;
+using SkillManagerClass = EFT.SkillManager.GClass2017;
+using PastTimeClass = GClass1662;
 
 namespace RealismMod
 {

@@ -16,10 +16,10 @@ using UnityEngine;
 using static EFT.HealthSystem.ActiveHealthController;
 using static RealismMod.Attributes;
 using Color = UnityEngine.Color;
-using ExistanceClass = GClass2788;
-using HealthStateClass = GClass2747<EFT.HealthSystem.ActiveHealthController.GClass2746>;
-using MedUseStringClass = GClass1352;
-using SetInHandsMedsInterface = GInterface165;
+using ExistanceClass = GClass2855;
+using HealthStateClass = GClass2814<EFT.HealthSystem.ActiveHealthController.GClass2813>;
+using MedUseStringClass = GClass1372;
+using SetInHandsMedsInterface = GInterface176;
 
 
 namespace RealismMod
@@ -391,7 +391,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
-            Type genericType = typeof(Class2067<>); //declare generic type
+            Type genericType = typeof(Class2115<>); //declare generic type
             Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
             return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
@@ -409,7 +409,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
-            Type genericType = typeof(Class2066<>); //declare generic type
+            Type genericType = typeof(Class2115<>); //declare generic type
             Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
             return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }

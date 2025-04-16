@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using ArmorTemplate = GClass2550; //to find again, search for HasHinge field
+using ArmorTemplate = GClass2615; //to find again, search for HasHinge field
 
 namespace RealismMod
 {
@@ -164,7 +164,7 @@ namespace RealismMod
             ItemAddress itemAddress = player.InventoryController.FindSlotToPickUp(item);
             if (itemAddress != null)
             {
-                GStruct446<GClass3132> operation = InteractionsHandlerClass.Move(item, itemAddress, player.InventoryController, true);
+                GStruct455<GClass3203> operation = InteractionsHandlerClass.Move(item, itemAddress, player.InventoryController, true);
                 if (operation.Succeeded)
                 {
                     ItemUiContext.smethod_0(player.InventoryController, item, operation, null);
@@ -181,7 +181,7 @@ namespace RealismMod
 
         private static bool TryRemoveGasMask(Item item, Player player, ItemAddress address)
         {
-            GStruct446<GClass3132> operation = InteractionsHandlerClass.Move(item, address, player.InventoryController, true);
+            GStruct455<GClass3203> operation = InteractionsHandlerClass.Move(item, address, player.InventoryController, true);
             if (operation.Succeeded)
             {
                 ItemUiContext.smethod_0(player.InventoryController, item, operation, null);
@@ -245,7 +245,7 @@ namespace RealismMod
                 _currentRadProtection = radProtection;
                 _hadGasMask = true;
 /*                player.Say(EPhraseTrigger.OnBeingHurt, true, 0f, (ETagStatus)0, 100, false); //force to reset audio*/
-                player.SpeechSource.SetLowPassFilterParameters(0.99f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
+                player.SpeechSource.SetLowPassFilterParameters(0.99f, ESoundOcclusionType.Obstruction, 1600, 5000, 1f, true);
                 player.Muffled = true;
             }
             else
@@ -256,7 +256,7 @@ namespace RealismMod
             }
 
             player.UpdateBreathStatus();
-            player.UpdateOcclusion();
+            //player.UpdateOcclusion(); - I dont know what this is, its never declared?
             player.SendVoiceMuffledState(player.Muffled);
 
             if (!HasGasMask && _hadGasMask && player.HealthStatus == ETagStatus.Dying)

@@ -11,12 +11,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using static RealismMod.Attributes;
 using ArmorPlateUIClass = ArmorPlateItemClass;
-using FormatArmorClass = GClass2869;
-using StatAttributeClass = GClass3103;
-using ArmorSubCLass = EFT.InventoryLogic.ArmorComponent.Class2118;
-using UIClass = GClass3485;
-using AmmoPenUIClass = GClass623;
-using UIListClass = GClass3484;
+using FormatArmorClass = GClass2936;
+using StatAttributeClass = GClass3174;
+using ArmorSubCLass = EFT.InventoryLogic.ArmorComponent.Class2165;
+using UIClass = GClass3555;
+using AmmoPenUIClass = GClass638;
+using UIListClass = GClass3554;
 using Diz.LanguageExtensions;
 
 namespace RealismMod

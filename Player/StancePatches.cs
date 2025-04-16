@@ -11,7 +11,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
-using CollisionLayerClass = GClass3367;
+using CollisionLayerClass = GClass3449;
 /*using LightStruct = GStruct155;*/
 
 namespace RealismMod
@@ -21,12 +21,12 @@ namespace RealismMod
         private static FieldInfo _playerField;
         protected override MethodBase GetTargetMethod()
         {
-            _playerField = AccessTools.Field(typeof(Player.FirearmController.GClass1771), "player_0");
-            return typeof(Player.FirearmController.GClass1771).GetMethod("DisableAimingOnReload");
+            _playerField = AccessTools.Field(typeof(Player.FirearmController.GClass1806), "player_0");
+            return typeof(Player.FirearmController.GClass1806).GetMethod("DisableAimingOnReload");
         }
 
         [PatchPrefix]
-        private static bool PatchPreFix(Player.FirearmController.GClass1771 __instance)
+        private static bool PatchPreFix(Player.FirearmController.GClass1806 __instance)
         {
             Player player = (Player)_playerField.GetValue(__instance);
             if (player.IsYourPlayer && StanceController.IsMounting)
@@ -1238,8 +1238,8 @@ namespace RealismMod
                     bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
                     bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
 
-                    float lastDistance = player.AIData.BotOwner.AimingData.LastDist2Target;
-                    Vector3 distanceVect = player.AIData.BotOwner.AimingData.RealTargetPoint - player.AIData.BotOwner.MyHead.position;
+                    float lastDistance = player.AIData.BotOwner.AimingManager.CurrentAiming.LastDist2Target;
+                    Vector3 distanceVect = player.AIData.BotOwner.AimingManager.CurrentAiming.RealTargetPoint - player.AIData.BotOwner.MyHead.position;
                     float realDistance = distanceVect.magnitude;
 
                     bool isTacBot = StanceController._botsToUseTacticalStances.IndexOf(player.AIData.BotOwner.Profile.Info.Settings.Role.ToString()) != -1;
