@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>RealismMod</AssemblyName>
     <Description></Description>
     <Version>0.14.8</Version>
@@ -11,94 +11,38 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
-    </Reference>
-    <Reference Include="spt-reflection">
-    <HintPath>Z:\DEVSPT\BepInEx\plugins\spt\spt-reflection.dll</HintPath>
-    </Reference>
-	<Reference Include="spt-common">
-    <HintPath>Z:\DEVSPT\BepInEx\plugins\spt\spt-common.dll</HintPath>
-    </Reference>
-	<Reference Include="ItemComponent.Types">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\ItemComponent.Types.dll</HintPath>
-    </Reference>
-    <Reference Include="Comfort">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\Comfort.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL"></Reference>
+    <Reference Include="spt-reflection" />
+	<Reference Include="spt-common" />
+	<Reference Include="ItemComponent.Types" />
+    <Reference Include="Comfort" />
+    <Reference Include="Assembly-CSharp" />
+    <Reference Include="UnityEngine" />
 	<Reference Include="Microsoft.CSharp" />
-    <Reference Include="UnityEngine.CoreModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.Coremodule.dll</HintPath>
-    </Reference>
-	<Reference Include="UnityEngine.InputLegacyModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
-    </Reference>
-	<Reference Include="UnityEngine.JSONSerializeModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
-    </Reference>
-	<Reference Include="UnityEngine.UnityWebRequestModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UnityWebRequestTextureModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UnityWebRequestWWWModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
-    </Reference>
-	<Reference Include="UnityEngine.UnityWebRequestAudioModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
-    </Reference>
-	<Reference Include="AnimationSystem.Types">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\AnimationSystem.Types.dll</HintPath>
-    </Reference>
+    <Reference Include="UnityEngine.CoreModule" />
+	<Reference Include="UnityEngine.InputLegacyModule" />
+	<Reference Include="UnityEngine.JSONSerializeModule" />
+	<Reference Include="UnityEngine.UnityWebRequestModule" />
+    <Reference Include="UnityEngine.UnityWebRequestTextureModule" />
+    <Reference Include="UnityEngine.UnityWebRequestWWWModule" />
+	<Reference Include="UnityEngine.UnityWebRequestAudioModule" />
+	<Reference Include="AnimationSystem.Types" />
 	<Reference Include="Newtonsoft.Json" />
-	<Reference Include="UnityEngine.AudioModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.Postprocessing.Runtime">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\Unity.Postprocessing.Runtime.dll</HintPath>
-    </Reference>
-	<Reference Include="UnityEngine.PhysicsModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
-    </Reference>
-	<Reference Include="ItemTemplate.Types">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\ItemTemplate.Types.dll</HintPath>
-    </Reference>
-	<Reference Include="UnityEngine.UI">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="Sirenix.Serialization">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\Sirenix.Serialization.dll</HintPath>
-    </Reference>
-	<Reference Include="Unity.TextMeshPro">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\Unity.TextMeshPro.dll</HintPath>
-    </Reference>
-	<Reference Include="UnityEngine.ImageConversionModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.TerrainPhysicsModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.TerrainPhysicsModule.dll</HintPath>
-    </Reference>
-	<Reference Include="UnityEngine.AssetBundleModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.ParticleSystemModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityENgine.ParticleSystemModule.dll</HintPath>
-    </Reference>
-	<Reference Include="UnityEngine.AIModule">
-    <HintPath>Z:\DEVSPT\EscapeFromTarkov_Data\Managed\UnityEngine.AIModule.dll</HintPath>
-    </Reference>
+	<Reference Include="UnityEngine.AudioModule" />
+    <Reference Include="Unity.Postprocessing.Runtime" />
+	<Reference Include="UnityEngine.PhysicsModule" />
+	<Reference Include="ItemTemplate.Types" />
+	<Reference Include="UnityEngine.UI" />
+    <Reference Include="Sirenix.Serialization" />
+	<Reference Include="Unity.TextMeshPro" />
+	<Reference Include="UnityEngine.ImageConversionModule" />
+    <Reference Include="UnityEngine.TerrainPhysicsModule" />
+	<Reference Include="UnityEngine.AssetBundleModule" />
+    <Reference Include="UnityEngine.ParticleSystemModule" />
+	<Reference Include="UnityEngine.AIModule" />
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup> 
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">

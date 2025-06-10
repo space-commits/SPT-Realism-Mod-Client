@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using RaidStateClass = GClass2107;
+using RaidStateClass = GClass2064;
 
 namespace RealismMod
 {

@@ -7,7 +7,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using SkillMovementStruct = EFT.SkillManager.GStruct242;
+using SkillMovementStruct = EFT.SkillManager.GStruct235;
 using ValueHandler = GClass796;
 using static EFT.Player;
 
@@ -129,7 +129,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(MovementContext __instance, float deltaTime, MovementContext movementContext)
+        private static bool Prefix(MovementContext __instance, float deltaTime)
         {
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
@@ -157,7 +157,7 @@ namespace RealismMod
       
                 float sprintAccel = player.Physical.SprintAcceleration * stanceAccelBonus * PlayerValues.HealthSprintAccelFactor * surfaceMulti * slopeFactor * PlayerValues.GearSpeedPenalty * weaponFactor * Plugin.RealHealthController.AdrenalineMovementBonus * gearPenalty * deltaTime * playerWeightFactor;
                 float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * stanceSpeedBonus * PlayerValues.HealthSprintSpeedFactor * surfaceMulti * slopeFactor * PlayerValues.GearSpeedPenalty * weaponFactor * gearPenalty * Plugin.RealHealthController.AdrenalineMovementBonus * playerWeightFactor;
-                float sprintInertia = Mathf.Max(EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(Mathf.Abs((float)movementContext._averageRotationX.Average)), EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(2.1474836E+09f) * (2f - player.Physical.Inertia));
+                float sprintInertia = Mathf.Max(EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(Mathf.Abs((float)rotationFrameSpan.Average)), EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(2.1474836E+09f) * (2f - player.Physical.Inertia));
                 speed = Mathf.Clamp(speed * sprintInertia, 0.1f, speed);
                 __instance.SprintSpeed = Mathf.Clamp(__instance.SprintSpeed + sprintAccel * Mathf.Sign(speed - __instance.SprintSpeed), 0.01f, speed) * stanceSpeedBonus;
                 return false;

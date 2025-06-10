@@ -3,7 +3,7 @@ using EFT;
 using EFT.Interactive;
 using RealismMod;
 using UnityEngine;
-using DamageTypeClass = GClass2855;
+using DamageTypeClass = GClass2788;
 
 //Credit to AT for the assets
 public class ShockWave : TriggerWithId
