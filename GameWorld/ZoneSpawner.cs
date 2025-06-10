@@ -7,7 +7,7 @@ using System.Drawing;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
-using static GClass1389;
+using static GClass1405;
 using static RootMotion.FinalIK.IKSolver;
 
 namespace RealismMod

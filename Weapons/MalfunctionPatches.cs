@@ -9,9 +9,9 @@ using System.Reflection;
 using Systems.Effects;
 using UnityEngine;
 using static EFT.InventoryLogic.Weapon;
-using DamageTypeClass = GClass2788;
-using MalfGlobals = BackendConfigSettingsClass.GClass1521;
-using OverheatGlobals = BackendConfigSettingsClass.GClass1522;
+using DamageTypeClass = GClass2855;
+using MalfGlobals = BackendConfigSettingsClass.GClass1501;
+using OverheatGlobals = BackendConfigSettingsClass.GClass1502;
 using EFT.HealthSystem;
 using static EFT.Player;
 
