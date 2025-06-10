@@ -11,14 +11,14 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using EFTSlot = GClass3184;
-using ArmorSlot = GClass2929;
+using EFTSlot = GClass3113;
+using ArmorSlot = GClass2862;
 using Diz.Skinning;
 using EFT.UI;
 using static EFT.Player;
 using DamageInfo = DamageInfoStruct;
-using SkillManagerClass = EFT.SkillManager.GClass2017;
-using PastTimeClass = GClass1662;
+using SkillManagerClass = EFT.SkillManager.GClass1981;
+using PastTimeClass = GClass1629;
 
 namespace RealismMod
 {
@@ -109,10 +109,10 @@ namespace RealismMod
             float recoilFactor = (doubleShot != 0) ? 1.5f : 1f;
 
             _recoilField.SetValue(__instance, recoilFactor + (float)ammo.ammoRec / 100f);
-            __instance.method_59(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
+            __instance.method_58(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
             if (ammo.AmmoTemplate.IsLightAndSoundShot)
             {
-                __instance.method_62(position, baseShotDirection);
+                __instance.method_61(position, baseShotDirection);
                 __instance.LightAndSoundShot(position, baseShotDirection, ammo.AmmoTemplate);
             }
 

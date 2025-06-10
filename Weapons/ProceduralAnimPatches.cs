@@ -7,8 +7,8 @@ using SPT.Reflection.Patching;
 using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
-using ProcessorClass = GClass2599;
-using StaminaLevelClass = GClass827<float>;
+using ProcessorClass = GClass2534;
+using StaminaLevelClass = GClass816<float>;
 
 namespace RealismMod
 {
