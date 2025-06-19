@@ -11,14 +11,15 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using EFTSlot = GClass3113;
-using ArmorSlot = GClass2862;
+using EFTSlot = GClass3184;
+using ArmorSlot = GClass2929;
 using Diz.Skinning;
 using EFT.UI;
 using static EFT.Player;
 using DamageInfo = DamageInfoStruct;
-using SkillManagerClass = EFT.SkillManager.GClass1981;
-using PastTimeClass = GClass1629;
+using SkillManagerClass = EFT.SkillManager.GClass2017;
+using PastTimeClass = GClass1662;
+using VelocityClass = GClass3451;
 
 namespace RealismMod
 {
@@ -42,7 +43,7 @@ namespace RealismMod
             _skillField = AccessTools.Field(typeof(FirearmController), "gclass1981_0");
             _soundField = AccessTools.Field(typeof(FirearmController), "weaponSoundPlayer_0");
             _recoilField = AccessTools.Field(typeof(FirearmController), "float_5");
-            return typeof(Player.FirearmController).GetMethod("method_57", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player.FirearmController).GetMethod("method_58", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -109,10 +110,10 @@ namespace RealismMod
             float recoilFactor = (doubleShot != 0) ? 1.5f : 1f;
 
             _recoilField.SetValue(__instance, recoilFactor + (float)ammo.ammoRec / 100f);
-            __instance.method_58(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
+            __instance.method_59(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
             if (ammo.AmmoTemplate.IsLightAndSoundShot)
             {
-                __instance.method_61(position, baseShotDirection);
+                __instance.method_62(position, baseShotDirection);
                 __instance.LightAndSoundShot(position, baseShotDirection, ammo.AmmoTemplate);
             }
 
@@ -141,14 +142,14 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass3369).GetMethod("Initialize", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass3451).GetMethod("Initialize", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
-        private static void Prefix(GClass3369 __instance)
+        private static void Prefix(GClass3451 __instance)
         {
-            float bcFactor = (float)AccessTools.Field(typeof(GClass3369), "float_3").GetValue(__instance);
-            AccessTools.Field(typeof(GClass3369), "float_3").SetValue(__instance, bcFactor *= PluginConfig.DragModifier.Value);
+            float bcFactor = (float)AccessTools.Field(typeof(GClass3451), "float_3").GetValue(__instance);
+            AccessTools.Field(typeof(GClass3451), "float_3").SetValue(__instance, bcFactor *= PluginConfig.DragModifier.Value);
         }
     }
 

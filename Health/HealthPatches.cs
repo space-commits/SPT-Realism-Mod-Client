@@ -16,10 +16,10 @@ using UnityEngine;
 using static EFT.HealthSystem.ActiveHealthController;
 using static RealismMod.Attributes;
 using Color = UnityEngine.Color;
-using ExistanceClass = GClass2788;
-using HealthStateClass = GClass2747<EFT.HealthSystem.ActiveHealthController.GClass2746>;
-using MedUseStringClass = GClass1352;
-using SetInHandsMedsInterface = GInterface165;
+using ExistanceClass = GClass2855;
+using HealthStateClass = GClass2814<EFT.HealthSystem.ActiveHealthController.GClass2813>;
+using MedUseStringClass = GClass1372;
+using SetInHandsMedsInterface = GInterface176;
 
 
 namespace RealismMod

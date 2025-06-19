@@ -6,7 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using ArmorTemplate = GClass2550; //to find again, search for HasHinge field
+using ArmorTemplate = ArmoredEquipmentTemplateClass; //to find again, search for HasHinge field
+using MoveOperation = GStruct455<GClass3203>;
 
 namespace RealismMod
 {
@@ -164,7 +165,7 @@ namespace RealismMod
             ItemAddress itemAddress = player.InventoryController.FindSlotToPickUp(item);
             if (itemAddress != null)
             {
-                GStruct446<GClass3132> operation = InteractionsHandlerClass.Move(item, itemAddress, player.InventoryController, true);
+                MoveOperation operation = InteractionsHandlerClass.Move(item, itemAddress, player.InventoryController, true);
                 if (operation.Succeeded)
                 {
                     ItemUiContext.smethod_0(player.InventoryController, item, operation, null);
@@ -181,7 +182,7 @@ namespace RealismMod
 
         private static bool TryRemoveGasMask(Item item, Player player, ItemAddress address)
         {
-            GStruct446<GClass3132> operation = InteractionsHandlerClass.Move(item, address, player.InventoryController, true);
+            MoveOperation operation = InteractionsHandlerClass.Move(item, address, player.InventoryController, true);
             if (operation.Succeeded)
             {
                 ItemUiContext.smethod_0(player.InventoryController, item, operation, null);
@@ -256,7 +257,7 @@ namespace RealismMod
             }
 
             player.UpdateBreathStatus();
-            player.UpdateOcclusion();
+            player.UpdateMuffledState();
             player.SendVoiceMuffledState(player.Muffled);
 
             if (!HasGasMask && _hadGasMask && player.HealthStatus == ETagStatus.Dying)

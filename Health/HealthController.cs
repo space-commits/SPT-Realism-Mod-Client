@@ -8,21 +8,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using DamageTypeClass = GClass2788; //this.ApplyDamage(EBodyPart.LeftLeg
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2746; //DisplayableVariations, OverallDuration, Existing
-using EffectsDictionary = GClass2795.GClass2796; //SerializeState
-using MedUiString = GClass1352;
-using LightBleedingInterface = GInterface301;
-using HeavyBleedingInterface = GInterface302;
-using FractureInterface = GInterface304;
-using DehydrationInterface = GInterface305;
-using ExhaustionInterface = GInterface306;
-using IntoxicationInterface = GInterface308;
-using LethalToxinInterface = GInterface309;
-using ContusionInterface = GInterface314;
-using PainKillerInterface = GInterface320;
-using TunnelVisionInterface = GInterface325;
-using TremorInterface = GInterface323;
+using DamageTypeClass = GClass2855; //this.ApplyDamage(EBodyPart.LeftLeg
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2813; //DisplayableVariations, OverallDuration, Existing
+using EffectsDictionary = GClass2862.GClass2863; //SerializeState
+using MedUiString = GClass1372;
+using LightBleedingInterface = GInterface313;
+using HeavyBleedingInterface = GInterface314;
+using FractureInterface = GInterface316;
+using DehydrationInterface = GInterface317;
+using ExhaustionInterface = GInterface318;
+using IntoxicationInterface = GInterface320;
+using LethalToxinInterface = GInterface321;
+using ContusionInterface = GInterface326;
+using PainKillerInterface = GInterface332;
+using TunnelVisionInterface = GInterface337;
+using TremorInterface = GInterface335;
 using RealismMod.Health;
 using static EFT.Player;
 using System.Reflection.Emit;

@@ -1,5 +1,4 @@
-﻿using Comfort.Common;
-using EFT;
+﻿using EFT;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using EFT.UI;
@@ -9,7 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using KeyInteractionResultClass = GClass3344;
+using KeyInteractionResultClass = GClass3424;
 
 namespace RealismMod
 {

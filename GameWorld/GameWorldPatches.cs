@@ -1,37 +1,22 @@
-﻿using Comfort.Common;
+﻿using Audio.AmbientSubsystem;
+using Comfort.Common;
 using EFT;
 using EFT.Animals;
 using EFT.Ballistics;
 using EFT.Communications;
+using EFT.Interactive;
+using EFT.InventoryLogic;
 using EFT.UI;
-using Sirenix.Serialization;
+using HarmonyLib;
 using SPT.Reflection.Patching;
 using System;
-using System.Drawing;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using QuestUIClass = GClass2269;
-using ChanceCalcClass = GClass824;
+using ChanceCalcClass = GClass835;
 using Color = UnityEngine.Color;
-using EFT.InventoryLogic;
-using HarmonyLib;
-using EFT.Interactive;
-using static RootMotion.FinalIK.InteractionTrigger.Range;
-using System.Collections.Generic;
-using static UnityEngine.Rendering.PostProcessing.HistogramMonitor;
-using static UnityEngine.UI.Selectable;
-using System.Threading.Tasks;
-using static RootMotion.FinalIK.GenericPoser;
-using Audio.AmbientSubsystem;
-using static BotsPresets;
-using EFT.UI.BattleTimer;
-using TMPro;
-using System.Text;
-using System.Xml.Linq;
-using static RootMotion.FinalIK.IKSolver;
-using EFT.InputSystem;
-using static RealismMod.DebugGizmos;
+using QuestUIClass = GClass2314;
 
 namespace RealismMod
 {
@@ -94,26 +79,26 @@ namespace RealismMod
       }*/
 
 
-  /*  public class ActivateBossesByWavePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(BotsController).GetMethod(
-                nameof(BotsController.ActivateBotsByWave),
-                BindingFlags.Public | BindingFlags.Instance,
-                null,
-                new Type[] { typeof(BossLocationSpawn) },
-                null);
-        }
+    /*  public class ActivateBossesByWavePatch : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(BotsController).GetMethod(
+                  nameof(BotsController.ActivateBotsByWave),
+                  BindingFlags.Public | BindingFlags.Instance,
+                  null,
+                  new Type[] { typeof(BossLocationSpawn) },
+                  null);
+          }
 
-        [PatchPrefix]
-        protected static bool PatchPrefix()
-        {
-            
-            return false;
-        }
+          [PatchPrefix]
+          protected static bool PatchPrefix()
+          {
 
-    }*/
+              return false;
+          }
+
+      }*/
 
     public class GamePlayerPatch : ModulePatch
     {

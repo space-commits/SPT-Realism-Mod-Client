@@ -10,7 +10,7 @@ using UnityEngine;
 using static RealismMod.Attributes;
 using HeadsetClass = HeadphonesItemClass; //updatephonesreally()
 using HeadsetTemplate = HeadphonesTemplateClass; //updatephonesreally()
-using IEquipmentPenalty = GInterface346;
+using IEquipmentPenalty = GInterface359;
 using RigConstructor = VestItemClass;
 using RigTemplate = VestTemplateClass; //the one without the blindness stat
 
