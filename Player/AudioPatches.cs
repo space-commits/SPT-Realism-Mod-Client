@@ -103,7 +103,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             _weaponSoundPlayerField = AccessTools.Field(typeof(Player.FirearmController), "weaponSoundPlayer_0");
-            return typeof(Player.FirearmController).GetMethod("method_59", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player.FirearmController).GetMethod("method_60", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -273,7 +273,7 @@ namespace RealismMod
                 DeafenController.HasHeadSet = true;
                 HeadphonesTemplateClass headphone = headset.Template;
                 float rating = TemplateStats.GearStats[headset.TemplateId].dB;
-                return Utils.CalcultateModifierFromRange(rating, 19f, 26f, DeafenController.MaxHeadsetProtection, DeafenController.MinHeadsetProtection);
+                return Utils.CalcultateModifierFromRange(rating, DeafenController.HeadestLowerProtection, DeafenController.HeadsetUpperProtection, DeafenController.MaxHeadsetProtection, DeafenController.MinHeadsetProtection);
             }
             else
             {

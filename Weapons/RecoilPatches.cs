@@ -312,12 +312,10 @@ namespace RealismMod
 
     public class RecalcWeaponParametersPatch : ModulePatch
     {
-        private static FieldInfo fcField;
         private static FieldInfo playerField;
 
         protected override MethodBase GetTargetMethod()
         {
-            fcField = AccessTools.Field(typeof(NewRecoilShotEffect), "_firearmController");
             playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(NewRecoilShotEffect).GetMethod("RecalculateRecoilParamsOnChangeWeapon", BindingFlags.Instance | BindingFlags.Public);
         }
@@ -330,14 +328,11 @@ namespace RealismMod
 
             if (player != null && player.IsYourPlayer)
             {
-
-                //force stats to be calculated 
-                float calcStats = firearmController.Weapon.ErgonomicsDelta;
-
-                fcField.SetValue(__instance, firearmController);
-
+             
+                float calcStats = firearmController.Weapon.ErgonomicsDelta; //force stats to be calculated 
                 float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
 
+                __instance._firearmController = firearmController;
                 __instance.RecoilStableShotIndex = WeaponStats.IsStocklessPistol ? 2 : 1;
                 __instance.HandRotationRecoil.RecoilReturnTrajectoryOffset = template.RecoilReturnPathOffsetHandRotation * PluginConfig.AfterRecoilRandomness.Value;
                 __instance.HandRotationRecoil.StableAngleIncreaseStep = template.RecoilStableAngleIncreaseStep;
@@ -588,6 +583,8 @@ namespace RealismMod
                 {
                     shotRecoilProcessValues[i].Process(__instance.RecoilDirection);
                 }
+
+                __instance.WeaponRecoil.OnShoot();
 
                 if (PluginConfig.EnableRecoilLogging.Value) 
                 {

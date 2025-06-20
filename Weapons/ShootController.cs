@@ -155,15 +155,16 @@ namespace RealismMod
             totalRecAngle = !isPistol ? totalRecAngle : totalRecAngle - 5;
             totalRecAngle = Mathf.Clamp(totalRecAngle, 60f, 110f);
             float dispersionSpeedFactor = !isPistol ? 1f + (-WeaponStats.TotalDispersionDelta) : 1f;
+            float configDisperionFactor = PluginConfig.RecoilDispersionFactor.Value * 0.001f;
 
-            _recoilAngle = (Utils.AreFloatsEqual(PluginConfig.RecoilDispersionFactor.Value, 0f) ? 0f : (90f - totalRecAngle) / 250f);
+            _recoilAngle = (Utils.AreFloatsEqual(configDisperionFactor, 0f) ? 0f : (90f - totalRecAngle) / 250f);
 
             float angleDispFactor = 90f / totalRecAngle;
             ////////////////
 
             _dispersionSpeed = PluginConfig.RecoilDispersionSpeed.Value * dispersionSpeedFactor;
-            float dispersion = Mathf.Max(ShootController.FactoredTotalDispersion * PluginConfig.RecoilDispersionFactor.Value * shotCountFactor * angleDispFactor * hipfireModifier, 0f); //0.001
-            float recoilClimbMulti = isPistol ? PluginConfig.PistolRecClimbFactor.Value : PluginConfig.RecoilClimbFactor.Value; //0.0055
+            float dispersion = Mathf.Max(ShootController.FactoredTotalDispersion * configDisperionFactor * shotCountFactor * angleDispFactor * hipfireModifier, 0f); //0.001
+            float recoilClimbMulti = (isPistol ? PluginConfig.PistolRecClimbFactor.Value : PluginConfig.RecoilClimbFactor.Value) * 0.001f; //0.0055
 
             float xRotation = dispersion / mouseSensFactor;
             float yRotation = (-ShootController.FactoredTotalVRecoil * recoilClimbMulti * shotCountFactor) / mouseSensFactor; // * fpsFactor

@@ -46,10 +46,13 @@ namespace RealismMod
         public const float AmbientInVolume = 0f; //-80f
         public const float WeaponMuffleBase = -80f;
         public const float BaseMainVolume = 0f;
-        public const float LightHelmetDeafReduction = 0.95f;
-        public const float HeavyHelmetDeafreduction = 0.85f;
+        public const float LightHelmetDeafReduction = 0.9f;
+        public const float HeavyHelmetDeafreduction = 0.8f;
         public const float MinHeadsetProtection = 0.8f;
         public const float MaxHeadsetProtection = 0.25f;
+        public const float HeadsetUpperProtection = 26f;
+        public const float HeadestLowerProtection = 16f;
+        public const float VignetteFactor = 0.16f;
         public const int MaxGain = 15;
         public const int MinGain = -10;
         public const float MaxMuffle = 15f;
@@ -86,7 +89,7 @@ namespace RealismMod
         {
             get
             {
-                return PlayerValues.EnviroType == EnvironmentType.Indoor ? 1.5f : 1f;
+                return PlayerValues.EnviroType == EnvironmentType.Indoor ? 1.4f : 1f;
             }
         }
 
@@ -113,7 +116,7 @@ namespace RealismMod
             _muffleTarget = _muffleTarget < newMaxMuffle ? _muffleTarget + (factor * 2f) : _muffleTarget;
             _maxShootMuffle = Mathf.Max(newMaxMuffle, _maxShootMuffle);
             //vignete
-            _vignetteTarget = _vignetteTarget < newMaxVignette ? _vignetteTarget + (factor * 0.18f) : _vignetteTarget;
+            _vignetteTarget = _vignetteTarget < newMaxVignette ? _vignetteTarget + (factor * VignetteFactor * EarProtectionFactor) : _vignetteTarget;//vignette needs to be reduced more
             _maxShootVignette = Mathf.Max(newMaxVignette, _maxShootVignette);
         }
 

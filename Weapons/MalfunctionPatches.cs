@@ -127,6 +127,7 @@ namespace RealismMod
         }
     }
 
+
     //allows additional factors to modify weapon durability burn
     public class GetDurabilityLossOnShotPatch : ModulePatch
     {
