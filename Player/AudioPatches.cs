@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Audio;
+using GunShotQueue = GClass869;
 /*using CompressorTemplateClass = GClass2918; //SetCompressor
 using HeadsetClass = GClass2654; //Updatephonesreally()
 using HeadsetTemplate = GClass2556; //SetCompressor*/
@@ -22,11 +23,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass859).GetMethod("Enqueue");
+            return typeof(GunShotQueue).GetMethod("Enqueue");
         }
 
         [PatchPrefix]
-        static void PatchPrefix(GClass859 __instance, ref float volume)
+        static void PatchPrefix(GunShotQueue __instance, ref float volume)
         {
             volume *= PluginConfig.GunshotVolume.Value;
         }
@@ -40,7 +41,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
-            return typeof(Player.FirearmController).GetMethod("method_60", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player.FirearmController).GetMethod("method_61", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]

@@ -1,27 +1,17 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
-using Comfort.Common;
+﻿using Comfort.Common;
 using EFT;
 using EFT.Animations;
 using EFT.Animations.NewRecoil;
-using EFT.InputSystem;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using RealismMod.Weapons;
-using System.Collections.Generic;
+using SPT.Reflection.Patching;
+using System;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
-using WeaponSkills = EFT.SkillManager.GClass1981;
-using WeaponStateClass = GClass1668;
-using EFT.AssetsManager;
-using System;
-using static RootMotion.FinalIK.InteractionTrigger.Range;
-using Diz.LanguageExtensions;
-using System.Linq;
-using EFT.UI;
-using System.Runtime.CompilerServices;
-using static UnityEngine.GraphicsBuffer;
+using WeaponSkills = EFT.SkillManager.GClass2017;
 
 namespace RealismMod
 {

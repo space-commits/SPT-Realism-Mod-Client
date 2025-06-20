@@ -1,12 +1,9 @@
 ﻿using EFT;
+using EFT.Animations;
 using EFT.InventoryLogic;
-using Comfort.Common;
 using System.Collections.Generic;
 using UnityEngine;
 using ExistanceClass = GClass2855;
-using System.Linq;
-using EFT.Animations;
-using Diz.LanguageExtensions;
 
 namespace RealismMod
 {

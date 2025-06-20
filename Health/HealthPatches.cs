@@ -2,7 +2,6 @@
 using EFT;
 using EFT.HealthSystem;
 using EFT.InventoryLogic;
-using EFT.UI;
 using EFT.UI.Health;
 using HarmonyLib;
 using SPT.Reflection.Patching;
@@ -391,7 +390,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
-            Type genericType = typeof(Class2067<>); //declare generic type
+            Type genericType = typeof(Class2115<>); //declare generic type
             Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
             return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
@@ -409,7 +408,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
-            Type genericType = typeof(Class2066<>); //declare generic type
+            Type genericType = typeof(Class2114<>); //declare generic type
             Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
             return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
@@ -441,7 +440,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(HealthControllerClass).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(HealthControllerClass).GetMethod("ApplyItem", new Type[] { typeof(Item), typeof(EBodyPart), typeof(float) });
         }
 
         private static void RestoreHP(HealthControllerClass hc, EBodyPart initialTarget, float hpToRestore) 
@@ -553,8 +552,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GControl4).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
-
+            return typeof(GControl4).GetMethod("ApplyItem", new Type[] { typeof(Item), typeof(EBodyPart), typeof(float) });
         }
         [PatchPrefix]
         private static bool Prefix(GControl4 __instance, Item item, EBodyPart bodyPart, ref bool __result)
@@ -623,7 +621,7 @@ namespace RealismMod
                     MedsItemClass medItem = boundItem as MedsItemClass;
                     if (boundItem != null && medItem != null)
                     {
-                        __instance.SetInHands(medItem, EBodyPart.Common, 1, new Callback<SetInHandsMedsInterface>(GControl4.Class2105.class2105_0.method_1));
+                        __instance.SetInHands(medItem, EBodyPart.Common, 1, new Callback<SetInHandsMedsInterface>(GControl4.Class2153.class2153_0.method_1));
                         callback(null);
                         return false;
                     }
@@ -864,16 +862,16 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("SetInHands", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsItemClass), typeof(EBodyPart), typeof(int), typeof(Callback<SetInHandsMedsInterface>)}, null);
+            return typeof(EFT.Player).GetMethod("SetInHands", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsItemClass), typeof(GStruct353<EBodyPart>), typeof(int), typeof(Callback<SetInHandsMedsInterface>)}, null);
         }
 
         [PatchPrefix]
-        private static bool Prefix(Player __instance, MedsItemClass meds, ref EBodyPart bodyPart)
+        private static bool Prefix(Player __instance, MedsItemClass meds, ref GStruct353<EBodyPart> bodyParts)
         {
             if (__instance.IsYourPlayer && Plugin.FikaPresent)
             {
                 bool shouldAllowHeal = true;
-                Plugin.RealHealthController.CanUseMedItemCommon(meds, __instance, ref bodyPart, ref shouldAllowHeal);
+                Plugin.RealHealthController.CanUseMedItemCommon(meds, __instance, ref bodyParts, ref shouldAllowHeal);
                 return shouldAllowHeal;
             }
             return true;
@@ -885,16 +883,16 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsItemClass), typeof(EBodyPart), typeof(Callback<SetInHandsMedsInterface>), typeof(int), typeof(bool) }, null);
+            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsItemClass), typeof(GStruct353<EBodyPart>), typeof(Callback<SetInHandsMedsInterface>), typeof(int), typeof(bool) }, null);
         }
 
         [PatchPrefix]
-        private static bool Prefix(Player __instance, MedsItemClass meds, ref EBodyPart bodyPart)
+        private static bool Prefix(Player __instance, MedsItemClass meds, ref GStruct353<EBodyPart> bodyParts)
         {
             if (__instance.IsYourPlayer && !Plugin.FikaPresent)  //Fika overrides Proceed methods
             {
                 bool shouldAllowHeal = true;
-                Plugin.RealHealthController.CanUseMedItemCommon(meds, __instance, ref bodyPart, ref shouldAllowHeal);
+                Plugin.RealHealthController.CanUseMedItemCommon(meds, __instance, ref bodyParts, ref shouldAllowHeal);
                 return shouldAllowHeal;
             }
             return true;

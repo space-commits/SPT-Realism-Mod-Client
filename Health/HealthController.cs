@@ -3,29 +3,28 @@ using EFT;
 using EFT.HealthSystem;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using RealismMod.Health;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using UnityEngine;
+using ContusionInterface = GInterface326;
 using DamageTypeClass = GClass2855; //this.ApplyDamage(EBodyPart.LeftLeg
+using DehydrationInterface = GInterface317;
 using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2813; //DisplayableVariations, OverallDuration, Existing
 using EffectsDictionary = GClass2862.GClass2863; //SerializeState
-using MedUiString = GClass1372;
-using LightBleedingInterface = GInterface313;
-using HeavyBleedingInterface = GInterface314;
-using FractureInterface = GInterface316;
-using DehydrationInterface = GInterface317;
 using ExhaustionInterface = GInterface318;
+using FractureInterface = GInterface316;
+using HeavyBleedingInterface = GInterface314;
 using IntoxicationInterface = GInterface320;
 using LethalToxinInterface = GInterface321;
-using ContusionInterface = GInterface326;
+using LightBleedingInterface = GInterface313;
+using MedUiString = GClass1372;
 using PainKillerInterface = GInterface332;
-using TunnelVisionInterface = GInterface337;
 using TremorInterface = GInterface335;
-using RealismMod.Health;
-using static EFT.Player;
-using System.Reflection.Emit;
+using TunnelVisionInterface = GInterface337;
 
 namespace RealismMod
 {
@@ -510,7 +509,7 @@ namespace RealismMod
             Type type0 = typeof(EffectsDictionary);
 
             // Get the existing type array
-            FieldInfo typeArrFieldInfo = type0.GetField("type_0", BindingFlags.NonPublic | BindingFlags.Static);
+            FieldInfo typeArrFieldInfo = type0.GetField("type_0", BindingFlags.Public | BindingFlags.Static);
             var existingTypeArr = (Type[])typeArrFieldInfo.GetValue(null);
 
             // Create new combined array
@@ -522,7 +521,7 @@ namespace RealismMod
             typeArrFieldInfo.SetValue(null, newTypeArr);
 
             // Recreate dictionary_0 using their pattern
-            FieldInfo dictionaryField0 = type0.GetField("dictionary_0", BindingFlags.NonPublic | BindingFlags.Static);
+            FieldInfo dictionaryField0 = type0.GetField("dictionary_0", BindingFlags.Public | BindingFlags.Static);
             var newDict0 = newTypeArr.ToDictionary(
                 t => t.Name,  // They use Name, not FullName or ToString()
                 t => (byte)Array.IndexOf(newTypeArr, t)
@@ -530,7 +529,7 @@ namespace RealismMod
             dictionaryField0.SetValue(null, newDict0);
 
             // Recreate dictionary_1 using their pattern
-            FieldInfo dictionaryField1 = type0.GetField("dictionary_1", BindingFlags.NonPublic | BindingFlags.Static);
+            FieldInfo dictionaryField1 = type0.GetField("dictionary_1", BindingFlags.Public | BindingFlags.Static);
             var newDict1 = newDict0.ToDictionary(
                 kv => kv.Value,
                 kv => kv.Key
@@ -1540,7 +1539,7 @@ namespace RealismMod
             }
         }
 
-        public void CanUseMedItemCommon(MedsItemClass meds, Player player, ref EBodyPart bodyPart, ref bool shouldAllowHeal)
+        public void CanUseMedItemCommon(MedsItemClass meds, Player player, ref GStruct353<EBodyPart> bodyParts, ref bool shouldAllowHeal)
         {
             CheckIfReducesHazardInRaid(meds, player, true); //the types of item that can reduce toxicity and radiation can't be blocked so should be fine
 
@@ -1583,6 +1582,14 @@ namespace RealismMod
                       bool canHealHBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
           */
 
+            for (int i = 0; i < bodyParts.Length; i++)
+            {
+                CanUseMedItemBodyPart(bodyParts[i], player, medStats, meds, canHealLBleed, canHealHBleed, canHealFract, ref shouldAllowHeal);
+            }
+        }
+
+        public void CanUseMedItemBodyPart(EBodyPart bodyPart, Player player, Consumable medStats, MedsItemClass meds, bool canHealLBleed, bool canHealHBleed, bool canHealFract, ref bool shouldAllowHeal) 
+        {
             if (bodyPart == EBodyPart.Common)
             {
                 int gearBlockedHealCount = 0;
@@ -1636,7 +1643,7 @@ namespace RealismMod
                     bool isNotLimb = false;
 
                     bodyPart = Plugin.RealHealthController.BodyPartsArr
-                        .Where(b => player.ActiveHealthController.GetBodyPartHealth(b).Current / player.ActiveHealthController.GetBodyPartHealth(b).Maximum < 1)
+                    .Where(b => player.ActiveHealthController.GetBodyPartHealth(b).Current / player.ActiveHealthController.GetBodyPartHealth(b).Maximum < 1)
                         .OrderBy(b => player.ActiveHealthController.GetBodyPartHealth(b).Current / player.ActiveHealthController.GetBodyPartHealth(b).Maximum).FirstOrDefault();
 
                     //IDE is a liar, it can be null

@@ -1,38 +1,37 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
-using Comfort.Common;
+﻿using Comfort.Common;
 using EFT;
 using HarmonyLib;
+using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using SkillMovementStruct = EFT.SkillManager.GStruct235;
-using ValueHandler = GClass796;
-using static EFT.Player;
+using SkillMovementStruct = EFT.SkillManager.GStruct242;
+using ValueHandler = GClass807;
 
 namespace RealismMod
 {
-/*    public class SprintPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
+    /*    public class SprintPatch : ModulePatch
         {
-            return typeof(PlayerAnimator).GetMethod("EnableSprint", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static bool PatchPrefix(PlayerAnimator __instance)
-        {
-            Player player = Utils.GetYourPlayer();
-            if (player == null) return true;
-            if (player.MovementContext.PlayerAnimator == __instance)
+            protected override MethodBase GetTargetMethod()
             {
-                return false;
+                return typeof(PlayerAnimator).GetMethod("EnableSprint", BindingFlags.Instance | BindingFlags.Public);
             }
-            return true;
+
+            [PatchPrefix]
+            private static bool PatchPrefix(PlayerAnimator __instance)
+            {
+                Player player = Utils.GetYourPlayer();
+                if (player == null) return true;
+                if (player.MovementContext.PlayerAnimator == __instance)
+                {
+                    return false;
+                }
+                return true;
+            }
         }
-    }
-*/
+    */
     public class StaminaRegenRatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -102,7 +101,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("method_64", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player).GetMethod("method_73", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]

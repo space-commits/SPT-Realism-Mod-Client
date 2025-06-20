@@ -1,0 +1,4 @@
+UpdateOcclusion changed to UpdateMuffledState and the logic changed, watch for gas mask muffling working right
+continuous healing probably fucked things for SetInHands and Proceed
+Most fields were made public, that means I need to remove a lot of reflection and in some cases errors will be caused if using accesstool to get a field using nonpublic flag
+headsets might not be doing any protection vs. vignette

@@ -289,7 +289,7 @@ namespace RealismMod
             AudioClip audioClip = Plugin.GasMaskAudioClips[clipName];
             _currentBreathClipLength = audioClip.length;
             float playBackVolume = GetBreathVolume();
-            _Player.SpeechSource.SetLowPassFilterParameters(0.99f, ESoundOcclusionType.Obstruction, 1600, 5000, true); //muffles player voice
+            _Player.SpeechSource.SetLowPassFilterParameters(0.99f, ESoundOcclusionType.Obstruction, 1600, 5000, 1, true); //muffles player voice
             _gasMaskAudioSource.volume = playBackVolume;
             _gasMaskAudioSource.clip = audioClip;
             _gasMaskAudioSource.Play();

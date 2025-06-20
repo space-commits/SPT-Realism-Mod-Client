@@ -8,7 +8,7 @@ using RealismMod.Weapons;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using WeaponSkills = EFT.SkillManager.GClass1981;
+using WeaponSkills = EFT.SkillManager.GClass2017;
 using EFT.WeaponMounting;
 
 namespace RealismMod
@@ -71,7 +71,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
-            _skillField = AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1981_0");
+            _skillField = AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass2017_0");
 
             return typeof(Player.FirearmController).GetMethod("method_12", BindingFlags.Instance | BindingFlags.Public);
 

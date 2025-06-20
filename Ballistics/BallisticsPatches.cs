@@ -1,25 +1,21 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
-using Comfort.Common;
+﻿using Comfort.Common;
+using Diz.Skinning;
 using EFT;
 using EFT.Ballistics;
-using EFT.HealthSystem;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using EFTSlot = GClass3184;
-using ArmorSlot = GClass2929;
-using Diz.Skinning;
-using EFT.UI;
 using static EFT.Player;
+using ArmorSlot = GClass2929;
 using DamageInfo = DamageInfoStruct;
-using SkillManagerClass = EFT.SkillManager.GClass2017;
+using EFTSlot = GClass3184;
 using PastTimeClass = GClass1662;
-using VelocityClass = GClass3451;
+using SkillManagerClass = EFT.SkillManager.GClass2017;
 
 namespace RealismMod
 {
@@ -40,7 +36,7 @@ namespace RealismMod
             _accField = AccessTools.Field(typeof(FirearmController), "float_3");
             _buckFeld = AccessTools.Field(typeof(FirearmController), "float_4");
             _prefabField = AccessTools.Field(typeof(FirearmController), "weaponPrefab_0");
-            _skillField = AccessTools.Field(typeof(FirearmController), "gclass1981_0");
+            _skillField = AccessTools.Field(typeof(FirearmController), "gclass2017_0");
             _soundField = AccessTools.Field(typeof(FirearmController), "weaponSoundPlayer_0");
             _recoilField = AccessTools.Field(typeof(FirearmController), "float_5");
             return typeof(Player.FirearmController).GetMethod("method_58", BindingFlags.Instance | BindingFlags.Public);
@@ -443,7 +439,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             armorCompsField = AccessTools.Field(typeof(Player), "_preAllocatedArmorComponents");
-            return typeof(EftBulletClass).GetMethod("smethod_2", BindingFlags.Static | BindingFlags.Public);
+            return typeof(EftBulletClass).GetMethod("smethod_3", BindingFlags.Static | BindingFlags.Public);
         }
 
         [PatchPrefix]

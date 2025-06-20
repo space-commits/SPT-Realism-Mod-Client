@@ -3,12 +3,9 @@ using EFT;
 using EFT.Quests;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
-using static GClass1389;
-using static RootMotion.FinalIK.IKSolver;
 
 namespace RealismMod
 {
