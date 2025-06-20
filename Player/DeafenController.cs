@@ -44,7 +44,7 @@ namespace RealismMod
     {
         public const float AmbientOutVolume = 0f; //-0.91515f
         public const float AmbientInVolume = 0f; //-80f
-        public const float WeaponMuffleBase = -80f;
+        public const float WeaponMuffleBase = -70f;
         public const float BaseMainVolume = 0f;
         public const float LightHelmetDeafReduction = 0.9f;
         public const float HeavyHelmetDeafreduction = 0.8f;
@@ -105,9 +105,9 @@ namespace RealismMod
         public static void IncreaseDeafeningShooting()
         {
             float factor = AmmoDeafFactor * GunDeafFactor * EarProtectionFactor * EnvironmentFactor;
-            float newMaxDeafen = factor * 2.5f;
+            float newMaxDeafen = factor * 2f;
             float newMaxMuffle = factor;
-            float newMaxVignette = factor * 0.3f;
+            float newMaxVignette = factor * 0.28f;
 
             //volume
             _mainVolumeReductionTarget = _mainVolumeReductionTarget < newMaxDeafen ? _mainVolumeReductionTarget + factor : _mainVolumeReductionTarget;
