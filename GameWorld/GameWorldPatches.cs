@@ -8,6 +8,7 @@ using EFT.Interactive;
 using EFT.InventoryLogic;
 using EFT.UI;
 using HarmonyLib;
+using RealismMod.Audio;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
@@ -465,7 +466,6 @@ namespace RealismMod
     }
 
     //makes culstists spawn during day time
-
     class DayTimeSpawnPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -562,10 +562,11 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(GameWorld __instance)
         {
+            Plugin.Instance.StartCoroutine(Plugin.RealismAudioController.LoadAudioClipsCoroutine());
+
             ProfileData.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
             if (Plugin.ServerConfig.enable_hazard_zones)
             {
-
                 //update tracked map info
                 GameWorldController.CurrentMap = Singleton<GameWorld>.Instance.MainPlayer.Location.ToLower();
                 GameWorldController.MapWithDynamicWeather = GameWorldController.CurrentMap.Contains("factory") || GameWorldController.CurrentMap == "laboratory" ? false : true;
@@ -573,19 +574,19 @@ namespace RealismMod
                 GameWorldController.IsMapThatCanDoRadEvent = GameWorldController.CurrentMap != "laboratory";
 
                 //audio components
-                Plugin.RealismAudioControllerComponent.RunReInitPlayer();
+                Plugin.RealismAudioController.RunReInitPlayer();
 
                 if (GameWorldController.DoMapGasEvent)
                 {
                     Player player = Utils.GetYourPlayer();
-                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.2f, minDelayBeforePlayback: 60f); //spooky short playback
-                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.2f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
+                    AmbientAudioInitializer.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.RealismAudioController.GasEventAudioClips, volume: 1.2f, minDelayBeforePlayback: 60f); //spooky short playback
+                    AmbientAudioInitializer.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.RealismAudioController.GasEventLongAudioClips, true, 5f, 30f, 0.2f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
                 }
 
                 if (GameWorldController.DoMapRads)
                 {
                     Player player = Utils.GetYourPlayer();
-                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.RadEventAudioClips, volume: 1f, minDelayBeforePlayback: 60f); //thunder
+                    AmbientAudioInitializer.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.RealismAudioController.RadEventAudioClips, volume: 1f, minDelayBeforePlayback: 60f); //thunder
                 }
 
                 //spawn zones
@@ -625,6 +626,7 @@ namespace RealismMod
                 HazardTracker.GetHazardValues(ProfileData.PMCProfileId); //update to use PMC id and not potentially scav id
             }
             GameWorldController.Reset();
+            Plugin.RealismAudioController.ClipsAreReady = false;
         }
     }
 }

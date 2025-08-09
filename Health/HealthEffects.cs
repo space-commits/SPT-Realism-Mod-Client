@@ -417,14 +417,14 @@ namespace RealismMod
                     RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 1f, 20f, 5f, 1f);
                     RealHealthController.AddToExistingBaseEFTEffect(_Player, "Contusion", EBodyPart.Head, 1f, 20f, 5f, 0.5f);
                     RealHealthController.AddBasesEFTEffect(_Player, "Tremor", EBodyPart.Head, 1f, 20f, 5f, 1f);
-                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.6f);
+                    Plugin.RealismAudioController.PlayFoodPoisoningSFX(0.6f);
                     addedEffect = true;
                 }
 
                 TimeExisted++;
                 if (TimeExisted % 30 == 0) 
                 {
-                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.45f);
+                    Plugin.RealismAudioController.PlayFoodPoisoningSFX(0.45f);
                 }
             }
         }

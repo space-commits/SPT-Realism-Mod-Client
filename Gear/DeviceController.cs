@@ -40,7 +40,7 @@ namespace RealismMod
             bool canTrigger = IsInRightLocation() && Plugin.ModInfo.IsHalloween && !Plugin.ModInfo.HasExploded && !GameWorldController.DidExplosionClientSide && isRightTime;
             if (canTrigger) 
             {
-                _audioSource.clip = Plugin.DeviceAudioClips["transmitter_success.wav"];
+                _audioSource.clip = Plugin.RealismAudioController.DeviceAudioClips["transmitter_success.wav"];
                 _audioSource.Play();
                 SpawnQuestTrigger();
                 TriggeredExplosion = true;
@@ -50,7 +50,7 @@ namespace RealismMod
             }
             else
             {
-                _audioSource.clip = Plugin.DeviceAudioClips["transmitter_fail.wav"];
+                _audioSource.clip = Plugin.RealismAudioController.DeviceAudioClips["transmitter_fail.wav"];
                 clipLength = _audioSource.clip.length;
                 _audioSource.Play();
                 PlaySoundForAI();
@@ -107,7 +107,7 @@ namespace RealismMod
         {
             _gameVolume = GameWorldController.GetGameVolumeAsFactor();
             AudioSource audioSource = go.AddComponent<AudioSource>();
-            audioSource.clip = Plugin.DeviceAudioClips[clip];
+            audioSource.clip = Plugin.RealismAudioController.DeviceAudioClips[clip];
             audioSource.volume = 1.05f * _gameVolume;
             audioSource.loop = false;
             audioSource.playOnAwake = false;
@@ -286,14 +286,14 @@ namespace RealismMod
             float time = 0f;
             if (IsInRightLocation())
             {
-                _audioSource.clip = Plugin.DeviceAudioClips["numbers.wav"];
+                _audioSource.clip = Plugin.RealismAudioController.DeviceAudioClips["numbers.wav"];
                 _audioSource.Play();
                 AddSelfToDevicesList();
                 CanTurnOn = false;
             }
             else
             {
-                _audioSource.clip = Plugin.DeviceAudioClips["switch_off.wav"];
+                _audioSource.clip = Plugin.RealismAudioController.DeviceAudioClips["switch_off.wav"];
                 _audioSource.Play();
                 CanTurnOn = true;
                 yield break;
@@ -369,7 +369,7 @@ namespace RealismMod
         {
             _gameVolume = GameWorldController.GetGameVolumeAsFactor();
             AudioSource audioSource = go.AddComponent<AudioSource>();
-            audioSource.clip = Plugin.DeviceAudioClips[clip];
+            audioSource.clip = Plugin.RealismAudioController.DeviceAudioClips[clip];
             audioSource.volume = 1.0f * _gameVolume;
             audioSource.loop = false;
             audioSource.playOnAwake = false;
@@ -524,14 +524,14 @@ namespace RealismMod
             float time = 0f;
             if (CheckIfZoneTypeMatches())
             {
-                _audioSource.clip = Plugin.DeviceAudioClips["start_success.wav"];
+                _audioSource.clip = Plugin.RealismAudioController.DeviceAudioClips["start_success.wav"];
                 _audioSource.Play();
                 CanTurnOn = false;
                 AddSelfToDevicesList();
             }
             else
             {
-                _audioSource.clip = Plugin.DeviceAudioClips["failed_start.wav"];
+                _audioSource.clip = Plugin.RealismAudioController.DeviceAudioClips["failed_start.wav"];
                 _audioSource.Play();
                 CanTurnOn = true;
                 yield break;
@@ -546,7 +546,7 @@ namespace RealismMod
 
             PlaySoundForAI();
 
-            _audioSource.clip = Plugin.DeviceAudioClips["analyser_loop.wav"];
+            _audioSource.clip = Plugin.RealismAudioController.DeviceAudioClips["analyser_loop.wav"];
             _audioSource.loop = true;
             _audioSource.Play();
 
@@ -566,7 +566,7 @@ namespace RealismMod
 
             if (shouldStall)
             {
-                _audioSource.clip = Plugin.DeviceAudioClips["stalling.wav"];
+                _audioSource.clip = Plugin.RealismAudioController.DeviceAudioClips["stalling.wav"];
                 _audioSource.Play();
                 CanTurnOn = true;
                 _stalledPreviously = true;

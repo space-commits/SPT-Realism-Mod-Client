@@ -479,7 +479,7 @@ namespace RealismMod
                     hc.ChangeEnergy(-energyDrain);
                     hc.ChangeHydration(-hydrationDrain);
 
-                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.5f);
+                    Plugin.RealismAudioController.PlayFoodPoisoningSFX(0.5f);
                     return;
                 }
             }
@@ -517,7 +517,6 @@ namespace RealismMod
 
             if (Plugin.ServerConfig.food_changes)
             {
-                if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("food changes ");
                 FoodDrinkItemClass foodClass = item as FoodDrinkItemClass;
                 if (foodClass != null)
                 {
@@ -775,14 +774,14 @@ namespace RealismMod
             var player = (Player)_playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                if (PluginConfig.EnableMedicalLogging.Value)
+            /*    if (PluginConfig.EnableMedicalLogging.Value)
                 {
                     Logger.LogWarning("=========");
                     Logger.LogWarning("part = " + bodyPart);
                     Logger.LogWarning("type = " + damageInfo.DamageType);
                     Logger.LogWarning("damage = " + damage);
                     Logger.LogWarning("=========");
-                }
+                }*/
 
                 EDamageType damageType = damageInfo.DamageType;
 
