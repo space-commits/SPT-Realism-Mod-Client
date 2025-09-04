@@ -16,6 +16,24 @@ using Random = UnityEngine.Random;
 
 namespace RealismMod
 {
+    public class VisualRecoilPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(WeaponRecoilProcessBase).GetMethod("CalculateRecoil", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(WeaponRecoilProcessBase __instance, float deltaTime, bool isAiming)
+        {
+            float multi = (ShootController.FactoredTotalHRecoil + ShootController.FactoredTotalDispersion) / 20f;
+            float num = (isAiming ? __instance.CurveAimingValueMultiply : __instance.CurveAimingValueMultiply) * PluginConfig.VisRecoilMulti.Value * multi;
+            __instance._current = num * __instance.TransformationCurve.Evaluate(__instance._curveTime) * __instance.method_0();
+            __instance._curveTime += deltaTime * __instance.CurveTimeMultiply;
+            return false;
+        }
+    }
+
     public class UpdateHipInaccuracyPatch : ModulePatch
     {
         private static FieldInfo _playerField;
@@ -545,7 +563,7 @@ namespace RealismMod
                 float vertFactor = PlayerValues.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * 
                     StanceController.BracingRecoilBonus * opticRecoilMulti * pistolShotFactor *
                     leftShoulderFactor;
-                vertFactor = Mathf.Clamp(vertFactor, 0.25f, 1.25f) * PluginConfig.VertMulti.Value;
+                vertFactor = Mathf.Clamp(vertFactor, 0.25f, 1.25f) * (WeaponStats.IsPistol ? PluginConfig.PistolVertMulti.Value : PluginConfig.VertMulti.Value);
                 float horzFactor = PlayerValues.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * pistolShotFactor;
                 horzFactor = Mathf.Clamp(horzFactor, 0.25f, 1.25f) * PluginConfig.HorzMulti.Value;
                 ShootController.FactoredTotalVRecoil = vertFactor * ShootController.BaseTotalVRecoil;

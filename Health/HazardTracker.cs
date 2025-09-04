@@ -5,11 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using RaidStateClass = GClass2107;
 
 namespace RealismMod
 {
-
     public class HazardRecord
     {
         public float RecordedTotalToxicity { get; set; }
@@ -82,9 +80,9 @@ namespace RealismMod
 
         public static void OutOfRaidUpdate() 
         {
-#pragma warning disable CS0618
-            if (RaidStateClass.InRaid) return;
-#pragma warning disable CS0618
+
+            if (GameWorldController.IsInRaid()) return;
+
             _upateTimer += Time.deltaTime;
             _hideoutRegenTick += Time.deltaTime;
 

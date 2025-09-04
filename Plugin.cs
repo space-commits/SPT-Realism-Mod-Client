@@ -336,6 +336,7 @@ namespace RealismMod
             AudioControllerGameObject = new GameObject();
             RealismAudioController = AudioControllerGameObject.AddComponent<RealismAudioController>();
             DontDestroyOnLoad(AudioControllerGameObject);
+            RealismAudioController.LoadAudioClips();
         }
 
         private void LoadHealthController()
@@ -446,6 +447,7 @@ namespace RealismMod
             //needed for food and meds
             if (ServerConfig.med_changes || ServerConfig.food_changes)
             {
+                new ApplyItemStash2Patch().Enable();
                 new ApplyItemStashPatch().Enable();
                 new StimStackPatch1().Enable();
                 new StimStackPatch2().Enable();
@@ -606,7 +608,6 @@ namespace RealismMod
             new RemoveSillyBossForcedMalf().Enable();
             new GetTotalMalfunctionChancePatch().Enable();
             new IsKnownMalfTypePatch().Enable();
-            new RemoveForcedMalf().Enable();
             if (ServerConfig.manual_chambering)
             {
                 new SetAmmoCompatiblePatch().Enable();
@@ -630,6 +631,7 @@ namespace RealismMod
             new SetOverweightPatch().Enable();
             new BreathProcessPatch().Enable();
             new CamRecoilPatch().Enable();
+            new VisualRecoilPatch().Enable();
 
             //weapon and related
             new TotalShotgunDispersionPatch().Enable();
@@ -752,6 +754,17 @@ namespace RealismMod
             new ToggleHeadDevicePatch().Enable();
             new HealCostDisplayShortPatch().Enable();
             new HealCostDisplayFullPatch().Enable();
+            new IsInteractivePatch().Enable();
+            new HealthCanApplyItemBasePatch().Enable();
+            new HealthHasPartsToApplyBasePatch().Enable();
+            new TryGetPartsToApplyPatch().Enable();
+            new MedsControllerPatch().Enable();
+            new MedsController2Patch().Enable();
+            new MedsControllerStartPatch().Enable();
+            new HealthCanApplyBasePatch().Enable();
+            new MedKitHpRatePatch().Enable();
+            new MedEffectStartedPatch().Enable();
+            new HealthControllerTryGetBodyPartToApplyPatch().Enable();
         }
 
         private void LoadMovementPatches()

@@ -38,7 +38,6 @@ namespace RealismMod
         public const string RAMU_DATA_ID = "670120ce354987453daf3d0c";
         public const string HALLOWEEN_TRANSMITTER_ID = "6703082a766cb6d11310094e";
 
-
         public static ManualLogSource Logger;
         public static System.Random SystemRandom = new System.Random();
 

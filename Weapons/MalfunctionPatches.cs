@@ -17,21 +17,6 @@ using static EFT.Player;
 
 namespace RealismMod
 {
-    //bosses can induce malfunctions, unrealistic
-    public class RemoveSillyBossForcedMalf : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(ActiveHealthController).GetMethod("AddMisfireEffect", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(ActiveHealthController __instance)
-        {
-            return false;
-        }
-    }
-
     //handle caliber incompatibilities and related mechanics
     public class GetMalfunctionStatePatch : ModulePatch
     {
@@ -293,15 +278,16 @@ namespace RealismMod
         }
     }
 
-    public class RemoveForcedMalf : ModulePatch
+    //bosses can induce malfunctions, unrealistic
+    public class RemoveSillyBossForcedMalf : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.AddMisfireEffect));
+            return typeof(ActiveHealthController).GetMethod("AddMisfireEffect", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        static bool Prefix(ActiveHealthController __instance)
+        private static bool Prefix(ActiveHealthController __instance)
         {
             return false;
         }

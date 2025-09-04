@@ -63,13 +63,13 @@ namespace RealismMod
 
         private static AnimationCurve _autoPistolConvergenceCurve = new AnimationCurve(
         new Keyframe(0, 1f),
-        new Keyframe(0.05f, 2f),
-        new Keyframe(0.1f, 2.5f),
-        new Keyframe(0.3f, 2f),
-        new Keyframe(0.5f, 1.5f),
-        new Keyframe(0.7f, 1.25f),
-        new Keyframe(0.9f, 1.15f),
-        new Keyframe(1.2f, 1f)
+        new Keyframe(0.05f, 3.5f),
+        new Keyframe(0.1f, 3f),
+        new Keyframe(0.3f, 2.5f),
+        new Keyframe(0.5f, 2f),
+        new Keyframe(0.7f, 2.5f),
+        new Keyframe(0.9f, 2.25f),
+        new Keyframe(1.2f, 2f)
        );
 
 

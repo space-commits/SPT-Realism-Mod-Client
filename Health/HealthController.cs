@@ -1440,9 +1440,9 @@ namespace RealismMod
             Plugin.RealHealthController.AddCustomEffect(painKillerEffect, true);
         }
 
-        public void CheckIfReducesHazardInStash(Item item, bool isMed, HealthControllerClass hc)
+        public bool CheckCanReduceToxinInStash(Item item, bool isMed, HealthControllerClass hc)
         {
-            if (HazardTracker.TotalToxicity <= 0) return;
+            if (HazardTracker.TotalToxicity <= 0) return false;
 
             MedUiString details = null;
             if (isMed && item as MedsItemClass != null)
@@ -1463,16 +1463,9 @@ namespace RealismMod
                 HazardTracker.TotalToxicity -= strength * duration;
                 HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
                 HazardTracker.SaveHazardValues();
-
-                //doesn't work :(
-                /*       if (isMed)
-                       {
-                           var med = item as MedsClass;
-                           med.MedKitComponent.HpResource -= 1f;
-                           med.MedKitComponent.Item.RaiseRefreshEvent(false, true);
-                       }*/
+                return true;
             }
-
+            return false;
         }
 
         public void CheckIfReducesHazardInRaid(Item item, Player player, bool isMed)
@@ -1539,11 +1532,52 @@ namespace RealismMod
             }
         }
 
-        public void CanUseMedItemCommon(MedsItemClass meds, Player player, ref GStruct353<EBodyPart> bodyParts, ref bool shouldAllowHeal)
+        public bool CanUseInRaid(MedsItemClass meds, Consumable medStats) 
         {
+            if (!medStats.CanBeUsedInRaid)
+            {
+               if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("This Item Can Not Be Used In Raid", EFT.Communications.ENotificationDurationType.Long);
+               return false;
+            }
+            return true;
+        }
+
+        public (EBodyPart NewBodyPart, bool ShouldAllowHeal) ProcessSurgery(MedsItemClass meds, Consumable medStats, Player player, EBodyPart bodyPart, bool hasBodyGear, bool hasHeadGear) 
+        {
+            bool isHead = false;
+            bool isBody = false;
+            bool isNotLimb = false;
+
+            bodyPart = Plugin.RealHealthController.BodyPartsArr
+            .Where(b => player.ActiveHealthController.GetBodyPartHealth(b).Current / player.ActiveHealthController.GetBodyPartHealth(b).Maximum < 1)
+                .OrderBy(b => player.ActiveHealthController.GetBodyPartHealth(b).Current / player.ActiveHealthController.GetBodyPartHealth(b).Maximum).FirstOrDefault();
+
+            if (bodyPart == EBodyPart.Common)
+            {
+                if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Surgery), EFT.Communications.ENotificationDurationType.Long);
+                return (bodyPart, false);
+            }
+
+            Plugin.RealHealthController.GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
+
+            if (PluginConfig.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
+            {
+                if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.GearCommon), EFT.Communications.ENotificationDurationType.Long);
+                return (bodyPart, false);
+            }
+            Plugin.RealHealthController.HandleHealthEffects(meds, medStats, bodyPart, player, true, true, false);
+            return (bodyPart, true);
+        }
+
+        public (EBodyPart NewBodyPart, bool ShouldAllowHeal) ProcessHealAttempt(MedsItemClass meds, Player player, EBodyPart bodyPart)
+        {
+            var medStats = TemplateStats.GetDataObj<Consumable>(TemplateStats.ConsumableStats, meds.TemplateId);
+
+            if (!CanUseInRaid(meds, medStats)) return (bodyPart, false);
+
             CheckIfReducesHazardInRaid(meds, player, true); //the types of item that can reduce toxicity and radiation can't be blocked so should be fine
 
-            if (meds.Template.ParentId == "5448f3a64bdc2d60728b456a")
+            if (meds.Template.ParentId == "5448f3a64bdc2d60728b456a") //stim parent
             {
                 int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
                 int delay = Mathf.Max((int)meds.HealthEffectsComponent.BuffSettings[0].Delay, 5);
@@ -1552,21 +1586,14 @@ namespace RealismMod
                 StimEffectShell stimEffect = new StimEffectShell(player, duration, delay, stimType, this);
                 Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
 
-                shouldAllowHeal = true;
-                return;
+                return (bodyPart, true);
             }
 
-            var medStats = TemplateStats.GetDataObj<Consumable>(TemplateStats.ConsumableStats, meds.TemplateId);
+            return CanUseMedItemBodyPart(bodyPart, player, medStats, meds);
+        }
 
-            if (medStats.CanBeUsedInRaid == false)
-            {
-                if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("This Item Can Not Be Used In Raid", EFT.Communications.ENotificationDurationType.Long);
-                shouldAllowHeal = false;
-                return;
-            }
-
-            float medHPRes = meds.MedKitComponent.HpResource;
-
+        public (EBodyPart NewBodyPart, bool ShouldAllowHeal) CanUseMedItemBodyPart(EBodyPart bodyPart, Player player, Consumable medStats, MedsItemClass meds) 
+        {
             bool canHealLBleed =
                 meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding) &&
                 meds.HealthEffectsComponent.DamageEffects[EDamageEffectType.LightBleeding].Cost + 1 <= meds.MedKitComponent.HpResource;
@@ -1577,19 +1604,6 @@ namespace RealismMod
                 meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) &&
                 meds.HealthEffectsComponent.DamageEffects[EDamageEffectType.Fracture].Cost + 1 <= meds.MedKitComponent.HpResource;
 
-            /*          bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
-                      bool canHealLBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding);
-                      bool canHealHBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
-          */
-
-            for (int i = 0; i < bodyParts.Length; i++)
-            {
-                CanUseMedItemBodyPart(bodyParts[i], player, medStats, meds, canHealLBleed, canHealHBleed, canHealFract, ref shouldAllowHeal);
-            }
-        }
-
-        public void CanUseMedItemBodyPart(EBodyPart bodyPart, Player player, Consumable medStats, MedsItemClass meds, bool canHealLBleed, bool canHealHBleed, bool canHealFract, ref bool shouldAllowHeal) 
-        {
             if (bodyPart == EBodyPart.Common)
             {
                 int gearBlockedHealCount = 0;
@@ -1614,20 +1628,14 @@ namespace RealismMod
                 if (PluginConfig.GearBlocksHeal.Value && isPills && mouthBlocked)
                 {
                     if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Pills), EFT.Communications.ENotificationDurationType.Long);
-                    shouldAllowHeal = false;
-                    return;
+                    return (bodyPart, false);
                 }
                 if (medStats.ConsumableType == EConsumableType.PainPills || medStats.ConsumableType == EConsumableType.PainDrug)
                 {
                     AddPainkillerEffect(player, meds, medStats);
-                    shouldAllowHeal = true;
-                    return;
+                    return (bodyPart, true);
                 }
-                if (isDrug || isPills)
-                {
-                    shouldAllowHeal = true;
-                    return;
-                }
+                if (isDrug || isPills) return (bodyPart, true);
 
                 Type heavyBleedType;
                 Type lightBleedType;
@@ -1638,34 +1646,7 @@ namespace RealismMod
 
                 if (medStats.ConsumableType == EConsumableType.Surgical)
                 {
-                    bool isHead = false;
-                    bool isBody = false;
-                    bool isNotLimb = false;
-
-                    bodyPart = Plugin.RealHealthController.BodyPartsArr
-                    .Where(b => player.ActiveHealthController.GetBodyPartHealth(b).Current / player.ActiveHealthController.GetBodyPartHealth(b).Maximum < 1)
-                        .OrderBy(b => player.ActiveHealthController.GetBodyPartHealth(b).Current / player.ActiveHealthController.GetBodyPartHealth(b).Maximum).FirstOrDefault();
-
-                    //IDE is a liar, it can be null
-#pragma warning disable CS0472 
-                    if (bodyPart == null) bodyPart = EBodyPart.Common;
-#pragma warning restore CS0472 
-
-                    if (bodyPart == EBodyPart.Common)
-                    {
-                        if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Surgery), EFT.Communications.ENotificationDurationType.Long);
-                        shouldAllowHeal = false;
-                        return;
-                    }
-
-                    Plugin.RealHealthController.GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
-
-                    if (PluginConfig.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
-                    {
-                        if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.GearCommon), EFT.Communications.ENotificationDurationType.Long);
-                    }
-                    Plugin.RealHealthController.HandleHealthEffects(meds, medStats, bodyPart, player, canHealHBleed, canHealLBleed, canHealFract);
-                    return;
+                    return ProcessSurgery(meds, medStats, player, bodyPart, hasBodyGear, hasHeadGear);
                 }
                 else
                 {
@@ -1763,25 +1744,20 @@ namespace RealismMod
 
                 if (bodyPart == EBodyPart.Common)
                 {
-                    if (medStats.ConsumableType == EConsumableType.Vaseline)
-                    {
-                        shouldAllowHeal = true;
-                        return;
-                    }
+                    if (medStats.ConsumableType == EConsumableType.Vaseline) return (bodyPart, true);
 
                     if (blockType == EHealBlockType.Unknown && gearBlockedHealCount > 0) blockType = EHealBlockType.GearCommon;
                     if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(blockType), EFT.Communications.ENotificationDurationType.Long);
-
-                    shouldAllowHeal = false;
-                    return;
+                    return (bodyPart, false);
                 }
             }
 
             //determine if any effects should be applied based on what is being healed
             if (bodyPart != EBodyPart.Common)
             {
-                Plugin.RealHealthController.HandleHealthEffects(meds, medStats, bodyPart, player, canHealHBleed, canHealLBleed, canHealFract);
+               Plugin.RealHealthController.HandleHealthEffects(meds, medStats, bodyPart, player, canHealHBleed, canHealLBleed, canHealFract);
             }
+            return (bodyPart, true);
         }
 
 

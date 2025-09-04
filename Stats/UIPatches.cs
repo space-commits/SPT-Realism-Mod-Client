@@ -516,8 +516,8 @@ namespace RealismMod
                     return "No Change";
                 case <= 50:
                     return $"{malfChance}%";
-                case <= 99:
-                    return "Small Increase";
+                case <= 100:
+                    return "Moderate Increase";
                 case <= 500:
                     return "Significant Increase";
                 case <= 1000:
