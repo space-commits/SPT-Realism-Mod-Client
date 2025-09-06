@@ -79,6 +79,7 @@ namespace RealismMod
         public const float MIN_TOXICITY_THRESHOLD = 30f;
         public const float MIN_COUGH_DAMAGE_THRESHOLD = 0.14f;
         public const float OUT_OF_RAID_RAD_HEAL_FACTOR = 0.2f;
+        public const float OUT_OF_RAID_RESOURCE_DEBUFF_MULTI = 10f;
 
         HashSet<string> ToxicItems = new HashSet<string>(new string[] {
             "593a87af86f774122f54a951",
@@ -390,10 +391,13 @@ namespace RealismMod
 
                 HealthEffecTick();
 
-                AddTestEffectChecker();
+                InRaidEffectDebuger();
                 DropGearChecker();
                 OverdoseTimer();
             }
+
+            if (!GameWorldController.IsInRaid()) OutOfRaidEffectDebugger();
+
 
             if (Utils.IsInHideout || !Utils.PlayerIsReady)
             {
@@ -426,14 +430,20 @@ namespace RealismMod
             ResetHealhPenalties();
         }
 
-        private void AddTestEffectChecker() 
+        private void InRaidEffectDebuger() 
         {
-            if (Input.GetKeyDown(PluginConfig.AddEffectKeybind.Value.MainKey))
+            if (PluginConfig.EnableMedicalLogging.Value && Input.GetKeyDown(PluginConfig.AddEffectKeybind.Value.MainKey))
             {
                 /*                    AddStimDebuffs(Utils.GetYourPlayer(), Plugin.AddEffectType.Value);*/ // use this to test stim debuffs
                 TestAddBaseEFTEffect(PluginConfig.AddEffectBodyPart.Value, Utils.GetYourPlayer(), PluginConfig.AddEffectType.Value);
                 if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + PluginConfig.AddEffectType.Value + " To Part " + (EBodyPart)PluginConfig.AddEffectBodyPart.Value);
             }
+        }
+
+        private void OutOfRaidEffectDebugger() 
+        {
+            if (PluginConfig.EnableMedicalLogging.Value && Input.GetKeyDown(PluginConfig.AddEffectKeybind.Value.MainKey)) 
+                TestAddOutOfRaidEffect();
         }
 
         private void DropGearChecker() 
@@ -537,30 +547,19 @@ namespace RealismMod
             dictionaryField1.SetValue(null, newDict1);
         }
 
-        public void TestAddBaseEFTEffect(int partIndex, Player player, String effect)
+        private void TestAddBaseEFTEffect(int partIndex, Player player, String effect)
         {
             if (effect == "")
             {
                 return;
             }
 
-            if (effect == "removeHP")
+            if (effect == "changeHp")
             {
-                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, -player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, DamageTypeClass.Existence);
+                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, (int)PluginConfig.test1.Value, DamageTypeClass.Existence);
                 return;
             }
-            if (effect == "addHP")
-            {
-                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, DamageTypeClass.Existence);
-                return;
-            }
-            int healAmount = 0;
-            if (int.TryParse(effect, out healAmount))
-            {
-                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, healAmount, DamageTypeClass.Existence);
-                return;
-            }
-
+ 
             Type effectType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance);
             if (effectType == null)
             {
@@ -569,6 +568,31 @@ namespace RealismMod
             }
             MethodInfo effectMethod = GetAddBaseEFTEffectMethodInfo();
             effectMethod.MakeGenericMethod(effectType).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
+        }
+
+        private void TestAddOutOfRaidEffect()
+        {
+            var hc = Plugin.BSGHealthController;
+            if (hc == null) return;
+
+            if (PluginConfig.AddEffectType.Value == "changeHp")
+            {
+                hc.ChangeHealth((EBodyPart)PluginConfig.AddEffectBodyPart.Value, (int)PluginConfig.test1.Value, GClass2855.Existence);
+            }
+
+            if (PluginConfig.AddEffectType.Value == "tox")
+            {
+                HazardTracker.TotalToxicity += PluginConfig.test1.Value;
+                HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
+                HazardTracker.SaveHazardValues();
+            }
+            if (PluginConfig.AddEffectType.Value == "rad")
+            {
+                HazardTracker.TotalRadiation += PluginConfig.test1.Value;
+                HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
+                HazardTracker.SaveHazardValues();
+            }
+            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + PluginConfig.AddEffectType.Value + " To Part " + (EBodyPart)PluginConfig.AddEffectBodyPart.Value);
         }
 
         public void AddBasesEFTEffect(Player player, String effect, EBodyPart bodyPart, float? delayTime, float? duration, float? residueTime, float? strength)
@@ -1480,8 +1504,8 @@ namespace RealismMod
             bool canApplyDeRad = (deradDetails != null && HazardTracker.TotalRadiation > 0);
 
 
-            if (canApplyDetox) ApplyDeHazardersOutOfRaid(detoxDetails);
-            if (canApplyDeRad) ApplyDeHazardersOutOfRaid(deradDetails);
+            if (canApplyDetox) ApplyDeHazardersOutOfRaid(detoxDetails, EDamageEffectType.Intoxication);
+            if (canApplyDeRad) ApplyDeHazardersOutOfRaid(deradDetails, EDamageEffectType.RadExposure);
 
   
             return canApplyDetox || canApplyDeRad;
@@ -1502,7 +1526,7 @@ namespace RealismMod
 
             if (details != null)
             {
-                ApplyDeHazardersOutOfRaid(details);
+                ApplyDeHazardersOutOfRaid(details, EDamageEffectType.Intoxication);
                 return true;
             }
             return false;
@@ -1570,6 +1594,20 @@ namespace RealismMod
                 default:
                     return "No Suitable Bodypart Was Found For Healing";
             }
+        }
+
+        public bool ShouldAlwaysAllowOutOfRaid(Item item, Consumable medStats) 
+        {
+            return
+                medStats.HPRestoreAmount > 0 ||
+                item is StimulatorItemClass ||
+                medStats.ConsumableType == EConsumableType.PainPills ||
+                medStats.ConsumableType == EConsumableType.Pills ||
+                medStats.ConsumableType == EConsumableType.Drug ||
+                medStats.ConsumableType == EConsumableType.PainDrug ||
+                medStats.ConsumableType == EConsumableType.Stimulator ||
+                medStats.ConsumableType == EConsumableType.Medkit ||
+                medStats.ConsumableType == EConsumableType.Surgical;
         }
 
         public bool CanUseInRaid(MedsItemClass meds, Consumable medStats) 

@@ -142,6 +142,7 @@ namespace RealismMod
         public float TrnqtDamage { get; set; } = 0f;
         public float HPRestoreAmount { get; set; } = 0f;
         public float HPRestoreTick { get; set; } = 0f;
+        public bool DoesExtraResourceDebuff { get; set; } = false;
     }
 
     public static class TemplateStats

@@ -29,7 +29,7 @@ namespace RealismMod
             float multi = Mathf.Min(2f, (ShootController.FactoredTotalHRecoil + ShootController.FactoredTotalDispersion) / 20f);
             float num = (isAiming ? __instance.CurveAimingValueMultiply : __instance.CurveAimingValueMultiply) * PluginConfig.VisRecoilMulti.Value * multi;
             __instance._current = num * __instance.TransformationCurve.Evaluate(__instance._curveTime) * __instance.method_0();
-            __instance._curveTime += deltaTime * __instance.CurveTimeMultiply * 0.9f;
+            __instance._curveTime += deltaTime * __instance.CurveTimeMultiply;
             return false;
         }
     }
@@ -382,7 +382,7 @@ namespace RealismMod
                 ShootController.BaseTotalConvergence = WeaponStats.TotalModdedConv * (WeaponStats.IsPistol ? PluginConfig.PistolConvergenceMulti.Value : PluginConfig.ConvergenceMulti.Value);
 
                 ShootController.BaseTotalRecoilDamping = (float)Math.Round(WeaponStats.TotalRecoilDamping * PluginConfig.RecoilDampingMulti.Value, 3);
-                ShootController.BaseTotalHandDamping = (float)Math.Round(WeaponStats.TotalRecoilHandDamping * PluginConfig.HandsDampingMulti.Value, 3);
+                ShootController.BaseTotalHandDamping = (float)Math.Round(WeaponStats.TotalRecoilHandDamping, 3);
                 WeaponStats.TotalWeaponWeight = firearmController.Weapon.TotalWeight;
                 WeaponStats.TotalWeaponLength = firearmController.Item.CalculateCellSize().X;
 

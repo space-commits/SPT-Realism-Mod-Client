@@ -449,7 +449,6 @@ namespace RealismMod
             //needed for food and meds
             if (ServerConfig.med_changes || ServerConfig.food_changes)
             {
-                new ApplyItemStash2Patch().Enable();
                 new ApplyItemStashPatch().Enable();
                 new StimStackPatch1().Enable();
                 new StimStackPatch2().Enable();
@@ -525,44 +524,10 @@ namespace RealismMod
             FPS = Mathf.Clamp(FPS, 30f, 200f);
         }
 
-        private void OutOfRaidHealthDebug() 
-        {
-            if (Input.GetKeyDown(PluginConfig.AddEffectKeybind.Value.MainKey))
-            {
-                Logger.LogWarning("debug");
-
-                var hc = Plugin.BSGHealthController;
-                if (hc == null) return;
-                Logger.LogWarning("got hc");
-
-                if (PluginConfig.AddEffectType.Value == "changeHp")
-                {
-                    hc.ChangeHealth((EBodyPart)PluginConfig.AddEffectBodyPart.Value, (int)PluginConfig.test1.Value, GClass2855.Existence);
-                }
-
-                if (PluginConfig.AddEffectType.Value == "tox")
-                {
-                    HazardTracker.TotalToxicity += PluginConfig.test1.Value;
-                    HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
-                    HazardTracker.SaveHazardValues();
-                }
-                if (PluginConfig.AddEffectType.Value == "rad")
-                {
-                    HazardTracker.TotalRadiation += PluginConfig.test1.Value;
-                    HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
-                    HazardTracker.SaveHazardValues();
-                }
-            }
-    
-        }
-
         void Update()
         {
             //TEMPORARY
             if (GameWorldController.GameStarted && PluginConfig.ZoneDebug.Value) MoveDaCube.Update();
-
-            //DELETE ME
-            if (PluginConfig.EnableMedicalLogging.Value && !GameWorldController.IsInRaid()) OutOfRaidHealthDebug();
 
             GetFps();
             CheckForProfileData();
@@ -790,15 +755,12 @@ namespace RealismMod
             new ToggleHeadDevicePatch().Enable();
             new HealCostDisplayShortPatch().Enable();
             new HealCostDisplayFullPatch().Enable();
-            new IsInteractivePatch().Enable();
             new HealthCanApplyItemBasePatch().Enable();
             new HealthHasPartsToApplyBasePatch().Enable();
             new TryGetPartsToApplyPatch().Enable();
-            new MedsControllerPatch().Enable();
             new MedsController2Patch().Enable();
-            new MedsControllerStartPatch().Enable();
-            new HealthCanApplyBasePatch().Enable();
-            new MedKitHpRatePatch().Enable();
+            new Method8Patch().Enable();
+           // new MedKitHpRatePatch().Enable();
             new MedEffectStartedPatch().Enable();
             new HealthControllerTryGetBodyPartToApplyPatch().Enable();
         }
