@@ -70,6 +70,15 @@ namespace RealismMod
             }
         }
 
+        public static int MedStationLevel 
+        {
+            get 
+            {
+                return _medStationLevel;
+            }
+        } 
+
+
         private static float _totalToxicity = 0f;
         private static float _totalRadiation = 0f;
         private static float _toxicityRateMeds = 0f;
@@ -77,10 +86,11 @@ namespace RealismMod
         private static float _upateTimer = 0f;
         private static float _hideoutRegenTick = 0f;
         public static bool _loadedData = false;
+        public static int _medStationLevel = 0;
+        public static int _ventsLevel = 0;
 
         public static void OutOfRaidUpdate() 
         {
-
             if (GameWorldController.IsInRaid()) return;
 
             _upateTimer += Time.deltaTime;
@@ -92,8 +102,10 @@ namespace RealismMod
                 var genController = Singleton<HideoutClass>.Instance?.EnergyController;
                 if (profileData != null && _loadedData && genController != null && genController.IsEnergyGenerationOn)
                 {
-                    float ventsFactor = -(profileData.Hideout.Areas[0].Level * 0.01f);
-                    float medFactor = -(profileData.Hideout.Areas[7].Level * 0.025f);
+                    _medStationLevel = profileData.Hideout.Areas[7].Level;
+                    _ventsLevel = profileData.Hideout.Areas[0].Level;
+                    float ventsFactor = -(_ventsLevel * 0.01f);
+                    float medFactor = -(_medStationLevel * 0.025f);
 
                     float totalFactor = ventsFactor + medFactor;
                     TotalToxicityRate = totalFactor;

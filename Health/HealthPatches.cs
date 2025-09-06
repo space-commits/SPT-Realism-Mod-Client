@@ -23,6 +23,7 @@ using ExistanceClass = GClass2855;
 using HealthStateClass = GClass2814<EFT.HealthSystem.ActiveHealthController.GClass2813>;
 using MedUseStringClass = GClass1372;
 using SetInHandsMedsInterface = GInterface176;
+using MedUiString = GClass1372;
 
 namespace RealismMod
 {
@@ -453,6 +454,56 @@ namespace RealismMod
         }
     }
 
+
+    public class MedsControllerPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player.MedsController.Class1172).GetMethod("method_5");
+        }
+
+        [PatchPrefix]
+        private static void Prefix()
+        {
+            Logger.LogWarning("Player.MedsController.Class1172 method_5");
+        }
+    }
+
+    public class MedsController2Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player.MedsController.Class1172).GetMethod("method_4");
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ref bool __result)
+        {
+            Logger.LogWarning("Player.MedsController.Class1172 method_4");
+            __result = false;
+            return false;
+        }
+    }
+
+    public class MedsControllerStartPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player.MedsController.Class1172).GetMethod("Start", new Type[] { typeof(GStruct353<EBodyPart>), typeof(float), typeof(Action) });
+        }
+
+        [PatchPrefix]
+        private static void Prefix(GStruct353<EBodyPart> bodyParts)
+        {
+            Logger.LogWarning("Player.MedsController.Class1172 Start");
+            Logger.LogWarning($"length {bodyParts.Length}");
+            for (int i = 0; i < bodyParts.Length; i++)
+            {
+                Logger.LogWarning($"part is {bodyParts[0]}, index {i}");
+            }
+        }
+    }
+
     //if out of raid, pretend everything has a resource rate above 0 to enable applying it
     public class MedKitHpRatePatch : ModulePatch
     {
@@ -485,9 +536,9 @@ namespace RealismMod
         {
             Logger.LogWarning("HealthControllerClass TryGetBodyPartToApply");
             var medStats = TemplateStats.GetDataObj<Consumable>(TemplateStats.ConsumableStats, item.TemplateId);
-            if (!GameWorldController.IsInRaid() && medStats != null)
+            if (!GameWorldController.IsInRaid())
             {
-                damagedBodyPart = bodyPart == EBodyPart.Common ? EBodyPart.Head : bodyPart;
+                damagedBodyPart = bodyPart;
                 __result = true;
                 return false;
             }
@@ -512,9 +563,9 @@ namespace RealismMod
         {
             Logger.LogWarning("HealthControllerClass.GClass2819 TryGetBodyPartToApply");
             var medStats = TemplateStats.GetDataObj<Consumable>(TemplateStats.ConsumableStats, item.TemplateId);
-            if (!GameWorldController.IsInRaid() && medStats != null)
+            if (!GameWorldController.IsInRaid())
             {
-                damagedBodyPart = bodyPart == EBodyPart.Common ? EBodyPart.Head : bodyPart;
+                damagedBodyPart = bodyPart;
                 __result = true;
                 return false;
             }
@@ -608,58 +659,8 @@ namespace RealismMod
         }
     }
 
-    public class MedsControllerPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player.MedsController.Class1172).GetMethod("method_5");
-        }
-
-        [PatchPrefix]
-        private static void Prefix()
-        {
-            Logger.LogWarning("Player.MedsController.Class1172 method_5");
-        }
-    }
-
-    public class MedsController2Patch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player.MedsController.Class1172).GetMethod("method_4");
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(ref bool __result)
-        {
-            Logger.LogWarning("Player.MedsController.Class1172 method_4");
-            __result = false;
-            return false;
-        }
-    }
-
-    public class MedsControllerStartPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player.MedsController.Class1172).GetMethod("Start", new Type[] { typeof(GStruct353<EBodyPart>), typeof(float), typeof(Action) });
-        }
-
-        [PatchPrefix]
-        private static void Prefix(GStruct353<EBodyPart> bodyParts)
-        {
-            Logger.LogWarning("Player.MedsController.Class1172 Start");
-            Logger.LogWarning($"length {bodyParts.Length}");
-            for (int i = 0; i < bodyParts.Length; i++)
-            {
-                Logger.LogWarning($"part is {bodyParts[0]}, index {i}");
-            }
-        }
-    }
-
     public class MedEffectStartedPatch : ModulePatch
     {
-
         private static readonly Type MedEffectType = typeof(HealthControllerClass).GetNestedType("MedEffect", BindingFlags.NonPublic);
 
         private static readonly PropertyInfo HealthControllerProperty = AccessTools.Property(MedEffectType, "HealthControllerClass");
@@ -673,51 +674,102 @@ namespace RealismMod
             return method;
         }
 
-        [PatchPrefix]
-        private static bool Prefix(object __instance)
+        private static void ApplyStim(HealthControllerClass healthController, Item medItem) 
         {
-            Logger.LogWarning("MedEffect.Started()");
+            GControl6 gcontrols = healthController.inventoryController_0 as GControl6;
+            gcontrols?.Heal(medItem, EBodyPart.Head, Mathf.RoundToInt(1));
+            GClass2821.RemoveItem(medItem);
+            var medItemTypes = medItem.GetType();
+            var raiseRefreshMethods = AccessTools.Method(medItemTypes, "RaiseRefreshEvent");
+            raiseRefreshMethods?.Invoke(medItem, new object[] { false, true });
+        }
 
-            var healthController = HealthControllerProperty.GetValue(__instance) as HealthControllerClass;
-            var bodyPart = (EBodyPart)BodyPartProperty.GetValue(__instance); 
-            var medItem = (Item)MedItemProperty.GetValue(__instance);
-            var medKitComponent = (MedKitComponent)MedKitComponentField.GetValue(__instance);
+        private static bool HandleBuffs(HealthControllerClass healthController, Item medItem, MedsItemClass medClass) 
+        {
+            var stimBuffs = medClass.HealthEffectsComponent.BuffSettings;
+            var hasUsedStim = false;
 
-
-            if (medItem is StimulatorItemClass)
+            foreach (var buff in stimBuffs)
             {
-                Logger.LogWarning("is stim");
-                GControl6 gcontrols = healthController.inventoryController_0 as GControl6;
-                gcontrols?.Heal(medItem, bodyPart, Mathf.RoundToInt(1));
-                GClass2821.RemoveItem(medItem);
-                var medItemTypes = medItem.GetType();
-                var raiseRefreshMethods = AccessTools.Method(medItemTypes, "RaiseRefreshEvent");
-                raiseRefreshMethods?.Invoke(medItem, new object[] { false, true });
+                //TODO: implement bleeding and other debuffs
+                if (buff.BuffType == EStimulatorBuffType.HealthRate)
+                {
+                    RestoreHP(healthController, EBodyPart.Common, buff.Value * buff.Duration);
+                    hasUsedStim = true;
+                }
+                if (buff.BuffType == EStimulatorBuffType.HydrationRate)
+                {
+                    healthController.ChangeHydration(buff.Value * buff.Duration);
+                    hasUsedStim = true;
+                }
+                if (buff.BuffType == EStimulatorBuffType.EnergyRate)
+                {
+                    healthController.ChangeEnergy(buff.Value * buff.Duration);
+                    hasUsedStim = true;
+                }
+            }
+            return hasUsedStim;
+        }
+
+        private static bool HandleStim(HealthControllerClass healthController, MedsItemClass medClass, Item medItem)
+        {
+            var treatedHazard = Plugin.RealHealthController.TryHazardTreatmentOutOfRaid(medClass);
+            var appliedBuffs = HandleBuffs(healthController, medItem, medClass);
+
+            if (treatedHazard || appliedBuffs)
+            {
+                ApplyStim(healthController, medItem);
                 return false;
             }
 
+            return true;
+        }
+
+        private static float HealBodyPart(HealthControllerClass hc, EBodyPart bodyPart, ref float hpToRestore)
+        {
+            float bodyPartMissingHp = hc.GetBodyPartHealth(bodyPart).Maximum - hc.GetBodyPartHealth(bodyPart).Current;
+            if (bodyPartMissingHp <= 0) return 0f;
+
+            float hpToUse = Math.Min(bodyPartMissingHp, hpToRestore);
+            hc.ChangeHealth(bodyPart, hpToUse, ExistanceClass.MedKitUse);
+
+            hpToRestore -= hpToUse;
+            return hpToUse;
+        }
+
+        private static float RestoreHP(HealthControllerClass hc, EBodyPart initialTarget, float hpToRestore)
+        {
+            var hpRestored = 0f;
+            //can't allow Ebodypart.common in earlier methods as it cause exceptions, so have to guess the intended target is common
+            bool isCommonProxy =  hc.GetBodyPartHealth(initialTarget).Maximum - hc.GetBodyPartHealth(initialTarget).Current <= 0f;
+
+            if (initialTarget != EBodyPart.Common && !isCommonProxy)
+            {
+                return HealBodyPart(hc, initialTarget, ref hpToRestore);
+            }
+
+            foreach (EBodyPart bodyPart in Plugin.RealHealthController.PossibleBodyParts)
+            {
+                if (hpToRestore <= 0) break;
+                hpRestored += HealBodyPart(hc, bodyPart, ref hpToRestore);
+            }
+
+            return hpRestored;
+        }
+
+        private static bool ApplyMedItem(HealthControllerClass healthController, MedKitComponent medKitComponent, Item medItem, EBodyPart bodyPart, float cost) 
+        {
+            bodyPart = bodyPart == EBodyPart.Common ? EBodyPart.Head : bodyPart;
+
             var medKitComponentType = medKitComponent.GetType();
-            Logger.LogWarning("1");
             var hpResourceField = AccessTools.Field(medKitComponentType, "HpResource");
-            Logger.LogWarning("2");
             float currentHp = (float)hpResourceField.GetValue(medKitComponent);
-            Logger.LogWarning("3");
-
-
-            float amountToHeal = 1f;
-            float cost = 1f;
-
-            healthController.ChangeHealth(bodyPart, amountToHeal, GClass2855.MedKitUse);
-
-            Logger.LogWarning("4");
 
             GControl6 gcontrol = healthController.inventoryController_0 as GControl6;
-            Logger.LogWarning("5");
             gcontrol?.Heal(medItem, bodyPart, Mathf.RoundToInt(cost));
-            Logger.LogWarning("6");
+
             float newHp = currentHp - cost;
             hpResourceField.SetValue(medKitComponent, newHp);
-            Logger.LogWarning("7");
 
             if (newHp <= 0f)
             {
@@ -728,7 +780,71 @@ namespace RealismMod
             var medItemType = medItem.GetType();
             var raiseRefreshMethod = AccessTools.Method(medItemType, "RaiseRefreshEvent");
             raiseRefreshMethod?.Invoke(medItem, new object[] { false, true });
-            return false;
+            return true;
+        }
+
+        private static bool HandleHealing(HealthControllerClass healthController, Consumable itemStats, Item medItem, EBodyPart bodyPart, MedKitComponent medKitComponent)
+        {
+            if (itemStats.HPRestoreAmount <= 0) return false;
+            float hpRestored = RestoreHP(healthController, bodyPart, itemStats.HPRestoreAmount);
+            if (hpRestored > 0f) 
+            {
+               return ApplyMedItem(healthController, medKitComponent, medItem, bodyPart, 1f);
+            }
+            return true;
+        }
+
+        private static bool HandleDrug(HealthControllerClass healthController, MedsItemClass medClass, Item medItem, MedKitComponent medKitComponent) 
+        {
+            var treatedHazard = Plugin.RealHealthController.TryHazardTreatmentOutOfRaid(medClass);
+            Logger.LogWarning("4");
+            var appliedBuffs = HandleBuffs(healthController, medItem, medClass);
+            Logger.LogWarning("5");
+
+            if (treatedHazard || appliedBuffs)
+            {
+                return ApplyMedItem(healthController, medKitComponent, medItem, EBodyPart.Head, 1f);
+            }
+            return true;
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(object __instance)
+        {
+            Logger.LogWarning("MedEffect.Started()");
+
+            var healthController = (HealthControllerClass)HealthControllerProperty.GetValue(__instance);
+            var bodyPart = (EBodyPart)BodyPartProperty.GetValue(__instance); 
+            var medItem = (Item)MedItemProperty.GetValue(__instance);
+            var medKitComponent = (MedKitComponent)MedKitComponentField.GetValue(__instance);
+
+            Logger.LogWarning("1");
+
+            var medClass = medItem as MedsItemClass;
+            var itemStats = TemplateStats.GetDataObj<Consumable>(TemplateStats.ConsumableStats, medItem.TemplateId);
+            Logger.LogWarning("2");
+
+            if (medClass != null && medItem is StimulatorItemClass) 
+                return HandleStim(healthController, medClass, medItem);
+
+            if (itemStats.ConsumableType == EConsumableType.Medkit || itemStats.ConsumableType == EConsumableType.Surgical)
+            {
+               return HandleHealing(healthController, itemStats, medItem, bodyPart, medKitComponent);
+            }
+
+            Logger.LogWarning("3");
+            var isDrug = 
+                itemStats.ConsumableType == EConsumableType.Drug || 
+                itemStats.ConsumableType == EConsumableType.PainPills || 
+                itemStats.ConsumableType == EConsumableType.Pills || 
+                itemStats.ConsumableType == EConsumableType.PainDrug;
+
+            if (medClass != null && isDrug) 
+            {
+               return HandleDrug(healthController, medClass, medItem, medKitComponent);
+            }
+
+            return true;
         }
     }
 
@@ -739,7 +855,7 @@ namespace RealismMod
             return typeof(HealthControllerClass).GetMethod("ApplyItem", new Type[] { typeof(Item), typeof(GStruct353<EBodyPart>), typeof(float) });
         }
 
-        private static void CallMedEffect(HealthControllerClass hc, Item item, EBodyPart? eBodyPart) 
+        private static void CallMedEffect(HealthControllerClass hc, Item item, EBodyPart? eBodyPart, float amountUsed) 
         {
             // Find the protected nested type "MedEffect"
             var medEffectType = typeof(HealthControllerClass).GetNestedType(
@@ -774,34 +890,13 @@ namespace RealismMod
                     eBodyPart.Value,
                     new Profile.ProfileHealthClass.GClass1974(),
                     (int?)hc.UpdateTime,
-                    new GStruct364 { ItemId = item.Id, Amount = 1f }
+                    new GStruct364 { ItemId = item.Id, Amount = amountUsed }
                 }
             );
         }
 
-        private static void DoFoodItem(HealthControllerClass hc, FoodDrinkItemClass foodClass)
+        private static void HandleBuffs(HealthControllerClass hc, FoodDrinkItemClass foodClass) 
         {
-            Singleton<GUISounds>.Instance.PlaySound(Plugin.RealismAudioController.FoodPoisoningSfx.RandomElement().Value, false, false, 1f);
-            var toxinDebuffs = foodClass.HealthEffectsComponent.BuffSettings.Where(b => b.BuffType == EStimulatorBuffType.UnknownToxin);
-            if (toxinDebuffs.Count() > 0)
-            {
-                var debuff = toxinDebuffs.First();
-                if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("has toxin debuff " + debuff.Chance);
-                if (debuff.Chance > 0 && UnityEngine.Random.Range(0, 100) < debuff.Chance * 100)
-                {
-                    if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("applying toxin debuff");
-                    float energyDrain = UnityEngine.Random.Range(debuff.Chance * 250, debuff.Chance * 500);
-                    energyDrain = Mathf.Clamp(energyDrain, 2.5f, 90f);
-                    float hydrationDrain = UnityEngine.Random.Range(debuff.Chance * 250, debuff.Chance * 500);
-                    hydrationDrain = Mathf.Clamp(hydrationDrain, 2.5f, 90f);
-                    hc.ChangeEnergy(-energyDrain);
-                    hc.ChangeHydration(-hydrationDrain);
-
-                    Plugin.RealismAudioController.PlayFoodPoisoningSFX(0.5f);
-                    return;
-                }
-            }
-
             foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings)
             {
                 if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("buff " + buff.BuffName + buff.BuffType);
@@ -823,8 +918,43 @@ namespace RealismMod
                     }
                 }
             }
+        }
 
-            Plugin.RealHealthController.CheckCanReduceToxinInStash(foodClass, false, hc);
+        private static bool TryDoPoisoning(HealthControllerClass hc, FoodDrinkItemClass foodClass) 
+        {
+            var toxinDebuffs = foodClass.HealthEffectsComponent.BuffSettings.Where(b => b.BuffType == EStimulatorBuffType.UnknownToxin);
+            if (toxinDebuffs.Count() > 0)
+            {
+                var debuff = toxinDebuffs.First();
+                if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("has toxin debuff " + debuff.Chance);
+                if (debuff.Chance > 0 && UnityEngine.Random.Range(0, 100) < debuff.Chance * 100)
+                {
+                    if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("applying toxin debuff");
+                    float energyDrain = UnityEngine.Random.Range(debuff.Chance * 250, debuff.Chance * 500);
+                    energyDrain = Mathf.Clamp(energyDrain, 2.5f, 90f);
+                    float hydrationDrain = UnityEngine.Random.Range(debuff.Chance * 250, debuff.Chance * 500);
+                    hydrationDrain = Mathf.Clamp(hydrationDrain, 2.5f, 90f);
+                    hc.ChangeEnergy(-energyDrain);
+                    hc.ChangeHydration(-hydrationDrain);
+
+                    Plugin.RealismAudioController.PlayFoodPoisoningSFXInRaid(0.5f);
+                    Singleton<GUISounds>.Instance.PlaySound(Plugin.RealismAudioController.FoodPoisoningSfx.RandomElement().Value, false, false, 1f);
+
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static void DoFoodItem(HealthControllerClass hc, FoodDrinkItemClass foodClass)
+        {
+            Singleton<GUISounds>.Instance.PlaySound(Plugin.RealismAudioController.FoodPoisoningSfx.RandomElement().Value, false, false, 1f);
+
+            if (TryDoPoisoning(hc, foodClass)) return;
+   
+            HandleBuffs(hc, foodClass);
+
+            Plugin.RealHealthController.TryReduceToxinInStashFood(foodClass, false, hc);
         }
 
 
@@ -832,10 +962,10 @@ namespace RealismMod
         private static bool PatchPrefix(HealthControllerClass __instance, Item item, GStruct353<EBodyPart> bodyParts, float? amount, ref bool __result)
         {
             Logger.LogWarning("ApplyItem 2 Out of Raid Prefix");
-            return true;
 
-            FoodDrinkItemClass foodClass = item as FoodDrinkItemClass;
-            if (GameWorldController.IsInRaid() || foodClass != null) return true;
+            if (GameWorldController.IsInRaid()) return true;
+
+            Plugin.BSGHealthController = __instance;
 
             var itemStats = TemplateStats.GetDataObj<Consumable>(TemplateStats.ConsumableStats, item.TemplateId);
 
@@ -845,18 +975,18 @@ namespace RealismMod
                 return false;
             }
 
-            Logger.LogWarning("ApplyItem 2 Out of Raid Prefix");
-            Logger.LogWarning("ApplyItem 2 Out of Raid Prefix");
+            EBodyPart? ebodyPart = bodyParts[0];
+            ebodyPart = ebodyPart == EBodyPart.Common ? EBodyPart.Head : ebodyPart;
 
-            EBodyPart? ebodyPart;
-            if (false) //find a valid body part
+            FoodDrinkItemClass foodDrinkItemClass = item as FoodDrinkItemClass;
+            float amountUsed = 1f;
+            if (foodDrinkItemClass != null)
             {
-                __result = false;
-                return false;
+                amountUsed = (amount ?? (foodDrinkItemClass.FoodDrinkComponent.HpPercent / foodDrinkItemClass.FoodDrinkComponent.MaxResource));
             }
 
             //may want functionality to apply to multiple parts at time, so this would be called per bodypart
-            CallMedEffect(__instance, item, ebodyPart);
+            CallMedEffect(__instance, item, ebodyPart, amountUsed);
 
             Profile profile = __instance.inventoryController_0.Profile as Profile;
             if (profile != null)
@@ -864,7 +994,7 @@ namespace RealismMod
                 profile.Health = __instance.Store(null);
             }
 
-            Singleton<GUISounds>.Instance.PlayItemSound(item.ItemSound, EInventorySoundType.offline_use, true);
+           // Singleton<GUISounds>.Instance.PlayItemSound(item.ItemSound, EInventorySoundType.offline_use, false);
 
             __result = true;
             return false;
@@ -873,8 +1003,6 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(HealthControllerClass __instance, Item item, GStruct353<EBodyPart> bodyParts, float? amount)
         {
-            Logger.LogWarning("ApplyItem  2 Out of Raid Postfix");
-
             if (Plugin.ServerConfig.food_changes)
             {
                 FoodDrinkItemClass foodClass = item as FoodDrinkItemClass;
@@ -896,73 +1024,6 @@ namespace RealismMod
             return typeof(HealthControllerClass).GetMethod("ApplyItem", new Type[] { typeof(Item), typeof(EBodyPart), typeof(float) });
         }
 
-        private static void RestoreHP(HealthControllerClass hc, EBodyPart initialTarget, float hpToRestore) 
-        {
-            if (initialTarget != EBodyPart.Common)
-            {
-                hc.ChangeHealth(initialTarget, hpToRestore, ExistanceClass.MedKitUse);
-                return;
-            }
-
-            foreach (EBodyPart bodyPart in Plugin.RealHealthController.PossibleBodyParts)
-            {
-                if (hpToRestore <= 0) break;
-                float hpMissing = hc.GetBodyPartHealth(bodyPart).Maximum - hc.GetBodyPartHealth(bodyPart).Current;
-                if (hpMissing <= 0) continue;
-                float hpToUse = Math.Min(hpMissing, hpToRestore);
-                hc.ChangeHealth(bodyPart, hpToUse, ExistanceClass.MedKitUse);
-                hpToRestore -= hpToUse;
-            }
-        }
-
-        private static void DoFoodItem(HealthControllerClass hc, FoodDrinkItemClass foodClass) 
-        {
-            var toxinDebuffs = foodClass.HealthEffectsComponent.BuffSettings.Where(b => b.BuffType == EStimulatorBuffType.UnknownToxin);
-            if (toxinDebuffs.Count() > 0) 
-            {
-                var debuff = toxinDebuffs.First();
-                if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("has toxin debuff " + debuff.Chance);
-                if (debuff.Chance > 0 && UnityEngine.Random.Range(0, 100) < debuff.Chance * 100)
-                {
-                    if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("applying toxin debuff");
-                    float energyDrain = UnityEngine.Random.Range(debuff.Chance * 250, debuff.Chance * 500);
-                    energyDrain = Mathf.Clamp(energyDrain, 2.5f, 90f);
-                    float hydrationDrain = UnityEngine.Random.Range(debuff.Chance * 250, debuff.Chance * 500);
-                    hydrationDrain = Mathf.Clamp(hydrationDrain, 2.5f, 90f);
-                    hc.ChangeEnergy(-energyDrain);
-                    hc.ChangeHydration(-hydrationDrain);
-
-                    Plugin.RealismAudioController.PlayFoodPoisoningSFX(0.5f);
-                    return;
-                }
-            }
-
-            foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings)
-            {
-                if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("buff " + buff.BuffName + buff.BuffType);
-                if (buff.BuffType == EStimulatorBuffType.EnergyRate)
-                {
-                    if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("has energy buff " + buff.Value);
-                    if (buff.Value > 0)
-                    {
-                        hc.ChangeEnergy(buff.Value * buff.Duration);
-                    }
-                }
-
-                if (buff.BuffType == EStimulatorBuffType.HydrationRate)
-                {
-                    if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("has hydration buff " + buff.Value);
-                    if (buff.Value > 0)
-                    {
-                        hc.ChangeHydration(buff.Value * buff.Duration);
-                    }
-                }
-            }
-
-            Plugin.RealHealthController.CheckCanReduceToxinInStash(foodClass, false, hc);
-        }
-
-
         [PatchPrefix]
         private static void PatchPrefix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
@@ -973,40 +1034,6 @@ namespace RealismMod
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
             Logger.LogWarning("ApplyItem Out of Raid Postfix");
-
-            return;
-
-            var itemStats = TemplateStats.GetDataObj<Consumable>(TemplateStats.ConsumableStats, item.TemplateId);
-            if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("Applying out of raid: " + item.LocalizedName());
-
-            if (Plugin.ServerConfig.food_changes)
-            {
-                FoodDrinkItemClass foodClass = item as FoodDrinkItemClass;
-                if (foodClass != null)
-                {
-                    if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("is food");
-                    DoFoodItem(__instance, foodClass);
-                    return;
-                }
-            }
-
-            if (Plugin.ServerConfig.med_changes)
-            {
-                MedsItemClass MedsItemClass = item as MedsItemClass;
-                if (MedsItemClass != null)
-                {
-                    //need to get surgery kit working later, doesnt want to remove hp resource.
-                    if (itemStats.ConsumableType == EConsumableType.Medkit) // || medType == "surg"
-                    {
-                        RestoreHP(__instance, bodyPart, itemStats.HPRestoreAmount);
-                        /*             MedsItemClass.MedKitComponent.HpResource -= 1f;
-                                     MedsItemClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
-                        return;
-                    }
-/*                    Plugin.RealHealthController.CheckIfReducesHazardInStash(MedsItemClass, true, __instance); //can't get it to use resource without causing issues
-*/
-                }
-            }
         }
     }
 

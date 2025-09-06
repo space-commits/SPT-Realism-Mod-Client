@@ -67,6 +67,8 @@ namespace RealismMod
         private const string PLUGINVERSION = "1.5.3";
 
         public static Plugin Instance;
+        //delete this
+        public static HealthControllerClass BSGHealthController;
 
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
@@ -515,7 +517,7 @@ namespace RealismMod
         }
 
         //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
-        private void SetFps()
+        private void GetFps()
         {
             _averageFPS += ((Time.deltaTime / Time.timeScale) - _averageFPS) * 0.035f;
             FPS = (1f / _averageFPS);
@@ -523,12 +525,46 @@ namespace RealismMod
             FPS = Mathf.Clamp(FPS, 30f, 200f);
         }
 
+        private void OutOfRaidHealthDebug() 
+        {
+            if (Input.GetKeyDown(PluginConfig.AddEffectKeybind.Value.MainKey))
+            {
+                Logger.LogWarning("debug");
+
+                var hc = Plugin.BSGHealthController;
+                if (hc == null) return;
+                Logger.LogWarning("got hc");
+
+                if (PluginConfig.AddEffectType.Value == "changeHp")
+                {
+                    hc.ChangeHealth((EBodyPart)PluginConfig.AddEffectBodyPart.Value, (int)PluginConfig.test1.Value, GClass2855.Existence);
+                }
+
+                if (PluginConfig.AddEffectType.Value == "tox")
+                {
+                    HazardTracker.TotalToxicity += PluginConfig.test1.Value;
+                    HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
+                    HazardTracker.SaveHazardValues();
+                }
+                if (PluginConfig.AddEffectType.Value == "rad")
+                {
+                    HazardTracker.TotalRadiation += PluginConfig.test1.Value;
+                    HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
+                    HazardTracker.SaveHazardValues();
+                }
+            }
+    
+        }
+
         void Update()
         {
             //TEMPORARY
             if (GameWorldController.GameStarted && PluginConfig.ZoneDebug.Value) MoveDaCube.Update();
 
-            SetFps();
+            //DELETE ME
+            if (PluginConfig.EnableMedicalLogging.Value && !GameWorldController.IsInRaid()) OutOfRaidHealthDebug();
+
+            GetFps();
             CheckForProfileData();
             CheckForMods();
 

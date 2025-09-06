@@ -19,7 +19,8 @@ namespace RealismMod
         Bandage,
         Pills,
         PainPills,
-        Alcohol
+        Alcohol,
+        Stimulator
     }
 
     public enum EHeavyBleedHealType 

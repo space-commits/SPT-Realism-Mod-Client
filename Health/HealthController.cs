@@ -78,6 +78,7 @@ namespace RealismMod
         public const float MIN_COUGH_THRESHOLD = 0.075f;
         public const float MIN_TOXICITY_THRESHOLD = 30f;
         public const float MIN_COUGH_DAMAGE_THRESHOLD = 0.14f;
+        public const float OUT_OF_RAID_RAD_HEAL_FACTOR = 0.2f;
 
         HashSet<string> ToxicItems = new HashSet<string>(new string[] {
             "593a87af86f774122f54a951",
@@ -427,7 +428,6 @@ namespace RealismMod
 
         private void AddTestEffectChecker() 
         {
-
             if (Input.GetKeyDown(PluginConfig.AddEffectKeybind.Value.MainKey))
             {
                 /*                    AddStimDebuffs(Utils.GetYourPlayer(), Plugin.AddEffectType.Value);*/ // use this to test stim debuffs
@@ -1440,29 +1440,69 @@ namespace RealismMod
             Plugin.RealHealthController.AddCustomEffect(painKillerEffect, true);
         }
 
-        public bool CheckCanReduceToxinInStash(Item item, bool isMed, HealthControllerClass hc)
+        private MedUiString GetHazardTreatment(EDamageEffectType hazardType, HealthEffectsComponent healthEffectsComponent)
+        {
+            return healthEffectsComponent.DamageEffects.ContainsKey(hazardType) ? healthEffectsComponent.DamageEffects[hazardType] : null;
+        }
+
+        private void ApplyDeHazardersOutOfRaid(MedUiString details, EDamageEffectType type) 
+        {
+            float strength = details.FadeOut;
+            int duration = (int)details.Duration;
+
+            if (type == EDamageEffectType.Intoxication)
+                HazardTracker.TotalToxicity -= strength * duration;
+
+            if (type == EDamageEffectType.RadExposure) 
+            {
+                if (HazardTracker.MedStationLevel >= 3)
+                {
+                    HazardTracker.TotalRadiation -= (strength * OUT_OF_RAID_RAD_HEAL_FACTOR) * duration;
+                }
+                else 
+                {
+                    var lowerThreshold = HazardTracker.TotalRadiation <= RAD_TREATMENT_THRESHOLD ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
+                    var reduction = (strength * OUT_OF_RAID_RAD_HEAL_FACTOR) * duration;
+                    HazardTracker.TotalRadiation = Mathf.Clamp(HazardTracker.TotalRadiation - reduction, lowerThreshold, 100f);
+                }
+            }
+
+            HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
+            HazardTracker.SaveHazardValues();
+        }
+
+        public bool TryHazardTreatmentOutOfRaid(MedsItemClass medClass)
+        {
+            MedUiString detoxDetails = GetHazardTreatment(EDamageEffectType.Intoxication, medClass.HealthEffectsComponent);
+            MedUiString deradDetails = GetHazardTreatment(EDamageEffectType.RadExposure, medClass.HealthEffectsComponent);
+
+            bool canApplyDetox = (detoxDetails != null && HazardTracker.TotalToxicity > 0);
+            bool canApplyDeRad = (deradDetails != null && HazardTracker.TotalRadiation > 0);
+
+
+            if (canApplyDetox) ApplyDeHazardersOutOfRaid(detoxDetails);
+            if (canApplyDeRad) ApplyDeHazardersOutOfRaid(deradDetails);
+
+  
+            return canApplyDetox || canApplyDeRad;
+        }
+
+        public bool TryReduceToxinInStashFood(Item item, bool isMed, HealthControllerClass hc)
         {
             if (HazardTracker.TotalToxicity <= 0) return false;
 
             MedUiString details = null;
-            if (isMed && item as MedsItemClass != null)
-            {
-                MedsItemClass med = item as MedsItemClass;
-                details = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? med.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
-            }
-            if (!isMed && item as FoodDrinkItemClass != null)
-            {
-                FoodDrinkItemClass food = item as FoodDrinkItemClass;
-                details = food.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? food.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
-            }
+            var med = item as MedsItemClass;
+            var food = item as FoodDrinkItemClass;
+            if (isMed && med != null)
+                details = GetHazardTreatment(EDamageEffectType.Intoxication, med.HealthEffectsComponent);
+
+            if (!isMed && food != null) 
+                details = GetHazardTreatment(EDamageEffectType.Intoxication, food.HealthEffectsComponent);
 
             if (details != null)
             {
-                float strength = details.FadeOut;
-                int duration = (int)details.Duration;
-                HazardTracker.TotalToxicity -= strength * duration;
-                HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
-                HazardTracker.SaveHazardValues();
+                ApplyDeHazardersOutOfRaid(details);
                 return true;
             }
             return false;
@@ -2148,7 +2188,7 @@ namespace RealismMod
             HazardTracker.BaseTotalRadiationRate = Mathf.MoveTowards(HazardTracker.BaseTotalRadiationRate, baseRadRate, speedBase * Time.deltaTime);
             HazardTracker.TotalRadiationRate = Mathf.MoveTowards(HazardTracker.TotalRadiationRate, totalRate, speed * Time.deltaTime);
      
-            float lowerThreshold = isInRadZone && GearController.CurrentGasProtection < 1f ? HazardTracker.TotalRadiation : !isInRadZone && HazardTracker.TotalRadiation <= RAD_TREATMENT_THRESHOLD ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
+            float lowerThreshold = isInRadZone && GearController.CurrentRadProtection < 1f ? HazardTracker.TotalRadiation : !isInRadZone && HazardTracker.TotalRadiation <= RAD_TREATMENT_THRESHOLD ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
             HazardTracker.TotalRadiation = Mathf.Clamp(HazardTracker.TotalRadiation + HazardTracker.TotalRadiationRate, lowerThreshold, 100f);
         }
 

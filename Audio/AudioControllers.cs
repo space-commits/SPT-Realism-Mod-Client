@@ -319,7 +319,7 @@ namespace RealismMod.Audio
             source.maxDistance = maxDistance;
         }
 
-        public void PlayFoodPoisoningSFX(float vol = 0.5f)
+        public void PlayFoodPoisoningSFXInRaid(float vol = 0.5f)
         {
             _foodPoisoningSfx.clip = FoodPoisoningSfx.RandomElement().Value;
             _foodPoisoningSfx.volume = vol * GameWorldController.GetGameVolumeAsFactor();

@@ -26,10 +26,10 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(WeaponRecoilProcessBase __instance, float deltaTime, bool isAiming)
         {
-            float multi = (ShootController.FactoredTotalHRecoil + ShootController.FactoredTotalDispersion) / 20f;
+            float multi = Mathf.Min(2f, (ShootController.FactoredTotalHRecoil + ShootController.FactoredTotalDispersion) / 20f);
             float num = (isAiming ? __instance.CurveAimingValueMultiply : __instance.CurveAimingValueMultiply) * PluginConfig.VisRecoilMulti.Value * multi;
             __instance._current = num * __instance.TransformationCurve.Evaluate(__instance._curveTime) * __instance.method_0();
-            __instance._curveTime += deltaTime * __instance.CurveTimeMultiply;
+            __instance._curveTime += deltaTime * __instance.CurveTimeMultiply * 0.9f;
             return false;
         }
     }
