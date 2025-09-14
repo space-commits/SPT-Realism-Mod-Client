@@ -217,7 +217,7 @@ namespace RealismMod
         public static void ToggleGasMask(Player player)
         {
             bool animatorBusy = player.InventoryController.IsChangingWeapon || player.MovementContext.StationaryWeapon != null || player.MovementContext.IsAnimatorInteractionOn;
-            if (PlayerValues.IsSprinting || animatorBusy || PlayerValues.IsInReloadOpertation) return; //toggling this while sprinting breaks shit
+            if (PlayerState.IsSprinting || animatorBusy || PlayerState.IsInReloadOpertation) return; //toggling this while sprinting breaks shit
             var faceCoverSlot = player?.Inventory?.Equipment?.GetSlot(EquipmentSlot.FaceCover);
             if (faceCoverSlot != null)
             {
@@ -453,8 +453,8 @@ namespace RealismMod
 
             totalErgo /= 100f;
             totalSpeed /= 100f;
-            PlayerValues.GearErgoPenalty = Mathf.Clamp(1f + totalErgo, 0.1f, 2f);
-            PlayerValues.GearSpeedPenalty = Mathf.Clamp(1f + totalSpeed, 0.1f, 2f);
+            PlayerState.GearErgoPenalty = Mathf.Clamp(1f + totalErgo, 0.1f, 2f);
+            PlayerState.GearSpeedPenalty = Mathf.Clamp(1f + totalSpeed, 0.1f, 2f);
 
             HandleGasMaskEffects(player, gasProtection, radProtection);
 
@@ -466,8 +466,8 @@ namespace RealismMod
 
             if (PluginConfig.EnableGeneralLogging.Value)
             {
-                Utils.Logger.LogWarning("gear speed " + PlayerValues.GearSpeedPenalty);
-                Utils.Logger.LogWarning("gear ergo " + PlayerValues.GearErgoPenalty);
+                Utils.Logger.LogWarning("gear speed " + PlayerState.GearSpeedPenalty);
+                Utils.Logger.LogWarning("gear ergo " + PlayerState.GearErgoPenalty);
             }
         }
 

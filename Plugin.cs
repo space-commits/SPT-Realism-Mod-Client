@@ -338,7 +338,9 @@ namespace RealismMod
             AudioControllerGameObject = new GameObject();
             RealismAudioController = AudioControllerGameObject.AddComponent<RealismAudioController>();
             DontDestroyOnLoad(AudioControllerGameObject);
+#pragma warning disable CS4014
             RealismAudioController.LoadAudioClips();
+#pragma warning restore CS4014 
         }
 
         private void LoadHealthController()
@@ -352,7 +354,9 @@ namespace RealismMod
         {
             Utils.Logger = Logger;
             Instance = this;
-        
+
+            new SprintPatch().Enable();
+
             try
             {
                 RequestRealismDataFromServer(EUpdateType.Full);
@@ -556,7 +560,11 @@ namespace RealismMod
 
         private void LoadGeneralPatches()
         {
-            if (ServerConfig.spawn_waves) new SpawnUpdatePatch().Enable();
+            if (ServerConfig.spawn_waves) 
+            {
+                new SpawnUpdatePatch().Enable();
+
+            }
   
             //deafening + adrenaline trigger
             new FlyingBulletPatch().Enable();
@@ -596,7 +604,7 @@ namespace RealismMod
             new HealthPanelPatch().Enable();
             new DropItemPatch().Enable();
             new GetAvailableActionsPatch().Enable();
-            if (ServerConfig.boss_spawns) new BossSpawnPatch().Enable();
+           // if (ServerConfig.boss_spawns || ServerConfig.spawn_waves) new BossSpawnPatch().Enable();
             new LampPatch().Enable();
             new AmbientSoundPlayerGroupPatch().Enable();
             new DayTimeAmbientPatch().Enable();
@@ -760,7 +768,7 @@ namespace RealismMod
             new TryGetPartsToApplyPatch().Enable();
             new MedsController2Patch().Enable();
             new Method8Patch().Enable();
-           // new MedKitHpRatePatch().Enable();
+            // new MedKitHpRatePatch().Enable();
             new MedEffectStartedPatch().Enable();
             new HealthControllerTryGetBodyPartToApplyPatch().Enable();
         }

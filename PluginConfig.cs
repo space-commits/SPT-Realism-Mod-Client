@@ -168,19 +168,12 @@ namespace RealismMod
         public static ConfigEntry<bool> EnableSprintPenalty { get; set; }
         public static ConfigEntry<bool> EnableMouseSensPenalty { get; set; }
         public static ConfigEntry<float> LeftShoulderOffset { get; set; }
-        public static ConfigEntry<float> WeapOffsetX { get; set; }
-        public static ConfigEntry<float> WeapOffsetY { get; set; }
-        public static ConfigEntry<float> WeapOffsetZ { get; set; }
         public static ConfigEntry<float> StanceRotationSpeedMulti { get; set; }
         public static ConfigEntry<float> StanceTransitionSpeedMulti { get; set; }
         public static ConfigEntry<float> ThirdPersonPositionSpeed { get; set; }
         public static ConfigEntry<float> ThirdPersonRotationSpeed { get; set; }
-        public static ConfigEntry<float> ActiveAimRotationX { get; set; }
-        public static ConfigEntry<float> ActiveAimRotationY { get; set; }
-        public static ConfigEntry<float> ActiveAimRotationZ { get; set; }
-        public static ConfigEntry<float> PistolRotationX { get; set; }
-        public static ConfigEntry<float> PistolRotationY { get; set; }
-        public static ConfigEntry<float> PistolRotationZ { get; set; }
+
+
         public static ConfigEntry<float> ActiveAimSpeedMulti { get; set; }
         public static ConfigEntry<float> ActiveAimResetSpeedMulti { get; set; }
         public static ConfigEntry<float> ActiveAimRotationMulti { get; set; }
@@ -206,96 +199,40 @@ namespace RealismMod
         public static ConfigEntry<float> PistolPosResetSpeedMulti { get; set; }
         public static ConfigEntry<float> ShortStockSpeedMulti { get; set; }
         public static ConfigEntry<float> ShortStockResetSpeedMulti { get; set; }
-        public static ConfigEntry<float> ActiveThirdPersonPositionX { get; set; }
-        public static ConfigEntry<float> ActiveThirdPersonPositionY { get; set; }
-        public static ConfigEntry<float> ActiveThirdPersonPositionZ { get; set; }
-        public static ConfigEntry<float> ActiveThirdPersonRotationX { get; set; }
-        public static ConfigEntry<float> ActiveThirdPersonRotationY { get; set; }
-        public static ConfigEntry<float> ActiveThirdPersonRotationZ { get; set; }
-        public static ConfigEntry<float> ActiveAimAdditionalRotationX { get; set; }
-        public static ConfigEntry<float> ActiveAimAdditionalRotationY { get; set; }
-        public static ConfigEntry<float> ActiveAimAdditionalRotationZ { get; set; }
-        public static ConfigEntry<float> ActiveAimResetRotationX { get; set; }
-        public static ConfigEntry<float> ActiveAimResetRotationY { get; set; }
-        public static ConfigEntry<float> ActiveAimResetRotationZ { get; set; }
-        public static ConfigEntry<float> HighReadyThirdPersonPositionX { get; set; }
-        public static ConfigEntry<float> HighReadyThirdPersonPositionY { get; set; }
-        public static ConfigEntry<float> HighReadyThirdPersonPositionZ { get; set; }
-        public static ConfigEntry<float> HighReadyThirdPersonRotationX { get; set; }
-        public static ConfigEntry<float> HighReadyThirdPersonRotationY { get; set; }
-        public static ConfigEntry<float> HighReadyThirdPersonRotationZ { get; set; }
-        public static ConfigEntry<float> HighReadyAdditionalRotationX { get; set; }
-        public static ConfigEntry<float> HighReadyAdditionalRotationY { get; set; }
-        public static ConfigEntry<float> HighReadyAdditionalRotationZ { get; set; }
-        public static ConfigEntry<float> HighReadyResetRotationX { get; set; }
-        public static ConfigEntry<float> HighReadyResetRotationY { get; set; }
-        public static ConfigEntry<float> HighReadyResetRotationZ { get; set; }
-        public static ConfigEntry<float> LowReadyThirdPersonPositionX { get; set; }
-        public static ConfigEntry<float> LowReadyThirdPersonPositionY { get; set; }
-        public static ConfigEntry<float> LowReadyThirdPersonPositionZ { get; set; }
-        public static ConfigEntry<float> LowReadyThirdPersonRotationX { get; set; }
-        public static ConfigEntry<float> LowReadyThirdPersonRotationY { get; set; }
-        public static ConfigEntry<float> LowReadyThirdPersonRotationZ { get; set; }
-        public static ConfigEntry<float> LowReadyAdditionalRotationX { get; set; }
-        public static ConfigEntry<float> LowReadyAdditionalRotationY { get; set; }
-        public static ConfigEntry<float> LowReadyAdditionalRotationZ { get; set; }
-        public static ConfigEntry<float> LowReadyResetRotationX { get; set; }
-        public static ConfigEntry<float> LowReadyResetRotationY { get; set; }
-        public static ConfigEntry<float> LowReadyResetRotationZ { get; set; }
-        public static ConfigEntry<float> PistolAdditionalRotationX { get; set; }
-        public static ConfigEntry<float> PistolAdditionalRotationY { get; set; }
-        public static ConfigEntry<float> PistolAdditionalRotationZ { get; set; }
-        public static ConfigEntry<float> PistolResetRotationX { get; set; }
-        public static ConfigEntry<float> PistolResetRotationY { get; set; }
-        public static ConfigEntry<float> PistolResetRotationZ { get; set; }
-        public static ConfigEntry<float> ShortStockAdditionalRotationX { get; set; }
-        public static ConfigEntry<float> ShortStockAdditionalRotationY { get; set; }
-        public static ConfigEntry<float> ShortStockAdditionalRotationZ { get; set; }
-        public static ConfigEntry<float> ShortStockResetRotationX { get; set; }
-        public static ConfigEntry<float> ShortStockResetRotationY { get; set; }
-        public static ConfigEntry<float> ShortStockResetRotationZ { get; set; }
-        public static ConfigEntry<float> PistolThirdPersonPositionX { get; set; }
-        public static ConfigEntry<float> PistolThirdPersonPositionY { get; set; }
-        public static ConfigEntry<float> PistolThirdPersonPositionZ { get; set; }
-        public static ConfigEntry<float> PistolThirdPersonRotationX { get; set; }
-        public static ConfigEntry<float> PistolThirdPersonRotationY { get; set; }
-        public static ConfigEntry<float> PistolThirdPersonRotationZ { get; set; }
-        public static ConfigEntry<float> PistolOffsetX { get; set; }
-        public static ConfigEntry<float> PistolOffsetY { get; set; }
-        public static ConfigEntry<float> PistolOffsetZ { get; set; }
-        public static ConfigEntry<float> ActiveAimOffsetX { get; set; }
-        public static ConfigEntry<float> ActiveAimOffsetY { get; set; }
-        public static ConfigEntry<float> ActiveAimOffsetZ { get; set; }
-        public static ConfigEntry<float> LowReadyOffsetX { get; set; }
-        public static ConfigEntry<float> LowReadyOffsetY { get; set; }
-        public static ConfigEntry<float> LowReadyOffsetZ { get; set; }
-        public static ConfigEntry<float> LowReadyRotationX { get; set; }
-        public static ConfigEntry<float> LowReadyRotationY { get; set; }
-        public static ConfigEntry<float> LowReadyRotationZ { get; set; }
-        public static ConfigEntry<float> HighReadyOffsetX { get; set; }
-        public static ConfigEntry<float> HighReadyOffsetY { get; set; }
-        public static ConfigEntry<float> HighReadyOffsetZ { get; set; }
-        public static ConfigEntry<float> HighReadyRotationX { get; set; }
-        public static ConfigEntry<float> HighReadyRotationY { get; set; }
-        public static ConfigEntry<float> HighReadyRotationZ { get; set; }
-        public static ConfigEntry<float> ShortStockThirdPersonPositionX { get; set; }
-        public static ConfigEntry<float> ShortStockThirdPersonPositionY { get; set; }
-        public static ConfigEntry<float> ShortStockThirdPersonPositionZ { get; set; }
-        public static ConfigEntry<float> ShortStockThirdPersonRotationX { get; set; }
-        public static ConfigEntry<float> ShortStockThirdPersonRotationY { get; set; }
-        public static ConfigEntry<float> ShortStockThirdPersonRotationZ { get; set; }
-        public static ConfigEntry<float> ShortStockOffsetX { get; set; }
-        public static ConfigEntry<float> ShortStockOffsetY { get; set; }
-        public static ConfigEntry<float> ShortStockOffsetZ { get; set; }
-        public static ConfigEntry<float> ShortStockRotationX { get; set; }
-        public static ConfigEntry<float> ShortStockRotationY { get; set; }
-        public static ConfigEntry<float> ShortStockRotationZ { get; set; }
-        public static ConfigEntry<float> ShortStockReadyOffsetX { get; set; }
-        public static ConfigEntry<float> ShortStockReadyOffsetY { get; set; }
-        public static ConfigEntry<float> ShortStockReadyOffsetZ { get; set; }
-        public static ConfigEntry<float> ShortStockReadyRotationX { get; set; }
-        public static ConfigEntry<float> ShortStockReadyRotationY { get; set; }
-        public static ConfigEntry<float> ShortStockReadyRotationZ { get; set; }
+
+        public static ConfigEntry<Vector3> WeapOffset { get; set; }
+        public static ConfigEntry<Vector3> ActiveAimRotation { get; set; }
+        public static ConfigEntry<Vector3> PistolRotation { get; set; }
+        public static ConfigEntry<Vector3> ActiveThirdPersonPosition { get; set; }
+        public static ConfigEntry<Vector3> ActiveThirdPersonRotation { get; set; }
+        public static ConfigEntry<Vector3> ActiveAimAdditionalRotation { get; set; }
+        public static ConfigEntry<Vector3> ActiveAimResetRotation { get; set; }
+        public static ConfigEntry<Vector3> HighReadyThirdPersonPosition { get; set; }
+        public static ConfigEntry<Vector3> HighReadyThirdPersonRotation { get; set; }
+        public static ConfigEntry<Vector3> HighReadyAdditionalRotation { get; set; }
+        public static ConfigEntry<Vector3> HighReadyResetRotation { get; set; }
+        public static ConfigEntry<Vector3> LowReadyThirdPersonPosition { get; set; }
+        public static ConfigEntry<Vector3> LowReadyThirdPersonRotation { get; set; }
+        public static ConfigEntry<Vector3> LowReadyAdditionalRotation { get; set; }
+        public static ConfigEntry<Vector3> LowReadyResetRotation { get; set; }
+        public static ConfigEntry<Vector3> PistolAdditionalRotation { get; set; }
+        public static ConfigEntry<Vector3> PistolResetRotation { get; set; }
+        public static ConfigEntry<Vector3> ShortStockAdditionalRotation { get; set; }
+        public static ConfigEntry<Vector3> ShortStockResetRotation { get; set; }
+        public static ConfigEntry<Vector3> PistolThirdPersonPosition { get; set; }
+        public static ConfigEntry<Vector3> PistolThirdPersonRotation { get; set; }
+        public static ConfigEntry<Vector3> PistolOffset { get; set; }
+        public static ConfigEntry<Vector3> ActiveAimOffset { get; set; }
+        public static ConfigEntry<Vector3> LowReadyOffset { get; set; }
+        public static ConfigEntry<Vector3> LowReadyRotation { get; set; }
+        public static ConfigEntry<Vector3> HighReadyOffset { get; set; }
+        public static ConfigEntry<Vector3> HighReadyRotation { get; set; }
+        public static ConfigEntry<Vector3> ShortStockThirdPersonPosition { get; set; }
+        public static ConfigEntry<Vector3> ShortStockThirdPersonRotation { get; set; }
+        public static ConfigEntry<Vector3> ShortStockOffset { get; set; }
+        public static ConfigEntry<Vector3> ShortStockRotation { get; set; }
+        public static ConfigEntry<Vector3> ShortStockReadyOffset { get; set; }
+        public static ConfigEntry<Vector3> ShortStockReadyRotation { get; set; }
 
         //dev config options
         public static ConfigEntry<bool> DevMode { get; set; }
@@ -508,9 +445,7 @@ namespace RealismMod
             ActiveAimReload = config.Bind<bool>(weapAimAndPos, "Allow Reload From Active Aim", false, new ConfigDescription("Allows Reload From Magazine While In Active Aim With Speed Bonus.", null, new ConfigurationManagerAttributes { Order = 190, Browsable = Plugin.ServerConfig.enable_stances }));
             EnableMountUI = config.Bind<bool>(weapAimAndPos, "Enable Mounting UI", Plugin.ServerConfig.enable_stances, new ConfigDescription("If Enabled, An Icon On Screen Will Indicate If Player Is Bracing, Mounting And What Side Of Cover They Are On.", null, new ConfigurationManagerAttributes { Order = 179, Browsable = Plugin.ServerConfig.enable_stances }));
             LeftShoulderOffset = config.Bind<float>(weapAimAndPos, "Left Shoulder Offset", -0.13f, new ConfigDescription("", new AcceptableValueRange<float>(-0.2f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 153, Browsable = Plugin.ServerConfig.enable_stances }));
-            WeapOffsetX = config.Bind<float>(weapAimAndPos, "Rifle Position X-Axis", -0.04f, new ConfigDescription("Adjusts The Starting Position Of Rifle On Screen If Alt Rifle Is Disabled", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 152, Browsable = Plugin.ServerConfig.enable_stances }));
-            WeapOffsetY = config.Bind<float>(weapAimAndPos, "Rifle Position Y-Axis", -0.015f, new ConfigDescription("Adjusts The Starting Position Of Rifle On Screen If Alt Rifle Is Disabled", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 151, Browsable = Plugin.ServerConfig.enable_stances }));
-            WeapOffsetZ = config.Bind<float>(weapAimAndPos, "Rifle Position Z-Axis", 0f, new ConfigDescription("Adjusts The Starting Position Of Rifle On Screen If Alt Rifle Is Disabled", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 150, Browsable = Plugin.ServerConfig.enable_stances }));
+            WeapOffset = config.Bind<Vector3>(weapAimAndPos, "Rifle Position Offset", new Vector3(-0.04f, -0.015f, 0f), new ConfigDescription("Adjusts The Starting Position Of Rifle On Screen If Alt Rifle Is Disabled", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 152, Browsable = Plugin.ServerConfig.enable_stances }));
             StanceRotationSpeedMulti = config.Bind<float>(weapAimAndPos, "Stance Rotation Speed Multi", 1f, new ConfigDescription("Adjusts The Speed Of Stance Rotation Changes.", new AcceptableValueRange<float>(0.1f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 146, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             StanceTransitionSpeedMulti = config.Bind<float>(weapAimAndPos, "Stance Transition Speed.", 15.0f, new ConfigDescription("Adjusts The Position Change Speed Between Stances", new AcceptableValueRange<float>(1f, 35f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
@@ -529,106 +464,53 @@ namespace RealismMod
             ThirdPersonRotationSpeed = config.Bind<float>(thirdPerson, "Third Person Rotation Speed Multi", 1.5f, new ConfigDescription("Speed Of Stance Rotation Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1000, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             ThirdPersonPositionSpeed = config.Bind<float>(thirdPerson, "Third Person Position Speed Multi", 1.0f, new ConfigDescription("Speed Of Stance Position Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1100, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
-            PistolThirdPersonPositionX = config.Bind<float>(thirdPerson, "Pistol Third Person Position X-Axis", -0.03f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 260, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            PistolThirdPersonPositionY = config.Bind<float>(thirdPerson, "Pistol Third Person Position Y-Axis", 0.04f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 250, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            PistolThirdPersonPositionZ = config.Bind<float>(thirdPerson, "Pistol Third Person Position Z-Axis", -0.05f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 240, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            PistolThirdPersonRotationX = config.Bind<float>(thirdPerson, "Pistol Third Person Rotation X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 230, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            PistolThirdPersonRotationY = config.Bind<float>(thirdPerson, "Pistol Third Person Rotation Y-Axis", -15f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 220, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            PistolThirdPersonRotationZ = config.Bind<float>(thirdPerson, "Pistol Third Person Rotation Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 210, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            PistolThirdPersonPosition = config.Bind<Vector3>(thirdPerson, "Pistol Third Person Position", new Vector3(-0.03f, 0.04f, -0.05f), new ConfigDescription("", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 260, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            PistolThirdPersonRotation = config.Bind<Vector3>(thirdPerson, "Pistol Third Person Rotation", new Vector3(0f, 15f, 0f), new ConfigDescription("", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 230, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
-            ShortStockThirdPersonPositionX = config.Bind<float>(thirdPerson, "Short-Stock Third Person Position X-Axis", 0.03f, new ConfigDescription("", new AcceptableValueRange<float>(-3f,3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 200, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ShortStockThirdPersonPositionY = config.Bind<float>(thirdPerson, "Short-Stock Third Person Position Y-Axis", 0.065f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 190, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ShortStockThirdPersonPositionZ = config.Bind<float>(thirdPerson, "Short-Stock Third Person Position Z-Axis", -0.075f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 180, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ShortStockThirdPersonRotationX = config.Bind<float>(thirdPerson, "Short-Stock Third Person Rotation X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 170, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ShortStockThirdPersonRotationY = config.Bind<float>(thirdPerson, "Short-Stock Third Person Rotation Y-Axis", -15f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 160, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ShortStockThirdPersonRotationZ = config.Bind<float>(thirdPerson, "Short-Stock Third Person Rotation Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 150, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            ShortStockThirdPersonPosition = config.Bind<Vector3>(thirdPerson, "Short-Stock Third Person Position", new Vector3(0.03f, 0.065f, -0.075f), new ConfigDescription("", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 200, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            ShortStockThirdPersonRotation = config.Bind<Vector3>(thirdPerson, "Short-Stock Third Person Rotation", new Vector3(0f, -15f, 0f), new ConfigDescription("", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 170, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+   
+            ActiveThirdPersonPosition = config.Bind<Vector3>(thirdPerson, "Active Aim Third Person Position", new Vector3(-0.02f, -0.02f, 0.02f), new ConfigDescription("", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 140, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            ActiveThirdPersonRotation = config.Bind<Vector3>(thirdPerson, "Active Aim Third Person Rotation", new Vector3(0f, -35f, 0f), new ConfigDescription("", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
-            ActiveThirdPersonPositionX = config.Bind<float>(thirdPerson, "Active Aim Third Person Position X-Axis", -0.02f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 140, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ActiveThirdPersonPositionY = config.Bind<float>(thirdPerson, "Active Aim Third Person Position Y-Axis", -0.02f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 130, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ActiveThirdPersonPositionZ = config.Bind<float>(thirdPerson, "Active Aim Third Person Position Z-Axis", 0.02f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 120, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ActiveThirdPersonRotationX = config.Bind<float>(thirdPerson, "Active Aim Third Person Rotation X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ActiveThirdPersonRotationY = config.Bind<float>(thirdPerson, "Active Aim Third Person Rotation Y-Axis", -35f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ActiveThirdPersonRotationZ = config.Bind<float>(thirdPerson, "Active Aim Third Person Rotation Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 90, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            HighReadyThirdPersonPosition = config.Bind<Vector3>(thirdPerson, "High Ready Third Person Position", new Vector3(0.02f, 0.05f, -0.045f), new ConfigDescription("", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            HighReadyThirdPersonRotation = config.Bind<Vector3>(thirdPerson, "High Ready Third Person Rotation", new Vector3(-8f, -25f, 0f), new ConfigDescription("", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+           
+            LowReadyThirdPersonPosition = config.Bind<Vector3>(thirdPerson, "Low Ready Third Person Position", new Vector3(0.01f, -0.025f, 0f), new ConfigDescription("", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            LowReadyThirdPersonRotation = config.Bind<Vector3>(thirdPerson, "Low Ready Third Person Rotation", new Vector3(24f, 10f, -1f), new ConfigDescription("", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
-            HighReadyThirdPersonPositionX = config.Bind<float>(thirdPerson, "High Ready Third Person Position X-Axis", 0.02f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyThirdPersonPositionY = config.Bind<float>(thirdPerson, "High Ready Third Person Position Y-Axis", 0.05f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyThirdPersonPositionZ = config.Bind<float>(thirdPerson, "High Ready Third Person Position Z-Axis", -0.045f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyThirdPersonRotationX = config.Bind<float>(thirdPerson, "High Ready Third Person Rotation X-Axis", -8f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyThirdPersonRotationY = config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Y-Axis", -25f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyThirdPersonRotationZ = config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Z-Axis", -0f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            LowReadyThirdPersonPositionX = config.Bind<float>(thirdPerson, "Low Ready Third Person Position X-Axis", 0.01f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyThirdPersonPositionY = config.Bind<float>(thirdPerson, "Low Ready Third Person Position Y-Axis", -0.025f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyThirdPersonPositionZ = config.Bind<float>(thirdPerson, "Low Ready Third Person Position Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-3f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 9, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyThirdPersonRotationX = config.Bind<float>(thirdPerson, "Low Ready Third Person Rotation X-Axis", 24f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyThirdPersonRotationY = config.Bind<float>(thirdPerson, "Low Ready Third Person Rotation Y-Axis", 10f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyThirdPersonRotationZ = config.Bind<float>(thirdPerson, "Low Ready Third Person Rotation Z-Axis", -1f, new ConfigDescription("", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            ActiveAimAdditionalRotationSpeedMulti = config.Bind<float>(activeAim, "Active Aim Additonal Rotation Speed Multi.", 2f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            ActiveAimAdditionalRotationSpeedMulti = config.Bind<float>(activeAim, "Active Aim Additonal Rotation Speed Multi.", 2f, new ConfigDescription("", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             ActiveAimResetRotationSpeedMulti = config.Bind<float>(activeAim, "Active Aim Reset Rotation Speed Multi.", 3.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             ActiveAimRotationMulti = config.Bind<float>(activeAim, "Active Aim Rotation Speed Multi.", 2f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 144, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             ActiveAimSpeedMulti = config.Bind<float>(activeAim, "Active Aim Speed Multi", 15f, new ConfigDescription("", new AcceptableValueRange<float>(1f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 143, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             ActiveAimResetSpeedMulti = config.Bind<float>(activeAim, "Active Aim Reset Speed Multi", 6f, new ConfigDescription("", new AcceptableValueRange<float>(1f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 142, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
-            ActiveAimOffsetX = config.Bind<float>(activeAim, "Active Aim Position X-Axis", -0.02f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 135, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ActiveAimOffsetY = config.Bind<float>(activeAim, "Active Aim Position Y-Axis", 0.008f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 134, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ActiveAimOffsetZ = config.Bind<float>(activeAim, "Active Aim Position Z-Axis", 0f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 133, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            ActiveAimRotationX = config.Bind<float>(activeAim, "Active Aim Rotation X-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 122, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ActiveAimRotationY = config.Bind<float>(activeAim, "Active Aim Rotation Y-Axis", -35.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 121, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ActiveAimRotationZ = config.Bind<float>(activeAim, "Active Aim Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 120, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            ActiveAimAdditionalRotationX = config.Bind<float>(activeAim, "Active Aiming Additional Rotation X-Axis", 0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 111, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ActiveAimAdditionalRotationY = config.Bind<float>(activeAim, "Active Aiming Additional Rotation Y-Axis", -35f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ActiveAimAdditionalRotationZ = config.Bind<float>(activeAim, "Active Aiming Additional Rotation Z-Axis", 0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            ActiveAimResetRotationX = config.Bind<float>(activeAim, "Active Aiming Reset Rotation X-Axis", 0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 102, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ActiveAimResetRotationY = config.Bind<float>(activeAim, "Active Aiming Reset Rotation Y-Axis.", 20.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 101, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ActiveAimResetRotationZ = config.Bind<float>(activeAim, "Active Aiming Reset Rotation Z-Axis", -1f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            HighReadyAdditionalRotationSpeedMulti = config.Bind<float>(highReady, "High Ready Additonal Rotation Speed Multi.", 0.1f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 94, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyResetRotationMulti = config.Bind<float>(highReady, "High Ready Reset Rotation Speed Multi.", 1.5f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 93, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyRotationMulti = config.Bind<float>(highReady, "High Ready Rotation Speed Multi.", 2f, new ConfigDescription("How Fast The Weapon Rotates Going Into Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 92, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            ActiveAimOffset = config.Bind<Vector3>(activeAim, "Active Aim Position", new Vector3(-0.02f, 0.008f, 0f), new ConfigDescription("Weapon Position When In Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 135, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            ActiveAimRotation = config.Bind<Vector3>(activeAim, "Active Aim Rotation", new Vector3(0.0f, -35f, 0f), new ConfigDescription("Weapon Rotation When In Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 122, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            ActiveAimAdditionalRotation = config.Bind<Vector3>(activeAim, "Active Aiming Additional Rotation", new Vector3(0f, -35f, 0f), new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 111, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            ActiveAimResetRotation = config.Bind<Vector3>(activeAim, "Active Aiming Reset Rotation", new Vector3(0f, 20f, -1f), new ConfigDescription("Weapon Rotation When Going Out Of Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 102, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+     
+            HighReadyAdditionalRotationSpeedMulti = config.Bind<float>(highReady, "High Ready Additonal Rotation Speed Multi.", 0.1f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 94, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            HighReadyResetRotationMulti = config.Bind<float>(highReady, "High Ready Reset Rotation Speed Multi.", 1.5f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 93, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            HighReadyRotationMulti = config.Bind<float>(highReady, "High Ready Rotation Speed Multi.", 2f, new ConfigDescription("How Fast The Weapon Rotates Going Into Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 92, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             HighReadyResetSpeedMulti = config.Bind<float>(highReady, "High Ready Reset Speed Multi", 6.5f, new ConfigDescription("How Fast The Weapon Moves Going Out Of Stance", new AcceptableValueRange<float>(1f, 100.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 91, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             HighReadySpeedMulti = config.Bind<float>(highReady, "High Ready Speed Multi", 6f, new ConfigDescription("How Fast The Weapon Moves Going Into Stance", new AcceptableValueRange<float>(1f, 100.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 90, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
-            HighReadyOffsetX = config.Bind<float>(highReady, "High Ready Position X-Axis", 0.005f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 85, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyOffsetY = config.Bind<float>(highReady, "High Ready Position Y-Axis", 0.035f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 84, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyOffsetZ = config.Bind<float>(highReady, "High Ready Position Z-Axis", -0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 83, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            HighReadyOffset = config.Bind<Vector3>(highReady, "High Ready Position", new Vector3(0.005f, 0.035f, -0.04f), new ConfigDescription("Weapon Position When In Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 85, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            HighReadyRotation = config.Bind<Vector3>(highReady, "High Ready Rotation", new Vector3(-8.0f, -20f, 0f), new ConfigDescription("Weapon Rotation When In Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 72, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            HighReadyAdditionalRotation = config.Bind<Vector3>(highReady, "High Ready Additional Rotation", new Vector3(-50.0f, -25f, -5f), new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 69, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            HighReadyResetRotation = config.Bind<Vector3>(highReady, "High Ready Reset Rotation", new Vector3(0f, 2f, 0f), new ConfigDescription("Weapon Rotation When Going Out Of Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 66, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
-            HighReadyRotationX = config.Bind<float>(highReady, "High Ready Rotation X-Axis", -8.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 72, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyRotationY = config.Bind<float>(highReady, "High Ready Rotation Y-Axis", -20.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 71, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyRotationZ = config.Bind<float>(highReady, "High Ready Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            HighReadyAdditionalRotationX = config.Bind<float>(highReady, "High Ready Additional Rotation X-Axis", -50.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 69, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyAdditionalRotationY = config.Bind<float>(highReady, "High Ready Additiona Rotation Y-Axis", -25f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 68, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyAdditionalRotationZ = config.Bind<float>(highReady, "High Ready Additional Rotation Z-Axis", -5f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 67, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            HighReadyResetRotationX = config.Bind<float>(highReady, "High Ready Reset Rotation X-Axis", 0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 66, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyResetRotationY = config.Bind<float>(highReady, "High Ready Reset Rotation Y-Axis", 2f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 65, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            HighReadyResetRotationZ = config.Bind<float>(highReady, "High Ready Reset Rotation Z-Axis", 0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 64, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            LowReadyAdditionalRotationSpeedMulti = config.Bind<float>(lowReady, "Low Ready Additonal Rotation Speed Multi", 0.75f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 64, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyResetRotationMulti = config.Bind<float>(lowReady, "Low Ready Reset Rotation Speed Multi", 2.25f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 63, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyRotationMulti = config.Bind<float>(lowReady, "Low Ready Rotation Speed Multi", 1.5f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 62, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            LowReadyAdditionalRotationSpeedMulti = config.Bind<float>(lowReady, "Low Ready Additonal Rotation Speed Multi", 0.75f, new ConfigDescription("How Fast The Weapon Rotates.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 64, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            LowReadyResetRotationMulti = config.Bind<float>(lowReady, "Low Ready Reset Rotation Speed Multi", 2.25f, new ConfigDescription("How Fast The Weapon Rotates.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 63, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            LowReadyRotationMulti = config.Bind<float>(lowReady, "Low Ready Rotation Speed Multi", 1.5f, new ConfigDescription("How Fast The Weapon Rotates.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 62, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             LowReadySpeedMulti = config.Bind<float>(lowReady, "Low Ready Speed Multi.", 14f, new ConfigDescription("", new AcceptableValueRange<float>(0.01f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 61, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             LowReadyResetSpeedMulti = config.Bind<float>(lowReady, "Low Ready Reset Speed Multi", 8.7f, new ConfigDescription("", new AcceptableValueRange<float>(0.01f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
-            LowReadyOffsetX = config.Bind<float>(lowReady, "Low Ready Position X-Axis", 0f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 55, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyOffsetY = config.Bind<float>(lowReady, "Low Ready Position Y-Axis", -0.01f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 54, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyOffsetZ = config.Bind<float>(lowReady, "Low Ready Position Z-Axis", 0.0f, new ConfigDescription("Weapon Position When In Stance..", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 53, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            LowReadyRotationX = config.Bind<float>(lowReady, "Low Ready Rotation X-Axis", 8f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 42, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyRotationY = config.Bind<float>(lowReady, "Low Ready Rotation Y-Axis", -5.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 41, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyRotationZ = config.Bind<float>(lowReady, "Low Ready Rotation Z-Axis", -1.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            LowReadyAdditionalRotationX = config.Bind<float>(lowReady, "Low Ready Additional Rotation X-Axis", 12.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 39, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyAdditionalRotationY = config.Bind<float>(lowReady, "Low Ready Additional Rotation Y-Axis", -1f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 38, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyAdditionalRotationZ = config.Bind<float>(lowReady, "Low Ready Additional Rotation Z-Axis", 0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 37, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            LowReadyResetRotationX = config.Bind<float>(lowReady, "Low Ready Reset Rotation X-Axis", -1.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 36, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyResetRotationY = config.Bind<float>(lowReady, "Low Ready Reset Rotation Y-Axis", 0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            LowReadyResetRotationZ = config.Bind<float>(lowReady, "Low Ready Reset Rotation Z-Axis", 0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            LowReadyOffset = config.Bind<Vector3>(lowReady, "Low Ready Position", new Vector3(0f, -0.01f, 0f), new ConfigDescription("Weapon Position When In Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 55, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            LowReadyRotation = config.Bind<Vector3>(lowReady, "Low Ready Rotation", new Vector3(8f, -5f, -1f), new ConfigDescription("Weapon Rotation When In Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 42, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            LowReadyAdditionalRotation = config.Bind<Vector3>(lowReady, "Low Ready Additional Rotation", new Vector3(12.0f, -1f, 0f), new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 39, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            LowReadyResetRotation = config.Bind<Vector3>(lowReady, "Low Ready Reset Rotation", new Vector3(-1.0f, 0f, 0f), new ConfigDescription("Weapon Rotation When Going Out Of Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 36, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
             PistolAdditionalRotationSpeedMulti = config.Bind<float>(pistol, "Pistol Additional Rotation Speed Multi", 0.1f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             PistolResetRotationSpeedMulti = config.Bind<float>(pistol, "Pistol Reset Rotation Speed Multi", 0.5f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
@@ -636,21 +518,10 @@ namespace RealismMod
             PistolPosSpeedMulti = config.Bind<float>(pistol, "Pistol Position Speed Multi", 6.0f, new ConfigDescription("", new AcceptableValueRange<float>(1.0f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 32, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             PistolPosResetSpeedMulti = config.Bind<float>(pistol, "Pistol Position Reset Speed Multi", 10.0f, new ConfigDescription("", new AcceptableValueRange<float>(1.0f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
-            PistolOffsetX = config.Bind<float>(pistol, "Pistol Position X-Axis.", 0f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 25, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            PistolOffsetY = config.Bind<float>(pistol, "Pistol Position Y-Axis.", 0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 24, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            PistolOffsetZ = config.Bind<float>(pistol, "Pistol Position Z-Axis.", -0.015f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            PistolRotationX = config.Bind<float>(pistol, "Pistol Rotation X-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            PistolRotationY = config.Bind<float>(pistol, "Pistol Rotation Y-Axis", -5f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            PistolRotationZ = config.Bind<float>(pistol, "Pistol Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            PistolAdditionalRotationX = config.Bind<float>(pistol, "Pistol Ready Additional Rotation X-Axis.", 0.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            PistolAdditionalRotationY = config.Bind<float>(pistol, "Pistol Ready Additional Rotation Y-Axis.", 0.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            PistolAdditionalRotationZ = config.Bind<float>(pistol, "Pistol Ready Additional Rotation Z-Axis.", 0.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            PistolResetRotationX = config.Bind<float>(pistol, "Pistol Ready Reset Rotation X-Axis", -1f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            PistolResetRotationY = config.Bind<float>(pistol, "Pistol Ready Reset Rotation Y-Axis", 0.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            PistolResetRotationZ = config.Bind<float>(pistol, "Pistol Ready Reset Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            PistolOffset = config.Bind<Vector3>(pistol, "Pistol Position", new Vector3(0f, 0.04f, -0.015f), new ConfigDescription("Weapon Position When In Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 25, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            PistolRotation = config.Bind<Vector3>(pistol, "Pistol Rotation", new Vector3(0.0f, -5f, 0f), new ConfigDescription("Weapon Rotation When In Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            PistolAdditionalRotation = config.Bind<Vector3>(pistol, "Pistol Ready Additional Rotation", new Vector3(0.0f, 0f, 0f), new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            PistolResetRotation = config.Bind<Vector3>(pistol, "Pistol Ready Reset Rotation", new Vector3(-1f, 0f, 0f), new ConfigDescription("Weapon Rotation When Going Out Of Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
             ShortStockAdditionalRotationSpeedMulti = config.Bind<float>(shortStock, "Short-Stock Additional Rotation Speed Multi", 1.5f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.1f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             ShortStockResetRotationSpeedMulti = config.Bind<float>(shortStock, "Short-Stock Reset Rotation Speed Multi", 1.0f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.1f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
@@ -658,22 +529,10 @@ namespace RealismMod
             ShortStockSpeedMulti = config.Bind<float>(shortStock, "Short-Stock Position Speed Multi.", 4f, new ConfigDescription("", new AcceptableValueRange<float>(1f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 32, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
             ShortStockResetSpeedMulti = config.Bind<float>(shortStock, "Short-Stock Position Reset Speed Mult", 3.8f, new ConfigDescription("", new AcceptableValueRange<float>(1f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
-            ShortStockOffsetX = config.Bind<float>(shortStock, "Short-Stock Position X-Axis", 0.02f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 25, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ShortStockOffsetY = config.Bind<float>(shortStock, "Short-Stock Position Y-Axis", 0.1f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 24, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ShortStockOffsetZ = config.Bind<float>(shortStock, "Short-Stock Position Z-Axis", -0.025f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            ShortStockRotationX = config.Bind<float>(shortStock, "Short-Stock Rotation X-Axis", 0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ShortStockRotationY = config.Bind<float>(shortStock, "Short-Stock Rotation Y-Axis", -15.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ShortStockRotationZ = config.Bind<float>(shortStock, "Short-Stock Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            ShortStockAdditionalRotationX = config.Bind<float>(shortStock, "Short-Stock Ready Additional Rotation X-Axis.", -3.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ShortStockAdditionalRotationY = config.Bind<float>(shortStock, "Short-Stock Ready Additional Rotation Y-Axis.", -15.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ShortStockAdditionalRotationZ = config.Bind<float>(shortStock, "Short-Stock Ready Additional Rotation Z-Axis.", 1.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
-            ShortStockResetRotationX = config.Bind<float>(shortStock, "Short-Stock Ready Reset Rotation X-Axis", -1.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ShortStockResetRotationY = config.Bind<float>(shortStock, "Short-Stock Ready Reset Rotation Y-Axis", 2f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-            ShortStockResetRotationZ = config.Bind<float>(shortStock, "Short-Stock Ready Reset Rotation Z-Axis", 0.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-300f, 300f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
-
+            ShortStockOffset = config.Bind<Vector3>(shortStock, "Short-Stock Position", new Vector3(0.02f, 0.1f, -0.025f), new ConfigDescription("Weapon Position When In Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 25, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            ShortStockRotation = config.Bind<Vector3>(shortStock, "Short-Stock Rotation", new Vector3(0f, -15f, 0f), new ConfigDescription("Weapon Rotation When In Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            ShortStockAdditionalRotation = config.Bind<Vector3>(shortStock, "Short-Stock Ready Additional Rotation", new Vector3(-3.0f, -15f, 1f), new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
+            ShortStockResetRotation = config.Bind<Vector3>(shortStock, "Short-Stock Ready Reset Rotation", new Vector3(-1.5f, 2f, 0f), new ConfigDescription("Weapon Rotation When Going Out Of Stance.", null, new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_stances }));
 
 /*            foreach (var configEntry in config.Keys)
             {

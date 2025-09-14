@@ -72,7 +72,7 @@ namespace RealismMod.Audio
         {
             _elapsedTime += Time.deltaTime;
 
-            if (PlayerValues.EnviroType == EnvironmentType.Indoor || PlayerValues.BtrState == EPlayerBtrState.Inside)
+            if (PlayerState.EnviroType == EnvironmentType.Indoor || PlayerState.BtrState == EPlayerBtrState.Inside)
             {
                 _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, Volume * 0.5f, 0.35f * Time.deltaTime);
             }
@@ -267,10 +267,8 @@ namespace RealismMod.Audio
 
         public IEnumerator LoadAudioClipsCoroutine()
         {
-            Utils.Logger.LogWarning("loading " + System.DateTime.Now);
             yield return LoadAudioClips().AsCoroutine();
             ClipsAreReady = true;
-            Utils.Logger.LogWarning("laoded " + System.DateTime.Now);
         }
 
         public async Task LoadAudioClips()
@@ -334,7 +332,7 @@ namespace RealismMod.Audio
         private float GetBreathVolume()
         {
             float baseVol = BASE_BREATH_VOLUME + GameWorldController.GetHeadsetVolume();
-            float modifiers = (2f - PlayerValues.BaseStaminaPerc) * PluginConfig.GasMaskBreathVolume.Value * GameWorldController.GetGameVolumeAsFactor();
+            float modifiers = (2f - PlayerState.BaseStaminaPerc) * PluginConfig.GasMaskBreathVolume.Value * GameWorldController.GetGameVolumeAsFactor();
             return Mathf.Max(baseVol * modifiers, 0);
         }
 
@@ -344,11 +342,11 @@ namespace RealismMod.Audio
             {
                 return "Dying";
             }
-            if (HazardTracker.TotalToxicity >= 50f || PlayerValues.BaseStaminaPerc <= 0.55 || HazardTracker.TotalRadiation >= 70f || Plugin.RealHealthController.HasPositiveAdrenalineEffect)
+            if (HazardTracker.TotalToxicity >= 50f || PlayerState.BaseStaminaPerc <= 0.55 || HazardTracker.TotalRadiation >= 70f || Plugin.RealHealthController.HasPositiveAdrenalineEffect)
             {
                 return "BadlyInjured";
             }
-            if (HazardTracker.TotalToxicity >= 30f || PlayerValues.BaseStaminaPerc <= 0.8f || HazardTracker.TotalRadiation >= 50f)
+            if (HazardTracker.TotalToxicity >= 30f || PlayerState.BaseStaminaPerc <= 0.8f || HazardTracker.TotalRadiation >= 50f)
             {
                 return "Injured";
             }

@@ -79,7 +79,7 @@ namespace RealismMod
                 CurrentGasEventStrength = 0f;
                 return;
             }
-            bool isIndoors = PlayerValues.EnviroType == EnvironmentType.Indoor;
+            bool isIndoors = PlayerState.EnviroType == EnvironmentType.Indoor;
             float enviroFactor = isIndoors ? 0.4f : 1f;
             float fogStrength = Plugin.RealismWeatherComponent.TargetFog;
             float baseStrength = fogStrength * FOG_GAS_STRENGTH_MODI;
@@ -96,7 +96,7 @@ namespace RealismMod
                 CurrentMapRadStrength = 0f;
                 return;
             }
-            bool isIndoors = PlayerValues.EnviroType == EnvironmentType.Indoor;
+            bool isIndoors = PlayerState.EnviroType == EnvironmentType.Indoor;
             float enviroFactor = isIndoors ? 0.4f : 1f;
             float rainStrength = isIndoors ? 0f : Plugin.RealismWeatherComponent.TargetRain * 0.15f;
             float baseStrength = BASE_MAP_RAD_STRENGTH * enviroFactor;
@@ -137,7 +137,7 @@ namespace RealismMod
             if (instance?.Sound?.Settings == null) return 1f;
             return instance.Sound.Settings.OverallVolume?.Value * 0.1f ?? 1f;
         }
-        public static void ModifyLootResources(Item item) 
+        public static void RandomizeLootResources(Item item) 
         {
             if (Plugin.ServerConfig.bot_loot_changes)
             {

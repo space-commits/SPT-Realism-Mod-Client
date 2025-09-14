@@ -134,26 +134,6 @@ namespace RealismMod
         }
     }
 
-    //attempt to prevent stutter when game needlessly generates new bot waves
-    public class SpawnUpdatePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(NonWavesSpawnScenario).GetMethod("Update");
-        }
-
-        [PatchPrefix]
-        public static bool PatchPrefix(NonWavesSpawnScenario __instance)
-        {
-            if (GameWorldController.TimeInRaid >= 200f)
-            {
-                return false;
-            }
-            return true;
-
-        }
-    }
-
     public class RigidLootSpawnPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -164,7 +144,7 @@ namespace RealismMod
         [PatchPostfix]
         public static void PatchPostfix(Item item)
         {
-            GameWorldController.ModifyLootResources(item);
+            GameWorldController.RandomizeLootResources(item);
         }
     }
 
@@ -178,7 +158,7 @@ namespace RealismMod
         [PatchPostfix]
         public static void PatchPostfix(Item item)
         {
-            GameWorldController.ModifyLootResources(item);
+            GameWorldController.RandomizeLootResources(item);
         }
     }
 
@@ -251,6 +231,27 @@ namespace RealismMod
                 __instance.Switch(Turnable.EState.Off);
                 __instance.enabled = false;
             }
+        }
+    }
+
+
+    //attempt to prevent stutter when game needlessly generates new bot waves
+    public class SpawnUpdatePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(NonWavesSpawnScenario).GetMethod("Update");
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(NonWavesSpawnScenario __instance)
+        {
+            if (GameWorldController.TimeInRaid >= 200f)
+            {
+                return false;
+            }
+            return true;
+
         }
     }
 
@@ -624,6 +625,7 @@ namespace RealismMod
                 HazardTracker.UpdateHazardValues(ProfileData.CurrentProfileId);
                 HazardTracker.SaveHazardValues();
                 HazardTracker.GetHazardValues(ProfileData.PMCProfileId); //update to use PMC id and not potentially scav id
+                HazardPlayerSpawnManager.RestOnRaidEnd();
             }
             GameWorldController.Reset();
             Plugin.RealismAudioController.ClipsAreReady = false;

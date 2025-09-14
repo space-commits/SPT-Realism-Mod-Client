@@ -84,6 +84,7 @@ namespace RealismMod
         public float BaseChamberCheckSpeed { get; set; } = 1f;
         public float BaseFixSpeed { get; set; } = 1f;
         public float VisualMulti {  get; set; } = 1f;
+        public bool EnableExtraBSGVisRecoil { get; set; } = true;
     }
 
     public class WeaponMod : RealismItem

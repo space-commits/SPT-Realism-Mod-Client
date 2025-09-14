@@ -89,7 +89,7 @@ namespace RealismMod
         {
             get
             {
-                return PlayerValues.EnviroType == EnvironmentType.Indoor ? 1.4f : 1f;
+                return PlayerState.EnviroType == EnvironmentType.Indoor ? 1.4f : 1f;
             }
         }
 

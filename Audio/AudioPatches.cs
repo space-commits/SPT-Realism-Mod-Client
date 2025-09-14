@@ -431,8 +431,8 @@ namespace RealismMod.Audio
             Vector3 contusionVect = __instance.GetTemplate<ThrowWeapTemplateClass>().Contusion;
             float intensity = contusionVect.z * (1f - (1f - DeafenController.EarProtectionFactor) * 1.3f);
             float distance = contusionVect.y * 2f * DeafenController.EarProtectionFactor;
-            intensity = PlayerValues.EnviroType == EnvironmentType.Indoor ? intensity * 1.7f : intensity;
-            distance = PlayerValues.EnviroType == EnvironmentType.Indoor ? distance * 1.7f : distance;
+            intensity = PlayerState.EnviroType == EnvironmentType.Indoor ? intensity * 1.7f : intensity;
+            distance = PlayerState.EnviroType == EnvironmentType.Indoor ? distance * 1.7f : distance;
             __result = new Vector3(contusionVect.x, distance, intensity);
             return false;
         }

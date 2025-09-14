@@ -304,7 +304,7 @@ namespace RealismMod
         public string Name { get; set; }
         public float Strength { get; set; }
         public bool UsesDistanceFalloff { get; set; }
-        public bool BlockNav { get; set; }
+        public bool BlockNav { get; set; } = true;
         public Analysable Analysable { get; set; }
         public InteractableSubZone Interactable { get; set; }
         public string AudioFile { get; set; }

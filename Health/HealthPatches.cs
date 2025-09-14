@@ -975,7 +975,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(GControl4 __instance, Item item, EBodyPart bodyPart, ref bool __result)
         {
-            Logger.LogWarning("ApplyItem");
             var player = (Player)AccessTools.Field(typeof(GControl4), "Player").GetValue(__instance);
             if (player.IsYourPlayer)
             {  
@@ -1023,7 +1022,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot, Callback<IHandsController> callback)
         {
-            Logger.LogWarning("SetQuickSlotItem");
             if (__instance.IsYourPlayer)
             {
                 Item boundItem = __instance.InventoryController.Inventory.FastAccess.GetBoundItem(quickSlot);
@@ -1038,7 +1036,6 @@ namespace RealismMod
                 }
                 if (Plugin.FikaPresent)
                 {
-                    Logger.LogWarning("SetQuickSlotItem Fika");
                     MedsItemClass medItem = boundItem as MedsItemClass;
                     if (boundItem != null && medItem != null)
                     {
@@ -1087,7 +1084,6 @@ namespace RealismMod
         {
             if (__instance.Player.IsYourPlayer) 
             {
-                Logger.LogWarning("RestoreBodyPart");
                 //I had to do this previously due to the type being protected, no longer is the case. Keeping for reference.
                 /* BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);*/
 
@@ -1277,8 +1273,6 @@ namespace RealismMod
         {
             if (__instance.IsYourPlayer && Plugin.FikaPresent)
             {
-                Logger.LogWarning("SetInHands");
-                Logger.LogWarning("is empty " + (bodyParts.nullable_0 == null || bodyParts.Length <= 0));
                 if (bodyParts.nullable_0 == null || bodyParts.Length <= 0) return true;
                 var processResult = Plugin.RealHealthController.ProcessHealAttempt(meds, __instance, bodyParts[0]);
                 bodyParts = new GStruct353<EBodyPart>(processResult.NewBodyPart);
@@ -1300,9 +1294,6 @@ namespace RealismMod
         {
             if (__instance.IsYourPlayer && !Plugin.FikaPresent)  //Fika overrides Proceed methods
             { 
-                Logger.LogWarning("Proceed");
-                Logger.LogWarning("is empty " + (bodyParts.nullable_0 == null || bodyParts.Length <= 0));
-                Logger.LogWarning("Length" + bodyParts.Length);
                 if (bodyParts.nullable_0 == null || bodyParts.Length <= 0) return true;
 
                 for (int i = 0; i < bodyParts.Length; i++)
@@ -1311,9 +1302,7 @@ namespace RealismMod
                 }
 
                 var processResult = Plugin.RealHealthController.ProcessHealAttempt(meds, __instance, bodyParts[0]);
-                bodyParts = new GStruct353<EBodyPart>(processResult.NewBodyPart);
-                Logger.LogWarning("new part " + bodyParts[0]);
-                Logger.LogWarning("Length" + bodyParts.Length);
+                bodyParts = new GStruct353<EBodyPart>(processResult.NewBodyPart);;
                 return processResult.ShouldAllowHeal;
             }
             return true;

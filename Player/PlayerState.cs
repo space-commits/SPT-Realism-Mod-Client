@@ -2,7 +2,7 @@
 
 namespace RealismMod
 {
-    public static class PlayerValues
+    public static class PlayerState
     {
         public const float AIM_MOVE_SPEED_BASE = 0.5f;
 

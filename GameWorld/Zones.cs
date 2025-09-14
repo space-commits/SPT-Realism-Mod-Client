@@ -298,7 +298,6 @@ namespace RealismMod
 
         private IEnumerator SetUpAudio() 
         {
-            Utils.Logger.LogWarning("started " + System.DateTime.Now);
             yield return new WaitUntil(() => Plugin.RealismAudioController.ClipsAreReady);
             SetUpValveAudio();
             SetUpValveStuckAudio();
@@ -306,7 +305,6 @@ namespace RealismMod
             SetUpPanelLoopAudio();
             SetUpLeakAudio();
             _loopAudioSource.Play();
-            Utils.Logger.LogWarning("finished " + System.DateTime.Now);
         }
 
         private void SetUpButtonAudio()
@@ -686,6 +684,7 @@ namespace RealismMod
                 BoxCollider box = _zoneCollider as BoxCollider;
                 Vector3 boxSize = box.size;
                 _maxDistance = boxSize.magnitude / 2f;
+                HazardPlayerSpawnManager.Register(_zoneCollider);
             }
             Name = name;
             ActiveDevices = new List<GameObject>();
@@ -830,6 +829,7 @@ namespace RealismMod
                 BoxCollider box = _zoneCollider as BoxCollider;
                 Vector3 boxSize = box.size;
                 _maxDistance = boxSize.magnitude / 2f;
+                HazardPlayerSpawnManager.Register(_zoneCollider);
             }
             Name = name;
             ActiveDevices = new List<GameObject>();
