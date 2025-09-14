@@ -309,6 +309,7 @@ namespace RealismMod
             return new Dictionary<string, Vector3>{
             { "5aafa857e5b5b00018480968", new Vector3(0f, 0f, -0.1f)}, //m1a
             { "5b0bbe4e5acfc40dc528a72d", new Vector3(0f, 0f, -0.035f)}, //sa58
+            { "676176d362e0497044079f4c", new Vector3(0f, -0.0135f, 0.02f)}, //x17
             { "6183afd850224f204c1da514", new Vector3(0f, -0.0135f, 0.02f)}, //mk17
             { "6165ac306ef05c2ce828ef74", new Vector3(0f, -0.0135f, 0.02f)}, //mk17 fde
             { "6184055050224f204c1da540", new Vector3(0f, -0.0135f, 0.02f)}, //mk16
@@ -319,7 +320,7 @@ namespace RealismMod
             { "56dee2bdd2720bc8328b4567", new Vector3(0f, 0f, -0.01f)}, //mp153
             { "606dae0ab0e443224b421bb7", new Vector3(0f, 0f, -0.01f)}, //mp155
             { "6259b864ebedf17603599e88", new Vector3(0f, 0f, -0.02f)}, //M3
-            { "mechM3v1", new Vector3(0f, 0f, -0.02f)}, //M3 mechanic
+            { "6783ae5bb52da6ed912e3d01", new Vector3(0f, 0f, -0.02f)}, //M3 mechanic
             };
         }
 
@@ -899,7 +900,7 @@ namespace RealismMod
             //I've no idea wtf is going on here but it sort of works
             if (!WeaponStats.HasShoulderContact && PluginConfig.EnableAltPistol.Value)
             {
-                DoAltPistolAndLeftShoulder(player, fc, pwa, stanceMulti, dt);
+               DoAltPistolAndLeftShoulder(player, fc, pwa, stanceMulti, dt);
             }
 
             if (CurrentStance == EStance.PatrolStance) return;
