@@ -13,7 +13,9 @@ namespace RealismMod
     {
         private const float TIME_CHECK_INTERVAL = 10f;
         private const float SPAWN_TIME = 40f;
+        private const float BOT_SPAWN_TIME = 20f;
         private const float TIME_MOVEMENT_THRESHOLD = 20f;
+        private const float BOT_TIME_MOVEMENT_THRESHOLD = 10f;
         public Player _Player { get; set; }
         public bool IsBot { get; private set; } = false;
         public bool SpawnedInZone { get; private set; } = false;
@@ -27,6 +29,10 @@ namespace RealismMod
         private bool _isProtectedFromSafeZone = false;
         string[] targetTags = { "Radiation", "Gas", "RadAssets", "GasAssets" };
         private bool _isInHazardZone = false;
+        private float _safeZoneCheckTimer = 0f;
+        private float _botTimer = 0f;
+        private float _timeActive = 0f;
+        private bool _checkedSpawn = false;
 
         public bool IsProtectedFromSafeZone
         {
@@ -64,10 +70,21 @@ namespace RealismMod
             }
         }
 
-        private float _safeZoneCheckTimer = 0f;
-        private float _botTimer = 0f;
-        private float _timeActive = 0f;
-        private bool _checkedSpawn = false;
+        private float SpawnTimeTheshold
+        {
+            get
+            {
+                return IsBot ? BOT_SPAWN_TIME : SPAWN_TIME;
+            }
+        }
+
+        private float MoveTimeTheshold
+        {
+            get
+            {
+                return IsBot ? BOT_TIME_MOVEMENT_THRESHOLD : TIME_MOVEMENT_THRESHOLD;
+            }
+        }
 
         void Start()
         {
@@ -154,7 +171,7 @@ namespace RealismMod
                     MoveEntityToSafeLocation();
                 }
                 bool isMoving = _Player.IsSprintEnabled || (_Player.ProceduralWeaponAnimation.Mask & EProceduralAnimationMask.Walking) != (EProceduralAnimationMask)0;
-                if (SpawnedInZone || _timeActive >= SPAWN_TIME || (_timeActive >= TIME_MOVEMENT_THRESHOLD && isMoving)) _checkedSpawn = true;
+                if (SpawnedInZone || _timeActive >= SpawnTimeTheshold || (_timeActive >= MoveTimeTheshold && isMoving)) _checkedSpawn = true;
             }
         }
 

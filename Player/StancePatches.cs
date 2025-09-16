@@ -1218,7 +1218,7 @@ namespace RealismMod
                         hasResetHighReady = true;
                         hasResetLowReady = true;
                         hasResetShortStock = true;
-                        StanceController.DoPistolStances(true, __instance, ref stanceRotation, dt, ref hasResetPistolPos, player, ref stanceRotationSpeed, ref isResettingPistol, firearmController);
+                        StanceController.DoPistolStances(true, __instance, ref stanceRotation, dt, ref hasResetPistolPos, player, ref stanceRotationSpeed, ref isResettingPistol, firearmController, Vector3.zero);
                     }
                     else if (!StanceController.TreatWeaponAsPistolStance || WeaponStats.HasShoulderContact)
                     {
@@ -1237,7 +1237,7 @@ namespace RealismMod
                         }
 
                         hasResetPistolPos = true;
-                        StanceController.DoRifleStances(player, firearmController, true, __instance, ref stanceRotation, dt, ref isResettingShortStock, ref hasResetShortStock, ref hasResetLowReady, ref hasResetActiveAim, ref hasResetHighReady, ref isResettingHighReady, ref isResettingLowReady, ref isResettingActiveAim, ref stanceRotationSpeed, ref hasResetMelee, ref isResettingMelee, ref didHalfMeleeAnim);
+                        StanceController.DoRifleStances(player, firearmController, true, __instance, ref stanceRotation, dt, ref isResettingShortStock, ref hasResetShortStock, ref hasResetLowReady, ref hasResetActiveAim, ref hasResetHighReady, ref isResettingHighReady, ref isResettingLowReady, ref isResettingActiveAim, ref stanceRotationSpeed, ref hasResetMelee, ref isResettingMelee, ref didHalfMeleeAnim, Vector3.zero);
                     }
 
                     StanceController.HasResetActiveAim = hasResetActiveAim;
@@ -1402,7 +1402,7 @@ namespace RealismMod
         }
   
         [PatchPostfix]
-        private static void Postfix(EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
+        private static void Postfix(EFT.Animations.ProceduralWeaponAnimation __instance, float dt, Vector3 ____vCameraTarget)
         {
             FirearmController firearmController = (FirearmController)_firearmControllerField.GetValue(__instance);
             if (firearmController == null)
@@ -1485,7 +1485,7 @@ namespace RealismMod
                     _hasResetLowReady = true;
                     _hasResetShortStock = true;
                     _hasResetMelee = true;
-                    StanceController.DoPistolStances(false, __instance, ref _stanceRotation, dt, ref _hasResetPistolPos, player, ref _stanceRotationSpeed, ref _isResettingPistol, fc);
+                    StanceController.DoPistolStances(false, __instance, ref _stanceRotation, dt, ref _hasResetPistolPos, player, ref _stanceRotationSpeed, ref _isResettingPistol, fc, ____vCameraTarget);
                 }
                 else if (!StanceController.TreatWeaponAsPistolStance || WeaponStats.HasShoulderContact)
                 {
@@ -1504,7 +1504,7 @@ namespace RealismMod
                     }
 
                     _hasResetPistolPos = true;
-                    StanceController.DoRifleStances(player, fc, false, __instance, ref _stanceRotation, dt, ref _isResettingShortStock, ref _hasResetShortStock, ref _hasResetLowReady, ref _hasResetActiveAim, ref _hasResetHighReady, ref _isResettingHighReady, ref _isResettingLowReady, ref _isResettingActiveAim, ref _stanceRotationSpeed, ref _hasResetMelee, ref _isResettingMelee, ref _didHalfMeleeAnim);
+                    StanceController.DoRifleStances(player, fc, false, __instance, ref _stanceRotation, dt, ref _isResettingShortStock, ref _hasResetShortStock, ref _hasResetLowReady, ref _hasResetActiveAim, ref _hasResetHighReady, ref _isResettingHighReady, ref _isResettingLowReady, ref _isResettingActiveAim, ref _stanceRotationSpeed, ref _hasResetMelee, ref _isResettingMelee, ref _didHalfMeleeAnim, ____vCameraTarget);
                 }
 
                 if (PluginConfig.EnableExtraProcEffects.Value) StanceController.DoExtraPosAndRot(__instance, player);

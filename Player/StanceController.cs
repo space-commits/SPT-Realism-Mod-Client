@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using Diz.LanguageExtensions;
 using EFT;
 using EFT.Animations;
 using EFT.Animations.NewRecoil;
@@ -99,6 +100,12 @@ namespace RealismMod
         private static float _currentPistolXPos = 0f;
         private static float _currentPistolYPos = 0f;
         private static float _currentPistolZPos = 0f;
+
+        private static float pistolCameraAlignmentTarget = 0f;
+        private static float pistolYTarget = 0f;
+
+        private static float rifleCameraAlignmentTarget = 0f;
+        private static float rifleYTarget = 0f;
 
         public static Vector3 CoverWiggleDirection = Vector3.zero;
         public static Vector3 WeaponOffsetPosition = Vector3.zero;
@@ -837,17 +844,41 @@ namespace RealismMod
             }
         }
 
-        private static void DoAltPistolAndLeftShoulder(Player player, Player.FirearmController fc, ProceduralWeaponAnimation pwa, float stanceMulti, float dt)
+        //I've no idea wtf is going on here but it sort of works
+        private static void DoAltPistolAndLeftShoulder(Player player, Player.FirearmController fc, ProceduralWeaponAnimation pwa, float stanceMulti, float dt, Vector3 camTarget)
         {
             float speedFactorTarget = IsAiming && !IsLeftShoulder && _animationTimer == 0f ? PluginConfig.PistolPosResetSpeedMulti.Value * stanceMulti : PluginConfig.PistolPosSpeedMulti.Value * stanceMulti;
             _pistolPosSpeed = Mathf.Lerp(_pistolPosSpeed, speedFactorTarget, dt * 10f);
-            float xTarget = !IsBlindFiring && IsLeftShoulder && !CancelLeftShoulder ? -0.08f : !IsBlindFiring ? 0.04f : 0f; // 0.0
-            float yTarget = IsAiming ? 0.01f : -0.04f;
+            float xTarget = !IsBlindFiring && IsLeftShoulder && !CancelLeftShoulder ? -0.08f : !IsBlindFiring ? 0.04f : 0f;       
             float zTarget = 0f;
 
+            if (!IsAiming)
+            {
+                pistolYTarget = -0.04f; // this might not be necessary anymore, just use the pistol offset and don't do this here
+                pistolCameraAlignmentTarget = camTarget.y;
+            }
+            else
+            {
+                float tolerance = 0.001f;    // how close is "good enough"
+                float speed = 0.5f * PluginConfig.PistolPosSpeedMulti.Value * stanceMulti;       // tuning: how fast it corrects
+
+                // Calculate difference
+                float error = pistolCameraAlignmentTarget - camTarget.y;
+
+                if (Mathf.Abs(error) > tolerance)
+                {
+                    // Convert error into a vertical offset
+                    // (positive error = move weapon upward, negative = downward)
+                    float adjustment = error * speed * dt;
+
+                    pistolYTarget += adjustment;
+                }
+            }
+
+            //this is sus, needs investigating
             if (!Utils.AreFloatsEqual(_currentPistolXPos, xTarget, 0.05f))
             {
-                yTarget += 0.03f;
+                //pistolYTarget += 0.03f;
                 zTarget += 0.05f;
                 _animationTimer += 1.9f * stanceMulti * dt;
                 _animSpeed = _smoothCurve.Evaluate(_animationTimer);
@@ -858,9 +889,9 @@ namespace RealismMod
                 _animSpeed = 1f;
             }
 
-            _currentPistolXPos = Mathf.Lerp(_currentPistolXPos, xTarget, dt * _pistolPosSpeed * _animSpeed);
             //_currentPistolXPos = Mathf.SmoothDamp(_currentPistolXPos, xTarget, ref _currentPistolXPosVelocity, 0.25f, speedFactor, dt);
-            _currentPistolYPos = Mathf.Lerp(_currentPistolYPos, yTarget, dt * _pistolPosSpeed);
+            _currentPistolXPos = Mathf.Lerp(_currentPistolXPos, xTarget, dt * _pistolPosSpeed * _animSpeed);
+            _currentPistolYPos = Mathf.Lerp(_currentPistolYPos, pistolYTarget, dt * _pistolPosSpeed); //do not apply animSpeed to pistol
             _currentPistolZPos = Mathf.Lerp(_currentPistolZPos, zTarget, dt * _pistolPosSpeed * _animSpeed);
 
             _pistolLocalPosition.x = _currentPistolXPos;
@@ -869,7 +900,7 @@ namespace RealismMod
             pwa.HandsContainer.WeaponRoot.localPosition = _pistolLocalPosition;
         }
 
-        public static void DoPistolStances(bool isThirdPerson, EFT.Animations.ProceduralWeaponAnimation pwa, ref Quaternion stanceRotation, float dt, ref bool hasResetPistolPos, Player player, ref float rotationSpeed, ref bool isResettingPistol, Player.FirearmController fc)
+        public static void DoPistolStances(bool isThirdPerson, EFT.Animations.ProceduralWeaponAnimation pwa, ref Quaternion stanceRotation, float dt, ref bool hasResetPistolPos, Player player, ref float rotationSpeed, ref bool isResettingPistol, Player.FirearmController fc, Vector3 camTarget)
         {
             bool useThirdPersonStance = isThirdPerson;//  || Plugin.IsUsingFika
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
@@ -900,7 +931,7 @@ namespace RealismMod
             //I've no idea wtf is going on here but it sort of works
             if (!WeaponStats.HasShoulderContact && PluginConfig.EnableAltPistol.Value)
             {
-               DoAltPistolAndLeftShoulder(player, fc, pwa, stanceMulti, dt);
+               DoAltPistolAndLeftShoulder(player, fc, pwa, stanceMulti, dt, camTarget);
             }
 
             if (CurrentStance == EStance.PatrolStance) return;
@@ -965,7 +996,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-15f, 0f, -20f) * movementFactor); //new Vector3(10f, 1f, -30f) * wiggleBalanceFactor * rotationBalanceFactor  * wiggleBalanceFactor
+                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-10f, 0f, -20f) * movementFactor); //new Vector3(10f, 1f, -30f) * wiggleBalanceFactor * rotationBalanceFactor  * wiggleBalanceFactor
 
                 isResettingPistol = false;
                 CurrentStance = EStance.None;
@@ -974,7 +1005,7 @@ namespace RealismMod
             }
         }
 
-        private static void DoRiflePosAndLeftShoulder(Player player, Player.FirearmController fc, ProceduralWeaponAnimation pwa, float stanceMulti, float movementFactor, float dt, ref float rotationSpeed, ref Quaternion stanceRotation)
+        private static void DoRiflePosAndLeftShoulder(Player player, Player.FirearmController fc, ProceduralWeaponAnimation pwa, float stanceMulti, float movementFactor, float dt, ref float rotationSpeed, ref Quaternion stanceRotation, Vector3 camTarget)
         {
             bool doAltRifle = PluginConfig.EnableAltRifle.Value;
 
@@ -1011,8 +1042,28 @@ namespace RealismMod
                 DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-2f, 2f, 10f) * movementFactor, true);
             }
 
+/*            if (!IsAiming)
+            {
+                rifleYTarget = 0f;
+                rifleCameraAlignmentTarget = camTarget.y;
+            }
+            else
+            {
+                float tolerance = PluginConfig.test1.Value;
+                float speed = PluginConfig.test2.Value * stanceMulti * dt;
+
+                float error = rifleCameraAlignmentTarget - camTarget.y;
+
+                if (Mathf.Abs(error) > tolerance)
+                {
+                    float adjustment = error * speed * Time.deltaTime;
+
+                    rifleYTarget += adjustment;
+                }
+            }*/
+
             _currentRifleXPos = Mathf.Lerp(_currentRifleXPos, xTarget, dt * shoulderSpeed * 3.5f * _animSpeed);
-            _currentRifleYPos = Mathf.Lerp(_currentRifleYPos, yTarget, dt * ySpeedFactor * _animSpeed);
+            _currentRifleYPos = Mathf.Lerp(_currentRifleYPos, yTarget + rifleYTarget, dt * ySpeedFactor * _animSpeed); //if trying to fix stance ADS, animspeed might be fucking with things
             _currentRifleZPos = Mathf.Lerp(_currentRifleZPos, zTarget, dt * shoulderSpeed * _animSpeed);
 
             _rifleLocalPosition.x = _currentRifleXPos;
@@ -1047,7 +1098,7 @@ namespace RealismMod
             }
         }
 
-        public static void DoRifleStances(Player player, Player.FirearmController fc, bool isThirdPerson, EFT.Animations.ProceduralWeaponAnimation pwa, ref Quaternion stanceRotation, float dt, ref bool isResettingShortStock, ref bool hasResetShortStock, ref bool hasResetLowReady, ref bool hasResetActiveAim, ref bool hasResetHighReady, ref bool isResettingHighReady, ref bool isResettingLowReady, ref bool isResettingActiveAim, ref float rotationSpeed, ref bool hasResetMelee, ref bool isResettingMelee, ref bool didHalfMeleeAnim)
+        public static void DoRifleStances(Player player, Player.FirearmController fc, bool isThirdPerson, EFT.Animations.ProceduralWeaponAnimation pwa, ref Quaternion stanceRotation, float dt, ref bool isResettingShortStock, ref bool hasResetShortStock, ref bool hasResetLowReady, ref bool hasResetActiveAim, ref bool hasResetHighReady, ref bool isResettingHighReady, ref bool isResettingLowReady, ref bool isResettingActiveAim, ref float rotationSpeed, ref bool hasResetMelee, ref bool isResettingMelee, ref bool didHalfMeleeAnim, Vector3 camTarget)
         {
             float weightLimit = 8f;
             float movementFactor = PlayerState.IsMoving ? 1.1f : 1f;
@@ -1143,7 +1194,7 @@ namespace RealismMod
             //for setting baseline position
             if (!IsBlindFiring) // && !pwa.LeftStance
             {
-                DoRiflePosAndLeftShoulder(player, fc, pwa, stanceMulti, movementFactor, dt, ref rotationSpeed, ref stanceRotation);
+                DoRiflePosAndLeftShoulder(player, fc, pwa, stanceMulti, movementFactor, dt, ref rotationSpeed, ref stanceRotation, camTarget);
             }
 
             DoTacSprint(fc, player);
