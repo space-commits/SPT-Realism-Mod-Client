@@ -72,6 +72,8 @@ namespace RealismMod
 
         public static bool _IsManuallyOperated = false;
 
+        public static bool EnableExtraBSGVisRecoil = true;
+
         public static float TotalModDuraBurn = 1;
 
         public static float TotalMalfChance = 0;

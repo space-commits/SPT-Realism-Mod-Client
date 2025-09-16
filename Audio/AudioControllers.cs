@@ -1,15 +1,40 @@
 ﻿using Comfort.Common;
 using EFT;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
-using static EFT.Interactive.BetterPropagationGroups;
+using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
-
-namespace RealismMod
+namespace RealismMod.Audio
 {
-    public class AmbientAudioPlayer : MonoBehaviour
+    public class AmbientAudioInitializer
+    {
+        public static void CreateAmbientAudioPlayer(Player player, Transform parentTransform, Dictionary<string, AudioClip> clips, bool followPlayer = false, float minTime = 15f, float maxTime = 90f, float volume = 1f, float minDistance = 45f, float maxDistance = 95f, float minDelayBeforePlayback = 60f)
+        {
+            GameObject audioGO = new GameObject("AmbientAudioPlayer");
+            var audioPlayer = audioGO.AddComponent<AmbientAudioComponent>();
+            audioPlayer.ParentTransform = parentTransform;
+            audioPlayer._Player = player;
+            audioPlayer.FollowPlayer = followPlayer;
+            audioPlayer.MinTimeBetweenClips = minTime;
+            audioPlayer.MaxTimeBetweenClips = maxTime;
+            audioPlayer.MinDistance = minDistance;
+            audioPlayer.MaxDistance = maxDistance;
+            audioPlayer.Volume = volume;
+            audioPlayer.DelayBeforePlayback = minDelayBeforePlayback;
+            foreach (var clip in clips)
+            {
+                audioPlayer.AudioClips.Add(clip.Value);
+            }
+        }
+    }
+
+    public class AmbientAudioComponent : MonoBehaviour
     {
         public Player _Player { get; set; }
         public List<AudioClip> AudioClips = new List<AudioClip>();
@@ -29,7 +54,7 @@ namespace RealismMod
         void Start()
         {
             Volume *= GameWorldController.GetGameVolumeAsFactor();
-            _audioSource = this.gameObject.AddComponent<AudioSource>();
+            _audioSource = gameObject.AddComponent<AudioSource>();
             _audioSource.volume = Volume;
             _audioSource.loop = false;
             _audioSource.playOnAwake = false;
@@ -47,7 +72,7 @@ namespace RealismMod
         {
             _elapsedTime += Time.deltaTime;
 
-            if (PlayerValues.EnviroType == EnvironmentType.Indoor || PlayerValues.BtrState == EPlayerBtrState.Inside)
+            if (PlayerState.EnviroType == EnvironmentType.Indoor || PlayerState.BtrState == EPlayerBtrState.Inside)
             {
                 _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, Volume * 0.5f, 0.35f * Time.deltaTime);
             }
@@ -89,7 +114,7 @@ namespace RealismMod
                         visualRepresentation.transform.localScale = Vector3.one;
                         visualRepresentation.transform.position = transform.position;
                         visualRepresentation.transform.rotation = ParentTransform.transform.rotation;
-                        visualRepresentation.GetComponent<Renderer>().material.color = new UnityEngine.Color(1, 0, 0, 1);
+                        visualRepresentation.GetComponent<Renderer>().material.color = new Color(1, 0, 0, 1);
                     }
 
                     _audioSource.clip = selectedClip;
@@ -105,29 +130,7 @@ namespace RealismMod
 
     }
 
-    public static class AudioController 
-    {
-        public static void CreateAmbientAudioPlayer(Player player, Transform parentTransform, Dictionary<string, AudioClip> clips, bool followPlayer = false, float minTime = 15f, float maxTime = 90f, float volume = 1f, float minDistance = 45f, float maxDistance = 95f, float minDelayBeforePlayback = 60f)
-        {
-            GameObject audioGO = new GameObject("AmbientAudioPlayer");
-            var audioPlayer = audioGO.AddComponent<AmbientAudioPlayer>();
-            audioPlayer.ParentTransform = parentTransform;
-            audioPlayer._Player = player;
-            audioPlayer.FollowPlayer = followPlayer;
-            audioPlayer.MinTimeBetweenClips = minTime;
-            audioPlayer.MaxTimeBetweenClips = maxTime;
-            audioPlayer.MinDistance = minDistance;
-            audioPlayer.MaxDistance = maxDistance;
-            audioPlayer.Volume = volume;
-            audioPlayer.DelayBeforePlayback = minDelayBeforePlayback;
-            foreach (var clip in clips)
-            {
-                audioPlayer.AudioClips.Add(clip.Value);
-            }
-        }
-    }
-
-    public class RealismAudioControllerComponent: MonoBehaviour
+    public class RealismAudioController : MonoBehaviour
     {
         private Player _Player;
         private AudioSource _foodPoisoningSfx;
@@ -136,6 +139,16 @@ namespace RealismMod
         private AudioSource _geigerAudioSource;
         private AudioSource _toggleDeviceSource;
 
+        public Dictionary<string, AudioClip> HitAudioClips = new Dictionary<string, AudioClip>();
+        public Dictionary<string, AudioClip> GasMaskAudioClips = new Dictionary<string, AudioClip>();
+        public Dictionary<string, AudioClip> HazardZoneClips = new Dictionary<string, AudioClip>();
+        public Dictionary<string, AudioClip> DeviceAudioClips = new Dictionary<string, AudioClip>();
+        public Dictionary<string, AudioClip> RadEventAudioClips = new Dictionary<string, AudioClip>();
+        public Dictionary<string, AudioClip> GasEventAudioClips = new Dictionary<string, AudioClip>();
+        public Dictionary<string, AudioClip> GasEventLongAudioClips = new Dictionary<string, AudioClip>();
+        public Dictionary<string, AudioClip> InteractableClips = new Dictionary<string, AudioClip>();
+        public Dictionary<string, AudioClip> FoodPoisoningSfx = new Dictionary<string, AudioClip>();
+
         private const float GAS_DELAY = 4f;
         private const float RAD_DELAY = 3f;
         private const float GAS_DEVICE_VOLUME = 0.28f;
@@ -143,26 +156,28 @@ namespace RealismMod
         private const float BASE_BREATH_VOLUME = 0.3f;
         private const float TOGGLE_DEVICE_VOLUME = 0.6f;
 
-        private static float _currentBreathClipLength = 0f;
-        private static float _breathTimer = 0f;
-        private static float _breathCountdown = 2.5f;
-        private static float _coughTimer = 0f;
-        private static bool _breathedOut = false;
+        public bool ClipsAreReady = false;
 
-        private static bool _muteGeiger = false;
-        private static bool _muteGasAnalyser = false;
-        private static float _currentGasClipLength = 0f;
-        private static float _gasDeviceTimer = 0f;
-        private static float _currentGeigerClipLength = 0f;
-        private static float _geigerDeviceTimer = 0f;
+        private float _currentBreathClipLength = 0f;
+        private float _breathTimer = 0f;
+        private float _breathCountdown = 2.5f;
+        private float _coughTimer = 0f;
+        private bool _breathedOut = false;
+
+        private bool _muteGeiger = false;
+        private bool _muteGasAnalyser = false;
+        private float _currentGasClipLength = 0f;
+        private float _gasDeviceTimer = 0f;
+        private float _currentGeigerClipLength = 0f;
+        private float _geigerDeviceTimer = 0f;
 
         void Start()
         {
-            _gasMaskAudioSource = this.gameObject.AddComponent<AudioSource>();
-            _gasAnalyserSource = this.gameObject.AddComponent<AudioSource>();
-            _geigerAudioSource = this.gameObject.AddComponent<AudioSource>();
-            _toggleDeviceSource = this.gameObject.AddComponent<AudioSource>();
-            _foodPoisoningSfx = this.gameObject.AddComponent<AudioSource>();
+            _gasMaskAudioSource = gameObject.AddComponent<AudioSource>();
+            _gasAnalyserSource = gameObject.AddComponent<AudioSource>();
+            _geigerAudioSource = gameObject.AddComponent<AudioSource>();
+            _toggleDeviceSource = gameObject.AddComponent<AudioSource>();
+            _foodPoisoningSfx = gameObject.AddComponent<AudioSource>();
 
             SetUpAudio(_gasMaskAudioSource, 1f, 0f);
             SetUpAudio(_gasAnalyserSource, 1f, 1f);
@@ -178,13 +193,13 @@ namespace RealismMod
             transform.position = _Player.gameObject.transform.position;
 
             _breathTimer += Time.deltaTime;
-            _coughTimer += Time.deltaTime;  
+            _coughTimer += Time.deltaTime;
 
             if (GearController.HasGasMask && _breathCountdown > 0f)
             {
                 _breathCountdown -= Time.deltaTime;
             }
-            else 
+            else
             {
                 _breathCountdown = 2.5f;
             }
@@ -211,36 +226,113 @@ namespace RealismMod
 
         }
 
+        private async Task LoadAudioClipHelper(string[] fileDirectories, Dictionary<string, AudioClip> clips)
+        {
+            foreach (var fileDir in fileDirectories)
+            {
+                clips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
+            }
+        }
+
+        private async Task<AudioClip> RequestAudioClip(string path)
+        {
+            string extension = Path.GetExtension(path);
+            AudioType audioType = AudioType.WAV;
+            switch (extension)
+            {
+                case ".wav":
+                    audioType = AudioType.WAV;
+                    break;
+                case ".ogg":
+                    audioType = AudioType.OGGVORBIS;
+                    break;
+            }
+            UnityWebRequest uwr = UnityWebRequestMultimedia.GetAudioClip(path, audioType);
+            UnityWebRequestAsyncOperation sendWeb = uwr.SendWebRequest();
+
+            while (!sendWeb.isDone)
+                await Task.Yield();
+
+            if (uwr.isNetworkError || uwr.isHttpError)
+            {
+                Utils.Logger.LogError("Realism Mod: Failed To Fetch Audio Clip");
+                return null;
+            }
+            else
+            {
+                AudioClip audioclip = DownloadHandlerAudioClip.GetContent(uwr);
+                return audioclip;
+            }
+        }
+
+        public IEnumerator LoadAudioClipsCoroutine()
+        {
+            yield return LoadAudioClips().AsCoroutine();
+            ClipsAreReady = true;
+        }
+
+        public async Task LoadAudioClips()
+        {
+            string[] hitSoundsDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\hitsounds");
+            string[] gasMaskDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\gasmask");
+            string[] hazardDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones");
+            string[] deviceDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\devices");
+            string[] gasEventAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\default");
+            string[] radEventAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\maprads");
+            string[] gasEventLongAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\long");
+            string[] foodPoisoning = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\health\\foodpoisoning");
+            string[] interactable = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\interactable");
+
+            HitAudioClips.Clear();
+            GasMaskAudioClips.Clear();
+            HazardZoneClips.Clear();
+            DeviceAudioClips.Clear();
+            GasEventAudioClips.Clear();
+            RadEventAudioClips.Clear();
+            InteractableClips.Clear();
+            FoodPoisoningSfx.Clear();
+
+            await LoadAudioClipHelper(hitSoundsDir, HitAudioClips);
+            await LoadAudioClipHelper(gasMaskDir, GasMaskAudioClips);
+            await LoadAudioClipHelper(hazardDir, HazardZoneClips);
+            await LoadAudioClipHelper(deviceDir, DeviceAudioClips);
+            await LoadAudioClipHelper(gasEventAmbient, GasEventAudioClips);
+            await LoadAudioClipHelper(radEventAmbient, RadEventAudioClips);
+            await LoadAudioClipHelper(gasEventLongAmbient, GasEventLongAudioClips);
+            await LoadAudioClipHelper(foodPoisoning, FoodPoisoningSfx);
+            await LoadAudioClipHelper(interactable, InteractableClips);
+        }
+
         public void RunReInitPlayer()
         {
             _Player = Utils.GetYourPlayer();
             transform.position = _Player.gameObject.transform.position;
         }
 
-        private void SetUpAudio(AudioSource source, float vol = 1f, float spatialBlend = 0f, float minDistance = 5f, float maxDistance = 10f) 
+        private void SetUpAudio(AudioSource source, float vol = 1f, float spatialBlend = 0f, float minDistance = 5f, float maxDistance = 10f)
         {
             source.volume = vol * GameWorldController.GetGameVolumeAsFactor();
-            source.spatialBlend = spatialBlend; 
+            source.spatialBlend = spatialBlend;
             source.minDistance = minDistance;
             source.maxDistance = maxDistance;
         }
 
-        public void PlayFoodPoisoningSFX(float vol = 0.5f)
+        public void PlayFoodPoisoningSFXInRaid(float vol = 0.5f)
         {
-            _foodPoisoningSfx.clip = Plugin.FoodPoisoningSfx.RandomElement().Value;
+            _foodPoisoningSfx.clip = FoodPoisoningSfx.RandomElement().Value;
             _foodPoisoningSfx.volume = vol * GameWorldController.GetGameVolumeAsFactor();
             _foodPoisoningSfx.Play();
         }
 
-        private void CoughController() 
+        private void CoughController()
         {
             if (Plugin.RealHealthController.DoCoughingAudio) _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
         }
 
-        private float GetBreathVolume() 
+        private float GetBreathVolume()
         {
             float baseVol = BASE_BREATH_VOLUME + GameWorldController.GetHeadsetVolume();
-            float modifiers = (2f - PlayerValues.BaseStaminaPerc) * PluginConfig.GasMaskBreathVolume.Value * GameWorldController.GetGameVolumeAsFactor();
+            float modifiers = (2f - PlayerState.BaseStaminaPerc) * PluginConfig.GasMaskBreathVolume.Value * GameWorldController.GetGameVolumeAsFactor();
             return Mathf.Max(baseVol * modifiers, 0);
         }
 
@@ -250,11 +342,11 @@ namespace RealismMod
             {
                 return "Dying";
             }
-            if (HazardTracker.TotalToxicity >= 50f || PlayerValues.BaseStaminaPerc <= 0.55 || HazardTracker.TotalRadiation >= 70f || Plugin.RealHealthController.HasPositiveAdrenalineEffect)
+            if (HazardTracker.TotalToxicity >= 50f || PlayerState.BaseStaminaPerc <= 0.55 || HazardTracker.TotalRadiation >= 70f || Plugin.RealHealthController.HasPositiveAdrenalineEffect)
             {
                 return "BadlyInjured";
             }
-            if (HazardTracker.TotalToxicity >= 30f || PlayerValues.BaseStaminaPerc <= 0.8f || HazardTracker.TotalRadiation >= 50f)
+            if (HazardTracker.TotalToxicity >= 30f || PlayerState.BaseStaminaPerc <= 0.8f || HazardTracker.TotalRadiation >= 50f)
             {
                 return "Injured";
             }
@@ -286,10 +378,10 @@ namespace RealismMod
             string clipToUse = ChooseAudioClip(healthStatus, desiredClip);
             string inOut = breathOut ? "out" : "in";
             string clipName = inOut + "_" + clipToUse + rndNumber + ".wav";
-            AudioClip audioClip = Plugin.GasMaskAudioClips[clipName];
+            AudioClip audioClip = GasMaskAudioClips[clipName];
             _currentBreathClipLength = audioClip.length;
             float playBackVolume = GetBreathVolume();
-            _Player.SpeechSource.SetLowPassFilterParameters(0.99f, ESoundOcclusionType.Obstruction, 1600, 5000, true); //muffles player voice
+            _Player.SpeechSource.SetLowPassFilterParameters(0.99f, ESoundOcclusionType.Obstruction, 1600, 5000, 1, true); //muffles player voice
             _gasMaskAudioSource.volume = playBackVolume;
             _gasMaskAudioSource.clip = audioClip;
             _gasMaskAudioSource.Play();
@@ -312,12 +404,12 @@ namespace RealismMod
 
         private void PlayToggleSfx(string clip)
         {
-            _toggleDeviceSource.clip = Plugin.DeviceAudioClips[clip];
+            _toggleDeviceSource.clip = DeviceAudioClips[clip];
             _toggleDeviceSource.volume = (TOGGLE_DEVICE_VOLUME + GameWorldController.GetHeadsetVolume()) * GameWorldController.GetGameVolumeAsFactor();
             _toggleDeviceSource.Play();
         }
 
-        private void DoDetectors() 
+        private void DoDetectors()
         {
             if (GearController.HasGasAnalyser && GameWorldController.GameStarted && Utils.PlayerIsReady)
             {
@@ -443,7 +535,7 @@ namespace RealismMod
             float volumeModi = 1f;
             string clip = GetGasAnalsyerClip(HazardTracker.BaseTotalToxicityRate, out volumeModi);
             if (clip == null) return;
-            AudioClip audioClip = Plugin.DeviceAudioClips[clip];
+            AudioClip audioClip = DeviceAudioClips[clip];
             _currentGasClipLength = audioClip.length;
             float volume = _muteGasAnalyser ? 0f : GetDeviceVolume(GEIGER_VOLUME, volumeModi);
 
@@ -458,7 +550,7 @@ namespace RealismMod
             if (clips == null) return;
             int rndNumber = UnityEngine.Random.Range(0, clips.Length);
             string clip = clips[rndNumber];
-            AudioClip audioClip = Plugin.DeviceAudioClips[clip];
+            AudioClip audioClip = DeviceAudioClips[clip];
             _currentGeigerClipLength = audioClip.length;
             float volume = _muteGeiger ? 0f : GetDeviceVolume(GEIGER_VOLUME);
 

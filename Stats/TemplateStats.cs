@@ -19,7 +19,8 @@ namespace RealismMod
         Bandage,
         Pills,
         PainPills,
-        Alcohol
+        Alcohol,
+        Stimulator
     }
 
     public enum EHeavyBleedHealType 
@@ -83,6 +84,7 @@ namespace RealismMod
         public float BaseChamberCheckSpeed { get; set; } = 1f;
         public float BaseFixSpeed { get; set; } = 1f;
         public float VisualMulti {  get; set; } = 1f;
+        public bool EnableExtraBSGVisRecoil { get; set; } = true;
     }
 
     public class WeaponMod : RealismItem
@@ -141,6 +143,7 @@ namespace RealismMod
         public float TrnqtDamage { get; set; } = 0f;
         public float HPRestoreAmount { get; set; } = 0f;
         public float HPRestoreTick { get; set; } = 0f;
+        public bool DoesExtraResourceDebuff { get; set; } = false;
     }
 
     public static class TemplateStats

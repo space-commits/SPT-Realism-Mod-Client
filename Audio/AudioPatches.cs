@@ -11,22 +11,23 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Audio;
+using GunShotQueue = GClass869;
 /*using CompressorTemplateClass = GClass2918; //SetCompressor
 using HeadsetClass = GClass2654; //Updatephonesreally()
 using HeadsetTemplate = GClass2556; //SetCompressor*/
 
-namespace RealismMod
+namespace RealismMod.Audio
 {
     //gunshot volume patch
     public class GunshotVolumePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass859).GetMethod("Enqueue");
+            return typeof(GunShotQueue).GetMethod("Enqueue");
         }
 
         [PatchPrefix]
-        static void PatchPrefix(GClass859 __instance, ref float volume)
+        static void PatchPrefix(GunShotQueue __instance, ref float volume)
         {
             volume *= PluginConfig.GunshotVolume.Value;
         }
@@ -39,8 +40,8 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
-            _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
-            return typeof(Player.FirearmController).GetMethod("method_60", BindingFlags.Instance | BindingFlags.Public);
+            _playerField = AccessTools.Field(typeof(Player.FirearmController), "_player");
+            return typeof(Player.FirearmController).GetMethod("method_61", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -58,7 +59,7 @@ namespace RealismMod
             {
                 float firerateMulti = Mathf.Pow(WeaponStats.AutoFireRateDelta, 3f);
                 float overHeatMulti = 1f + Mathf.Pow(__instance.Weapon.MalfState.LastShotOverheat / 100f, 2f);
-                result = (firerateMulti * overHeatMulti) + UnityEngine.Random.Range(-0.015f, 0.015f);
+                result = firerateMulti * overHeatMulti + UnityEngine.Random.Range(-0.015f, 0.015f);
                 result = Mathf.Clamp(result, 0.75f, 1.25f);
             }
             else
@@ -86,7 +87,7 @@ namespace RealismMod
             if (player == null) return true;
             PhraseSpeakerClass speaker = player.Speaker;
             if (speaker == null) return true;
-            if (speaker == __instance && GearController.HasGasMask && (trigger == EPhraseTrigger.OnBreath || ((tags & ETagStatus.Dying) == ETagStatus.Dying)))
+            if (speaker == __instance && GearController.HasGasMask && (trigger == EPhraseTrigger.OnBreath || (tags & ETagStatus.Dying) == ETagStatus.Dying))
             {
                 return false;
             }
@@ -102,7 +103,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             _weaponSoundPlayerField = AccessTools.Field(typeof(Player.FirearmController), "weaponSoundPlayer_0");
-            return typeof(Player.FirearmController).GetMethod("method_59", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player.FirearmController).GetMethod("method_60", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -266,13 +267,13 @@ namespace RealismMod
         private static float GetHeadsetProtection(InventoryEquipment equipment)
         {
             CompoundItem headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as CompoundItem;
-            HeadphonesItemClass headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as HeadphonesItemClass) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<HeadphonesItemClass>().FirstOrDefault<HeadphonesItemClass>() : null);
+            HeadphonesItemClass headset = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as HeadphonesItemClass ?? (headwear != null ? headwear.GetAllItemsFromCollection().OfType<HeadphonesItemClass>().FirstOrDefault() : null);
             if (headset != null)
             {
                 DeafenController.HasHeadSet = true;
                 HeadphonesTemplateClass headphone = headset.Template;
                 float rating = TemplateStats.GearStats[headset.TemplateId].dB;
-                return Utils.CalcultateModifierFromRange(rating, 19f, 26f, DeafenController.MaxHeadsetProtection, DeafenController.MinHeadsetProtection);
+                return Utils.CalcultateModifierFromRange(rating, DeafenController.HeadestLowerProtection, DeafenController.HeadsetUpperProtection, DeafenController.MaxHeadsetProtection, DeafenController.MinHeadsetProtection);
             }
             else
             {
@@ -311,37 +312,37 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
-            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            playerField = AccessTools.Field(typeof(Player.FirearmController), "_player");
             return typeof(Player.FirearmController).GetMethod("RegisterShot", BindingFlags.Instance | BindingFlags.Public);
         }
 
-/*        private static float GetMuzzleLoudness(IEnumerable<Mod> mods)
-        {
-            float loudness = 0f;
-
-            foreach (Mod mod in mods.OfType<Mod>())
-            {
-                if (mod.Slots.Length > 0 && mod.Slots[0].ContainedItem != null && Utils.IsSilencer((Mod)mod.Slots[0].ContainedItem))
+        /*        private static float GetMuzzleLoudness(IEnumerable<Mod> mods)
                 {
-                    continue;
-                }
-                else
-                {
-                    loudness += mod.Template.Loudness;
-                }
-            }
-            return (loudness / 100) + 1f;
+                    float loudness = 0f;
 
-        }*/
+                    foreach (Mod mod in mods.OfType<Mod>())
+                    {
+                        if (mod.Slots.Length > 0 && mod.Slots[0].ContainedItem != null && Utils.IsSilencer((Mod)mod.Slots[0].ContainedItem))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            loudness += mod.Template.Loudness;
+                        }
+                    }
+                    return (loudness / 100) + 1f;
+
+                }*/
 
         private static float CalcAmmoFactor(float ammoRec)
         {
-            return Mathf.Clamp((ammoRec / 100f) + 1f, 0.8f, 2f);
+            return Mathf.Clamp(ammoRec / 100f + 1f, 0.8f, 2f);
         }
 
         private static float CalcVelocityFactor(float speedFactor)
         {
-            return ((speedFactor - 1f) * -2f) + 1f;
+            return (speedFactor - 1f) * -2f + 1f;
         }
 
         [PatchPostfix]
@@ -373,7 +374,7 @@ namespace RealismMod
                     float distanceFromPlayer = Vector3.Distance(shooterPos, playerPos);
                     if (distanceFromPlayer <= 15f)
                     {
-                  
+
                         float velocityFactor = CalcVelocityFactor(weap.SpeedFactor);
                         float calFactor = StatCalc.CaliberLoudnessFactor(weap.AmmoCaliber);
                         if (shot.InitialSpeed * weap.SpeedFactor <= SpeedOfSound)
@@ -381,7 +382,7 @@ namespace RealismMod
                             velocityFactor *= __instance.IsSilenced ? SuppressorWithSubsFactor : SubsonicFactor;
                         }
                         float baseBotDeafFactor = calFactor * velocityFactor;
-                        float totalBotDeafFactor = baseBotDeafFactor * ((-distanceFromPlayer / 100f) + 1f) * 1.25f;
+                        float totalBotDeafFactor = baseBotDeafFactor * (-distanceFromPlayer / 100f + 1f) * 1.25f;
                         DeafenController.BotFiringDeafFactor = Mathf.Clamp(totalBotDeafFactor, 1f, 5f);
                         DeafenController.IsBotFiring = true;
                         DeafenController.BotTimer = 0f;
@@ -397,7 +398,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Grenade).GetMethod("Explosion", BindingFlags.Static | BindingFlags.Public);
+            return typeof(Grenade).GetMethod("Explosion", BindingFlags.Static | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -410,7 +411,7 @@ namespace RealismMod
             {
                 DeafenController.GrenadeExploded = true;
                 DeafenController.GrenadeTimer = 0f;
-                DeafenController.ExplosionDeafFactor = grenadeItem.Contusion.z * ((-distanceFromPlayer / 100f) + 1f);
+                DeafenController.ExplosionDeafFactor = grenadeItem.Contusion.z * (-distanceFromPlayer / 100f + 1f);
                 DeafenController.IncreaseDeafeningExplosion();
             }
         }
@@ -428,10 +429,10 @@ namespace RealismMod
         static bool PreFix(ThrowWeapItemClass __instance, ref Vector3 __result)
         {
             Vector3 contusionVect = __instance.GetTemplate<ThrowWeapTemplateClass>().Contusion;
-            float intensity = contusionVect.z * (1f - ((1f - DeafenController.EarProtectionFactor) * 1.3f));
+            float intensity = contusionVect.z * (1f - (1f - DeafenController.EarProtectionFactor) * 1.3f);
             float distance = contusionVect.y * 2f * DeafenController.EarProtectionFactor;
-            intensity = PlayerValues.EnviroType == EnvironmentType.Indoor ? intensity * 1.7f : intensity;
-            distance = PlayerValues.EnviroType == EnvironmentType.Indoor ? distance * 1.7f : distance;
+            intensity = PlayerState.EnviroType == EnvironmentType.Indoor ? intensity * 1.7f : intensity;
+            distance = PlayerState.EnviroType == EnvironmentType.Indoor ? distance * 1.7f : distance;
             __result = new Vector3(contusionVect.x, distance, intensity);
             return false;
         }

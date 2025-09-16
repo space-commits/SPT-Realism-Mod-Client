@@ -7,8 +7,8 @@ using SPT.Reflection.Patching;
 using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
-using ProcessorClass = GClass2534;
-using StaminaLevelClass = GClass816<float>;
+using ProcessorClass = GClass2599;
+using StaminaLevelClass = GClass827<float>;
 
 namespace RealismMod
 {
@@ -214,7 +214,7 @@ namespace RealismMod
                     float accuracy = weapon.GetTotalCenterOfImpact(false);
                     float3Field.SetValue(firearmController, accuracy); //update accuracy value
 
-                    float totalPlayerWeight = PlayerValues.TotalModifiedWeightMinusWeapon;
+                    float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
                     float playerWeightADSFactor = 1f - (totalPlayerWeight / 200f);
                     float stanceMulti = 
                         StanceController.IsIdle() && !StanceController.IsLeftShoulder ? 1.5f 
@@ -224,18 +224,18 @@ namespace RealismMod
                         : StanceController.IsLeftShoulder ? 0.85f : 1f;
                     float stockMulti = weapon.WeapClass != "pistol" && !WeaponStats.HasShoulderContact ? 0.75f : 1f;
 
-                    float totalSightlessAimSpeed = WeaponStats.SightlessAimSpeed * PlayerValues.ADSInjuryMulti * (Mathf.Max(PlayerValues.RemainingArmStamFactor, 0.35f));
+                    float totalSightlessAimSpeed = WeaponStats.SightlessAimSpeed * PlayerState.ADSInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.35f));
 
                     float sightSpeedModi = currentAimingMod != null ? aimingModStats.AimSpeed : 1f;
                     sightSpeedModi = currentAimingMod != null && (currentAimingMod.TemplateId == "5c07dd120db834001c39092d" || currentAimingMod.TemplateId == "5c0a2cec0db834001b7ce47d") && __instance.CurrentScope.IsOptic ? 1f : sightSpeedModi;
                     float totalSightedAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * stanceMulti * stockMulti * playerWeightADSFactor, 0.4f, 1.5f);
                    
-                    float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerValues.ADSSprintMulti * Plugin.RealHealthController.AdrenalineADSBonus * (1f + WeaponStats.ModAimSpeedModifier), 0.28f) * (weapon.WeapClass == "pistol" ? PluginConfig.PistolGlobalAimSpeedModifier.Value : PluginConfig.GlobalAimSpeedModifier.Value);
+                    float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerState.ADSSprintMulti * Plugin.RealHealthController.AdrenalineADSBonus * (1f + WeaponStats.ModAimSpeedModifier), 0.28f) * (weapon.WeapClass == "pistol" ? PluginConfig.PistolGlobalAimSpeedModifier.Value : PluginConfig.GlobalAimSpeedModifier.Value);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(__instance, newAimSpeed); //aimspeed
 
                     float leftShoulderFactor = StanceController.IsLeftShoulder ? 1.3f : 1f;
                     float formfactor = WeaponStats.IsBullpup ? 0.7f : 1f;
-                    float ergoWeight = WeaponStats.ErgoFactor * PlayerValues.ErgoDeltaInjuryMulti * (1f - (PlayerValues.StrengthSkillAimBuff * 1.75f)) * (1f + (1f - PlayerValues.GearErgoPenalty));
+                    float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.75f)) * (1f + (1f - PlayerState.GearErgoPenalty));
                     float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(weapon.TotalWeight, weapon.WeapClass == "pistol" ? 1f : 4f);
                     float playerWeightSwayFactor = 1f + (totalPlayerWeight / 200f);
                     float totalErgoFactor = 1f + ((ergoWeight * ergoWeightFactor * playerWeightSwayFactor * leftShoulderFactor) / 100f);
@@ -262,19 +262,19 @@ namespace RealismMod
                     float chonkerFactor = weapon.Weight >= 9f ? 1.45f : 1f;
                     float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * PluginConfig.ProceduralIntensity.Value * chonkerFactor;
                     float totalInputIntensitry = handsIntensity * handsIntensity * PluginConfig.ProceduralIntensity.Value * chonkerFactor;
-                    PlayerValues.TotalBreathIntensity = totalBreathIntensity;
-                    PlayerValues.TotalHandsIntensity = totalInputIntensitry;
+                    PlayerState.TotalBreathIntensity = totalBreathIntensity;
+                    PlayerState.TotalHandsIntensity = totalInputIntensitry;
 
                     //this is stupid, refactor
-                    if (PlayerValues.HasFullyResetSprintADSPenalties)
+                    if (PlayerState.HasFullyResetSprintADSPenalties)
                     {
-                        __instance.Breath.Intensity = PlayerValues.TotalBreathIntensity * StanceController.BracingSwayBonus;
-                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerValues.TotalHandsIntensity * StanceController.BracingSwayBonus;
+                        __instance.Breath.Intensity = PlayerState.TotalBreathIntensity * StanceController.BracingSwayBonus;
+                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerState.TotalHandsIntensity * StanceController.BracingSwayBonus;
                     }
                     else
                     {
-                        __instance.Breath.Intensity = PlayerValues.SprintTotalBreathIntensity;
-                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerValues.SprintTotalHandsIntensity;
+                        __instance.Breath.Intensity = PlayerState.SprintTotalBreathIntensity;
+                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerState.SprintTotalHandsIntensity;
                     }
 
                     if (__instance.CurrentAimingMod != null)
@@ -300,9 +300,9 @@ namespace RealismMod
                     if (PluginConfig.EnablePWALogging.Value == true)
                     {
                         Logger.LogWarning("=====method_23========");
-                        Logger.LogWarning("ADSInjuryMulti = " + PlayerValues.ADSInjuryMulti);
-                        Logger.LogWarning("remaining stam percentage = " + PlayerValues.RemainingArmStamFactor);
-                        Logger.LogWarning("strength = " + PlayerValues.StrengthSkillAimBuff);
+                        Logger.LogWarning("ADSInjuryMulti = " + PlayerState.ADSInjuryMulti);
+                        Logger.LogWarning("remaining stam percentage = " + PlayerState.RemainingArmStamFactor);
+                        Logger.LogWarning("strength = " + PlayerState.StrengthSkillAimBuff);
                         Logger.LogWarning("player weight = " + playerWeightADSFactor);
                         Logger.LogWarning("sightSpeedModi = " + sightSpeedModi);
                         Logger.LogWarning("totalSightlessAimSpeed = " + totalSightlessAimSpeed);
@@ -393,18 +393,18 @@ namespace RealismMod
                 float stanceFactorMotion = GetStanceFactor(__instance);
                 float weapWeight = weapon.TotalWeight;
                 float formfactor = WeaponStats.IsBullpup ? 0.75f : 1f;
-                float totalPlayerWeight = PlayerValues.TotalModifiedWeight - weapWeight;
+                float totalPlayerWeight = PlayerState.TotalModifiedWeight - weapWeight;
                 float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
                 bool noShoulderContact = !WeaponStats.HasShoulderContact; //maybe don't include pistol
-                float ergoWeight = WeaponStats.ErgoFactor * PlayerValues.ErgoDeltaInjuryMulti * (1f - (PlayerValues.StrengthSkillAimBuff)) * (1f + (1f - PlayerValues.GearErgoPenalty));
+                float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff)) * (1f + (1f - PlayerState.GearErgoPenalty));
                 float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, isPistol ? 1.3f : 2.4f); 
                 float displacementModifier = noShoulderContact ? PluginConfig.ProceduralIntensity.Value * 0.95f : PluginConfig.ProceduralIntensity.Value * 0.48f; // lower = less drag
                 float aimIntensity = noShoulderContact ? PluginConfig.ProceduralIntensity.Value * 0.86f : PluginConfig.ProceduralIntensity.Value * 0.51f;
                 float displacementFactor = isPistol ? 17.5f : 15.8f;
-                float displacementLowerLimit = isPistol ? 0.73f : 0.88f;
+                float displacementLowerLimit = isPistol ? 0.95f : 0.88f;
                 float displacementUpperLimit = isPistol ? 2.1f : 5.9f;
                 float swayStrengthFactor = isPistol ? 42f : 169f; 
-                float swayStrengthLowerLimit = isPistol ? 0.34f : 0.53f;
+                float swayStrengthLowerLimit = isPistol ? 0.44f : 0.53f;
                 float swayStrengthUpperLimit = isPistol ? 0.84f : 1.09f;
 
                 float combinedFactors = ergoWeight * weightFactor * playerWeightFactor * formfactor;
@@ -420,13 +420,13 @@ namespace RealismMod
 
                 float motionWeaponFactor = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol || !WeaponStats.HasShoulderContact ? 1.55f : WeaponStats.IsBullpup ? 0.8f : 1f;
                 float motionUpperLimit = isPistol ? 1.45f : 2.55f;
-                float motionLowerLimit = isPistol ? 1.3f : 1.35f;
+                float motionLowerLimit = isPistol ? 1.35f : 1.35f;
                 WeaponStats.BaseWeaponMotionIntensity = Mathf.Clamp(0.065f * stanceFactorMotion * ergoWeight * playerWeightFactor * motionWeaponFactor * WeaponStats.TotalWeaponHandlingModi, motionLowerLimit, motionUpperLimit) * 0.33f;
 
                 float walkMotionStockFactor = WeaponStats.IsBullpup ? 0.8f : WeaponStats.IsMachinePistol || WeaponStats.IsStocklessPistol ? 1.4f : !WeaponStats.HasShoulderContact ? 1.45f : 1f;
                 float weaponWalkMotionFactor = 2.1f * (WeaponStats.ErgoFactor / 100f) * WeaponStats.TotalWeaponHandlingModi;
                 weaponWalkMotionFactor = Mathf.Pow(weaponWalkMotionFactor, 0.87f);
-                WeaponStats.WalkMotionIntensity = weaponWalkMotionFactor * walkMotionStockFactor * playerWeightFactor * (1f + (1f - PlayerValues.GearErgoPenalty));
+                WeaponStats.WalkMotionIntensity = weaponWalkMotionFactor * walkMotionStockFactor * playerWeightFactor * (1f + (1f - PlayerState.GearErgoPenalty));
 
                 if (PluginConfig.EnablePWALogging.Value == true)
                 {
@@ -440,7 +440,7 @@ namespace RealismMod
                     Logger.LogWarning("Sway Factors = " + __instance.MotionReact.SwayFactors);
                     Logger.LogWarning("Motion Intensity = " + WeaponStats.BaseWeaponMotionIntensity);
                     Logger.LogWarning("Walk Motion Intensity = " + WeaponStats.WalkMotionIntensity);
-                    Logger.LogWarning("PlayerState.GearErgoPenalty = " + PlayerValues.GearErgoPenalty);
+                    Logger.LogWarning("PlayerState.GearErgoPenalty = " + PlayerState.GearErgoPenalty);
                     Logger.LogWarning("ergoWeightFactor = " + weightFactor);
                     Logger.LogWarning("stanceFactor = " + stanceFactor);
                     Logger.LogWarning("has bipod " + (firearmController.HasBipod && firearmController.BipodState));

@@ -62,7 +62,7 @@ namespace RealismMod
                     _mountingUIRect.sizeDelta = _iconSize * scaleAmount;
 
                 }
-                else if (StanceController.IsBracing && !PlayerValues.IsSprinting)
+                else if (StanceController.IsBracing && !PlayerState.IsSprinting)
                 {
                     _mountingUIRect.sizeDelta = _iconSize;
                     float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time, 1f));

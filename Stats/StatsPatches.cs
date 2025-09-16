@@ -8,7 +8,7 @@ using RealismMod.Weapons;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using WeaponSkills = EFT.SkillManager.GClass1981;
+using WeaponSkills = EFT.SkillManager.GClass2017;
 using EFT.WeaponMounting;
 
 namespace RealismMod
@@ -71,7 +71,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
-            _skillField = AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1981_0");
+            _skillField = AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass2017_0");
 
             return typeof(Player.FirearmController).GetMethod("method_12", BindingFlags.Instance | BindingFlags.Public);
 
@@ -118,7 +118,7 @@ namespace RealismMod
             if (__instance != null && __instance?.Owner != null && __instance?.Owner?.ID != null && __instance?.Owner?.ID == Singleton<GameWorld>.Instance?.MainPlayer?.ProfileId)
             {
                 var weapStats = TemplateStats.GetDataObj<Gun>(TemplateStats.GunStats, __instance.TemplateId);
-                if (PlayerValues.IsInReloadOpertation)
+                if (PlayerState.IsInReloadOpertation)
                 {
                     __result = FinalStatCalc(__instance, weapStats);
                 }
@@ -138,8 +138,8 @@ namespace RealismMod
         public static float FinalStatCalc(Weapon __instance, Gun weapStats)
         {
             WeaponStats._WeapClass = __instance.WeapClass;
-            bool isManual = weapStats.IsManuallyOperated;
-            WeaponStats._IsManuallyOperated = isManual;
+            WeaponStats._IsManuallyOperated = weapStats.IsManuallyOperated;
+            WeaponStats.EnableExtraBSGVisRecoil = weapStats.EnableExtraBSGVisRecoil;
 
             float totalWeapWeight = __instance.TotalWeight;
             string weapType = weapStats.WeapType;
@@ -617,7 +617,7 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                __result = WeaponStats.ErgoFactor * (1f - (PlayerValues.StrengthSkillAimBuff * 1.5f)) * (1f + (1f - PlayerValues.GearErgoPenalty));
+                __result = WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + (1f - PlayerState.GearErgoPenalty));
 
                 if (PluginConfig.EnablePWALogging.Value == true)
                 {

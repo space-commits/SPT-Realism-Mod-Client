@@ -1,24 +1,21 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
-using Comfort.Common;
+﻿using Comfort.Common;
+using Diz.Skinning;
 using EFT;
 using EFT.Ballistics;
-using EFT.HealthSystem;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using EFTSlot = GClass3113;
-using ArmorSlot = GClass2862;
-using Diz.Skinning;
-using EFT.UI;
 using static EFT.Player;
+using ArmorSlot = GClass2929;
 using DamageInfo = DamageInfoStruct;
-using SkillManagerClass = EFT.SkillManager.GClass1981;
-using PastTimeClass = GClass1629;
+using EFTSlot = GClass3184;
+using PastTimeClass = GClass1662;
+using SkillManagerClass = EFT.SkillManager.GClass2017;
 
 namespace RealismMod
 {
@@ -39,10 +36,10 @@ namespace RealismMod
             _accField = AccessTools.Field(typeof(FirearmController), "float_3");
             _buckFeld = AccessTools.Field(typeof(FirearmController), "float_4");
             _prefabField = AccessTools.Field(typeof(FirearmController), "weaponPrefab_0");
-            _skillField = AccessTools.Field(typeof(FirearmController), "gclass1981_0");
+            _skillField = AccessTools.Field(typeof(FirearmController), "gclass2017_0");
             _soundField = AccessTools.Field(typeof(FirearmController), "weaponSoundPlayer_0");
             _recoilField = AccessTools.Field(typeof(FirearmController), "float_5");
-            return typeof(Player.FirearmController).GetMethod("method_57", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player.FirearmController).GetMethod("method_58", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -109,10 +106,10 @@ namespace RealismMod
             float recoilFactor = (doubleShot != 0) ? 1.5f : 1f;
 
             _recoilField.SetValue(__instance, recoilFactor + (float)ammo.ammoRec / 100f);
-            __instance.method_58(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
+            __instance.method_59(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
             if (ammo.AmmoTemplate.IsLightAndSoundShot)
             {
-                __instance.method_61(position, baseShotDirection);
+                __instance.method_62(position, baseShotDirection);
                 __instance.LightAndSoundShot(position, baseShotDirection, ammo.AmmoTemplate);
             }
 
@@ -141,14 +138,14 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass3369).GetMethod("Initialize", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass3451).GetMethod("Initialize", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
-        private static void Prefix(GClass3369 __instance)
+        private static void Prefix(GClass3451 __instance)
         {
-            float bcFactor = (float)AccessTools.Field(typeof(GClass3369), "float_3").GetValue(__instance);
-            AccessTools.Field(typeof(GClass3369), "float_3").SetValue(__instance, bcFactor *= PluginConfig.DragModifier.Value);
+            float bcFactor = (float)AccessTools.Field(typeof(GClass3451), "float_3").GetValue(__instance);
+            AccessTools.Field(typeof(GClass3451), "float_3").SetValue(__instance, bcFactor *= PluginConfig.DragModifier.Value);
         }
     }
 
@@ -442,7 +439,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             armorCompsField = AccessTools.Field(typeof(Player), "_preAllocatedArmorComponents");
-            return typeof(EftBulletClass).GetMethod("smethod_2", BindingFlags.Static | BindingFlags.Public);
+            return typeof(EftBulletClass).GetMethod("smethod_3", BindingFlags.Static | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -577,7 +574,7 @@ namespace RealismMod
             float dist = CameraClass.Instance.Distance(pos);
             string audioClip = rndNum == 0 ? "ric_1.wav" : rndNum == 1 ? "ric_2.wav" : "ric_3.wav";
 
-            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 40, 4.25f, EOcclusionTest.Regular);
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.RealismAudioController.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 40, 4.25f, EOcclusionTest.Regular);
         }
 
         private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm, int rndNum)
@@ -606,7 +603,7 @@ namespace RealismMod
                     }
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.RealismAudioController.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.Ceramic)
             {
@@ -620,7 +617,7 @@ namespace RealismMod
                     audioClip = rndNum == 0 ? "ceramic_1.wav" : rndNum == 1 ? "ceramic_2.wav" : "ceramic_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 1.5f : volClose * 1.5f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.RealismAudioController.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 1.5f : volClose * 1.5f, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.UHMWPE || mat == EArmorMaterial.Combined)
             {
@@ -634,7 +631,7 @@ namespace RealismMod
                     audioClip = rndNum == 0 ? "uhmwpe_1.wav" : rndNum == 1 ? "uhmwpe_2.wav" : "uhmwpe_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.RealismAudioController.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.Titan || mat == EArmorMaterial.ArmoredSteel)
             {
@@ -648,7 +645,7 @@ namespace RealismMod
                     audioClip = rndNum == 0 ? "metal_1.wav" : rndNum == 1 ? "metal_2.wav" : "metal_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 0.75f : volClose * 0.75f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.RealismAudioController.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 0.75f : volClose * 0.75f, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.Glass)
             {
@@ -661,7 +658,7 @@ namespace RealismMod
                 {
                     audioClip = rndNum == 0 ? "glass_1.wav" : rndNum == 1 ? "glass_2.wav" : "glass_3.wav";
                 }
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.RealismAudioController.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
             else
             {
@@ -674,7 +671,7 @@ namespace RealismMod
                 {
                     audioClip = rndNum == 0 ? "impact_1.wav" : rndNum == 1 ? "impact_2.wav" : "impact_3.wav";
                 }
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.RealismAudioController.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
         }
 

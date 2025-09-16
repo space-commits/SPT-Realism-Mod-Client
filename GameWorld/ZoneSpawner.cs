@@ -3,12 +3,9 @@ using EFT;
 using EFT.Quests;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
-using static GClass1389;
-using static RootMotion.FinalIK.IKSolver;
 
 namespace RealismMod
 {
@@ -64,7 +61,7 @@ namespace RealismMod
                 spawnGo.transform.position = spawnLocation;
                 BoxCollider boxCollider = spawnGo.AddComponent<BoxCollider>();
                 boxCollider.size = new Vector3(1, 500, 1);
-                VisualizeZone(spawnGo.name, spawnGo.transform, boxCollider);
+                VisualizeDebugZone(spawnGo.name, spawnGo.transform, boxCollider);
             }
         }
 
@@ -72,6 +69,9 @@ namespace RealismMod
         public static Vector3 TryGetSafeSpawnPoint(Player entity, bool isBot, bool blocksNav, bool isInRads)
         {
             IEnumerable<Vector3> spawns = ZoneData.GetSafeSpawns();
+
+            if (PluginConfig.ZoneDebug.Value) Utils.Logger.LogWarning($"isbot {isBot}, blocksNav {blocksNav}, spawns null {spawns == null}, currentMap {GameWorldController.CurrentMap} isInRads{isInRads}");
+
             if (spawns == null || (isBot && !blocksNav) || (!isBot && GameWorldController.CurrentMap == "laboratory" && !isInRads)) return entity.Transform.position; //can't account for bot vs player, because of maps like Labs where player should spawn in gas
             IEnumerable<Vector3> validSpawns = spawns;
             Player player = Utils.GetYourPlayer();
@@ -217,6 +217,7 @@ namespace RealismMod
             BoxCollider boxCollider = hazardZone.AddComponent<BoxCollider>();
             boxCollider.isTrigger = true;
             boxCollider.size = size;
+            boxCollider.name = zoneName + "_Collider";
 
             //if gas event or rad event, all bots have gas mask, but asset zone assets do not block bot paths so they get stuck
             bool ignoreNav = (GameWorldController.DoMapGasEvent || GameWorldController.DoMapRads) && hazard.ZoneType != EZoneType.GasAssets && hazard.ZoneType != EZoneType.RadAssets;
@@ -242,14 +243,14 @@ namespace RealismMod
             // visual representation for debugging
             if (PluginConfig.ZoneDebug.Value && !isBufferZone)
             {
-                VisualizeZone(zoneName, hazardZone.transform, boxCollider, hazard.ZoneType);
+                VisualizeDebugZone(zoneName, hazardZone.transform, boxCollider, hazard.ZoneType);
             }
         }
 
-        private static void VisualizeZone(string name, Transform parentTransform, BoxCollider collider, EZoneType zoneType = EZoneType.Gas) 
+        private static void VisualizeDebugZone(string name, Transform parentTransform, BoxCollider collider, EZoneType zoneType = EZoneType.Gas) 
         {
             GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            visualRepresentation.name = name + "Visual";
+            visualRepresentation.name = name + "_Visual_Debug";
             visualRepresentation.transform.parent = parentTransform;
             visualRepresentation.transform.localScale = collider.size;
             visualRepresentation.transform.localPosition = collider.center;
@@ -263,10 +264,10 @@ namespace RealismMod
         private static void AddBufferZone<T>(HazardGroup hazardLocation, Zone subZone, GameObject zoneGroup, EZoneType zoneType) where T : MonoBehaviour, IZone
         {
             Zone bufferZone = new Zone();
-            bufferZone.Name = subZone.Name + "_buffeZone";
+            bufferZone.Name = subZone.Name + "_Buffer_Zone";
             bufferZone.UsesDistanceFalloff = false;
             bufferZone.Strength = 10;
-            bufferZone.BlockNav = false;
+            bufferZone.BlockNav = subZone.BlockNav;
             bufferZone.Position = subZone.Position;
             bufferZone.Rotation = subZone.Rotation;
             Vector3 size = new Vector3(subZone.Size.X, subZone.Size.Y, subZone.Size.Z) * 1.4f;
@@ -284,7 +285,7 @@ namespace RealismMod
             foreach (var subZone in hazardLocation.Zones)
             {
                 SetUpSubZone<T>(hazardLocation, subZone, hazardGroupObject, zoneType);
-                if(subZone.UseVisual && (zoneType == EZoneType.Gas || zoneType == EZoneType.GasAssets)) AddBufferZone<T>(hazardLocation, subZone, hazardGroupObject, zoneType);
+                if (subZone.UseVisual && (zoneType == EZoneType.Gas || zoneType == EZoneType.GasAssets)) AddBufferZone<T>(hazardLocation, subZone, hazardGroupObject, zoneType);
             }
 
             if (zoneType == EZoneType.Interactable) 

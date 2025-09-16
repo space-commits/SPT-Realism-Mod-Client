@@ -1,37 +1,23 @@
-﻿using Comfort.Common;
+﻿using Audio.AmbientSubsystem;
+using Comfort.Common;
 using EFT;
 using EFT.Animals;
 using EFT.Ballistics;
 using EFT.Communications;
+using EFT.Interactive;
+using EFT.InventoryLogic;
 using EFT.UI;
-using Sirenix.Serialization;
+using HarmonyLib;
+using RealismMod.Audio;
 using SPT.Reflection.Patching;
 using System;
-using System.Drawing;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using QuestUIClass = GClass2269;
-using ChanceCalcClass = GClass824;
+using ChanceCalcClass = GClass835;
 using Color = UnityEngine.Color;
-using EFT.InventoryLogic;
-using HarmonyLib;
-using EFT.Interactive;
-using static RootMotion.FinalIK.InteractionTrigger.Range;
-using System.Collections.Generic;
-using static UnityEngine.Rendering.PostProcessing.HistogramMonitor;
-using static UnityEngine.UI.Selectable;
-using System.Threading.Tasks;
-using static RootMotion.FinalIK.GenericPoser;
-using Audio.AmbientSubsystem;
-using static BotsPresets;
-using EFT.UI.BattleTimer;
-using TMPro;
-using System.Text;
-using System.Xml.Linq;
-using static RootMotion.FinalIK.IKSolver;
-using EFT.InputSystem;
-using static RealismMod.DebugGizmos;
+using QuestUIClass = GClass2314;
 
 namespace RealismMod
 {
@@ -94,26 +80,26 @@ namespace RealismMod
       }*/
 
 
-  /*  public class ActivateBossesByWavePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(BotsController).GetMethod(
-                nameof(BotsController.ActivateBotsByWave),
-                BindingFlags.Public | BindingFlags.Instance,
-                null,
-                new Type[] { typeof(BossLocationSpawn) },
-                null);
-        }
+    /*  public class ActivateBossesByWavePatch : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(BotsController).GetMethod(
+                  nameof(BotsController.ActivateBotsByWave),
+                  BindingFlags.Public | BindingFlags.Instance,
+                  null,
+                  new Type[] { typeof(BossLocationSpawn) },
+                  null);
+          }
 
-        [PatchPrefix]
-        protected static bool PatchPrefix()
-        {
-            
-            return false;
-        }
+          [PatchPrefix]
+          protected static bool PatchPrefix()
+          {
 
-    }*/
+              return false;
+          }
+
+      }*/
 
     public class GamePlayerPatch : ModulePatch
     {
@@ -148,26 +134,6 @@ namespace RealismMod
         }
     }
 
-    //attempt to prevent stutter when game needlessly generates new bot waves
-    public class SpawnUpdatePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(NonWavesSpawnScenario).GetMethod("Update");
-        }
-
-        [PatchPrefix]
-        public static bool PatchPrefix(NonWavesSpawnScenario __instance)
-        {
-            if (GameWorldController.TimeInRaid >= 200f)
-            {
-                return false;
-            }
-            return true;
-
-        }
-    }
-
     public class RigidLootSpawnPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -178,7 +144,7 @@ namespace RealismMod
         [PatchPostfix]
         public static void PatchPostfix(Item item)
         {
-            GameWorldController.ModifyLootResources(item);
+            GameWorldController.RandomizeLootResources(item);
         }
     }
 
@@ -192,7 +158,7 @@ namespace RealismMod
         [PatchPostfix]
         public static void PatchPostfix(Item item)
         {
-            GameWorldController.ModifyLootResources(item);
+            GameWorldController.RandomizeLootResources(item);
         }
     }
 
@@ -265,6 +231,27 @@ namespace RealismMod
                 __instance.Switch(Turnable.EState.Off);
                 __instance.enabled = false;
             }
+        }
+    }
+
+
+    //attempt to prevent stutter when game needlessly generates new bot waves
+    public class SpawnUpdatePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(NonWavesSpawnScenario).GetMethod("Update");
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(NonWavesSpawnScenario __instance)
+        {
+            if (GameWorldController.TimeInRaid >= 200f)
+            {
+                return false;
+            }
+            return true;
+
         }
     }
 
@@ -480,7 +467,6 @@ namespace RealismMod
     }
 
     //makes culstists spawn during day time
-
     class DayTimeSpawnPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -577,10 +563,11 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(GameWorld __instance)
         {
+            Plugin.Instance.StartCoroutine(Plugin.RealismAudioController.LoadAudioClipsCoroutine());
+
             ProfileData.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
             if (Plugin.ServerConfig.enable_hazard_zones)
             {
-
                 //update tracked map info
                 GameWorldController.CurrentMap = Singleton<GameWorld>.Instance.MainPlayer.Location.ToLower();
                 GameWorldController.MapWithDynamicWeather = GameWorldController.CurrentMap.Contains("factory") || GameWorldController.CurrentMap == "laboratory" ? false : true;
@@ -588,19 +575,19 @@ namespace RealismMod
                 GameWorldController.IsMapThatCanDoRadEvent = GameWorldController.CurrentMap != "laboratory";
 
                 //audio components
-                Plugin.RealismAudioControllerComponent.RunReInitPlayer();
+                Plugin.RealismAudioController.RunReInitPlayer();
 
                 if (GameWorldController.DoMapGasEvent)
                 {
                     Player player = Utils.GetYourPlayer();
-                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.2f, minDelayBeforePlayback: 60f); //spooky short playback
-                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.2f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
+                    AmbientAudioInitializer.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.RealismAudioController.GasEventAudioClips, volume: 1.2f, minDelayBeforePlayback: 60f); //spooky short playback
+                    AmbientAudioInitializer.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.RealismAudioController.GasEventLongAudioClips, true, 5f, 30f, 0.2f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
                 }
 
                 if (GameWorldController.DoMapRads)
                 {
                     Player player = Utils.GetYourPlayer();
-                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.RadEventAudioClips, volume: 1f, minDelayBeforePlayback: 60f); //thunder
+                    AmbientAudioInitializer.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.RealismAudioController.RadEventAudioClips, volume: 1f, minDelayBeforePlayback: 60f); //thunder
                 }
 
                 //spawn zones
@@ -638,8 +625,10 @@ namespace RealismMod
                 HazardTracker.UpdateHazardValues(ProfileData.CurrentProfileId);
                 HazardTracker.SaveHazardValues();
                 HazardTracker.GetHazardValues(ProfileData.PMCProfileId); //update to use PMC id and not potentially scav id
+                HazardPlayerSpawnManager.RestOnRaidEnd();
             }
             GameWorldController.Reset();
+            Plugin.RealismAudioController.ClipsAreReady = false;
         }
     }
 }

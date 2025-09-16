@@ -1,38 +1,37 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
-using Comfort.Common;
+﻿using Comfort.Common;
 using EFT;
 using HarmonyLib;
+using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using SkillMovementStruct = EFT.SkillManager.GStruct235;
-using ValueHandler = GClass796;
-using static EFT.Player;
+using SkillMovementStruct = EFT.SkillManager.GStruct242;
+using ValueHandler = GClass807;
 
 namespace RealismMod
 {
-/*    public class SprintPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
+    /*    public class SprintPatch : ModulePatch
         {
-            return typeof(PlayerAnimator).GetMethod("EnableSprint", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static bool PatchPrefix(PlayerAnimator __instance)
-        {
-            Player player = Utils.GetYourPlayer();
-            if (player == null) return true;
-            if (player.MovementContext.PlayerAnimator == __instance)
+            protected override MethodBase GetTargetMethod()
             {
-                return false;
+                return typeof(PlayerAnimator).GetMethod("EnableSprint", BindingFlags.Instance | BindingFlags.Public);
             }
-            return true;
+
+            [PatchPrefix]
+            private static bool PatchPrefix(PlayerAnimator __instance)
+            {
+                Player player = Utils.GetYourPlayer();
+                if (player == null) return true;
+                if (player.MovementContext.PlayerAnimator == __instance)
+                {
+                    return false;
+                }
+                return true;
+            }
         }
-    }
-*/
+    */
     public class StaminaRegenRatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -56,8 +55,8 @@ namespace RealismMod
                 StanceController.CurrentStance == EStance.LowReady ? 1.15f :
                 StanceController.CurrentStance == EStance.PatrolStance ? 1.25f :
                 StanceController.CurrentStance == EStance.PistolCompressed ? 1.2f : 1f;
-            float playerWeightFactor = 1f - ((PlayerValues.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerValues.StrengthWeightBuff)); 
-            __result = baseValue * float_7[(int)epose_0] * Singleton<BackendConfigSettingsClass>.Instance.StaminaRestoration.GetAt(player_0.HealthController.Energy.Normalized) * (player_0.Skills.EnduranceBuffRestoration + 1f) * PlayerValues.HealthStamRegenFactor * gearFactor * stanceFactor * playerWeightFactor / Single_0;
+            float playerWeightFactor = 1f - ((PlayerState.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerState.StrengthWeightBuff)); 
+            __result = baseValue * float_7[(int)epose_0] * Singleton<BackendConfigSettingsClass>.Instance.StaminaRestoration.GetAt(player_0.HealthController.Energy.Normalized) * (player_0.Skills.EnduranceBuffRestoration + 1f) * PlayerState.HealthStamRegenFactor * gearFactor * stanceFactor * playerWeightFactor / Single_0;
             return false;
         }
     }
@@ -85,12 +84,12 @@ namespace RealismMod
                     slopeFactor = MovementSpeedController.GetSlope(player);
                 }
 
-                float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - ((WeaponStats.ErgoFactor / 100f) * (1f - PlayerValues.StrengthWeightBuff)), 0.15f);
-                float playerWeightFactor = Mathf.Pow(1f - ((PlayerValues.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerValues.StrengthWeightBuff)), 0.3f); //doubling up because BSG's calcs are shit
+                float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - ((WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff)), 0.15f);
+                float playerWeightFactor = Mathf.Pow(1f - ((PlayerState.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerState.StrengthWeightBuff)), 0.3f); //doubling up because BSG's calcs are shit
                 float surfaceMulti = PluginConfig.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player);
                 float stanceFactor = StanceController.CurrentStance == EStance.PatrolStance ? 1.33f : StanceController.CurrentStance == EStance.LowReady ? 1.15f : StanceController.CurrentStance == EStance.HighReady ? 1.05f : StanceController.CurrentStance == EStance.ShortStock ? 0.95f : 1f;
-                float totalModifier = PlayerValues.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor * weaponFactor * playerWeightFactor * Plugin.RealHealthController.AdrenalineMovementBonus;
+                float totalModifier = PlayerState.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor * weaponFactor * playerWeightFactor * Plugin.RealHealthController.AdrenalineMovementBonus;
                 __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * totalModifier);
                 return false;
             }
@@ -102,7 +101,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("method_64", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player).GetMethod("method_73", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
@@ -143,8 +142,8 @@ namespace RealismMod
                     GearController.HasGasMask ? 0.3f * enduranceFactor : 
                     GearController.FSIsActive && GearController.GearBlocksMouth ? 0.5f * armorSkillFactor :
                     GearController.NVGIsActive ? 0.6f : 1f;
-                float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - ((WeaponStats.ErgoFactor / 100f) * (1f - PlayerValues.StrengthWeightBuff)), 0.15f);
-                float playerWeightFactor = PlayerValues.TotalModifiedWeightMinusWeapon >= 50f ? 1f - ((PlayerValues.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerValues.StrengthWeightBuff)) : 1f; //doubling up because BSG's calcs are shit
+                float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - ((WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff)), 0.15f);
+                float playerWeightFactor = PlayerState.TotalModifiedWeightMinusWeapon >= 50f ? 1f - ((PlayerState.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerState.StrengthWeightBuff)) : 1f; //doubling up because BSG's calcs are shit
                 float slopeFactor = PluginConfig.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
                 float surfaceMulti = PluginConfig.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float stanceSpeedBonus = StanceController.IsDoingTacSprint ? 1.15f * (1f + player.Skills.EnduranceBuffRestoration.Value) : 1f;
@@ -155,8 +154,8 @@ namespace RealismMod
                     surfaceMulti = Mathf.Max(surfaceMulti * 0.85f, 0.2f);
                 }
       
-                float sprintAccel = player.Physical.SprintAcceleration * stanceAccelBonus * PlayerValues.HealthSprintAccelFactor * surfaceMulti * slopeFactor * PlayerValues.GearSpeedPenalty * weaponFactor * Plugin.RealHealthController.AdrenalineMovementBonus * gearPenalty * deltaTime * playerWeightFactor;
-                float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * stanceSpeedBonus * PlayerValues.HealthSprintSpeedFactor * surfaceMulti * slopeFactor * PlayerValues.GearSpeedPenalty * weaponFactor * gearPenalty * Plugin.RealHealthController.AdrenalineMovementBonus * playerWeightFactor;
+                float sprintAccel = player.Physical.SprintAcceleration * stanceAccelBonus * PlayerState.HealthSprintAccelFactor * surfaceMulti * slopeFactor * PlayerState.GearSpeedPenalty * weaponFactor * Plugin.RealHealthController.AdrenalineMovementBonus * gearPenalty * deltaTime * playerWeightFactor;
+                float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * stanceSpeedBonus * PlayerState.HealthSprintSpeedFactor * surfaceMulti * slopeFactor * PlayerState.GearSpeedPenalty * weaponFactor * gearPenalty * Plugin.RealHealthController.AdrenalineMovementBonus * playerWeightFactor;
                 float sprintInertia = Mathf.Max(EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(Mathf.Abs((float)rotationFrameSpan.Average)), EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(2.1474836E+09f) * (2f - player.Physical.Inertia));
                 speed = Mathf.Clamp(speed * sprintInertia, 0.1f, speed);
                 __instance.SprintSpeed = Mathf.Clamp(__instance.SprintSpeed + sprintAccel * Mathf.Sign(speed - __instance.SprintSpeed), 0.01f, speed) * stanceSpeedBonus;

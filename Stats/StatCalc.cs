@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static EFT.Player;
-using WeaponSkillsClass = EFT.SkillManager.GClass1981;
+using WeaponSkillsClass = EFT.SkillManager.GClass2017;
 
 namespace RealismMod
 {
@@ -63,21 +63,21 @@ namespace RealismMod
             float playerWeight = player.Inventory.TotalWeight;
             var weapon = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item as Weapon : null;
             float weaponWeight = weapon != null ? weapon.TotalWeight : 0f;
-            PlayerValues.TotalModifiedWeightMinusWeapon = playerWeight - weaponWeight;
-            PlayerValues.TotalMousePenalty = (-playerWeight / 10f);
-            PlayerValues.TotalModifiedWeight = playerWeight;
+            PlayerState.TotalModifiedWeightMinusWeapon = playerWeight - weaponWeight;
+            PlayerState.TotalMousePenalty = (-playerWeight / 10f);
+            PlayerState.TotalModifiedWeight = playerWeight;
 
             if (PluginConfig.EnableGeneralLogging.Value) 
             {
-                Utils.Logger.LogWarning($"Total Mouse Penality {PlayerValues.TotalMousePenalty}, Total Modified Weight Minus Weap {PlayerValues.TotalModifiedWeightMinusWeapon}, Total Modified Weight {PlayerValues.TotalModifiedWeight},");
+                Utils.Logger.LogWarning($"Total Mouse Penality {PlayerState.TotalMousePenalty}, Total Modified Weight Minus Weap {PlayerState.TotalModifiedWeightMinusWeapon}, Total Modified Weight {PlayerState.TotalModifiedWeight},");
             }
 
             if (PluginConfig.EnableMouseSensPenalty.Value)
             {
                 player.RemoveMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor);
-                if (PlayerValues.TotalMousePenalty < 0f)
+                if (PlayerState.TotalMousePenalty < 0f)
                 {
-                    player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerValues.TotalMousePenalty / 100f);
+                    player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerState.TotalMousePenalty / 100f);
                 }
             }
         }
@@ -126,12 +126,12 @@ namespace RealismMod
             {
                 float aimSwayHeadGearFactor = GearController.FSIsActive || GearController.NVGIsActive || GearController.HasGasMask ? 1.45f : 1f;
                 float gunWeightFactor = ProceduralIntensityFactorCalc(weapon.TotalWeight, 4f);
-                float ergoWeightFactor = WeaponStats.ErgoFactor * gunWeightFactor * (1f + (-WeaponStats.Balance / 100f)) * (1f - WeaponStats.PureErgoDelta) * aimSwayHeadGearFactor * (1f - (PlayerValues.StrengthSkillAimBuff * 1.5f)) * (1f + ((1f - PlayerValues.GearErgoPenalty) * 1.5f)); //
+                float ergoWeightFactor = WeaponStats.ErgoFactor * gunWeightFactor * (1f + (-WeaponStats.Balance / 100f)) * (1f - WeaponStats.PureErgoDelta) * aimSwayHeadGearFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + ((1f - PlayerState.GearErgoPenalty) * 1.5f)); //
                 swayStrength = Mathf.InverseLerp(1f, 180f, ergoWeightFactor);
             }
             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayStrength").SetValue(pwa, swayStrength);
 
-            float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerValues.GearErgoPenalty) * 1.3f;
+            float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerState.GearErgoPenalty) * 1.3f;
             float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)), 0.35f, 1.5f);
             valueBlender.Speed = pwa.SwayFalloff * aimSpeed * 4.35f;
 
@@ -150,8 +150,8 @@ namespace RealismMod
                 Utils.Logger.LogWarning("aimSpeed = " + aimSpeed);
                 Utils.Logger.LogWarning("base aimSpeed = " + baseAimspeed);
                 Utils.Logger.LogWarning("swayStrength = " + swayStrength);
-                Utils.Logger.LogWarning("total ergofactor = " + WeaponStats.ErgoFactor * (1f - (PlayerValues.StrengthSkillAimBuff * 1.5f)));
-                Utils.Logger.LogWarning("gear ergo factor = " + PlayerValues.GearErgoPenalty);
+                Utils.Logger.LogWarning("total ergofactor = " + WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)));
+                Utils.Logger.LogWarning("gear ergo factor = " + PlayerState.GearErgoPenalty);
 
             }
         }
@@ -901,7 +901,9 @@ namespace RealismMod
                 case "86x70":
                     return 1.35f;
                 case "127x108":
-                    return 1.5f;
+                    return 1.75f;
+                case "127x99":
+                    return 1.65f;
 
                 case "23x75":
                     return 1.2f;
@@ -971,7 +973,9 @@ namespace RealismMod
                 case "86x70":
                     return 0.19f;
                 case "127x108":
-                    return 0.22f;
+                    return 0.25f;
+                case "127x99":
+                    return 0.24f;
 
                 case "23x75":
                     return 0.14f;
@@ -1040,6 +1044,8 @@ namespace RealismMod
                 case "86x70":
                     return 6;
                 case "127x108":
+                    return 8;
+                case "127x99":
                     return 7;
 
                 case "23x75":
@@ -1111,7 +1117,9 @@ namespace RealismMod
                 case "86x70":
                     return 30;
                 case "127x108":
-                    return 35;
+                    return 40;
+                case "127x99":
+                    return 37;
 
                 case "23x75":
                     return 19;
@@ -1180,8 +1188,10 @@ namespace RealismMod
                 case "86x70":
                     return 5f;
                 case "127x108":
-                    return 6f;
-                    
+                    return 7f;
+                case "127x99":
+                    return 6.5f;
+
                 case "23x75":
                     return 3.35f;
                 case "12g":

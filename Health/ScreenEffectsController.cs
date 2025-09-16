@@ -44,9 +44,9 @@ namespace RealismMod.Health
 
         public static void DoRadiationEffects() 
         {
-            float effectStrength = (HazardTracker.TotalRadiationRate * 40f) + (HazardTracker.TotalRadiation * 0.15f);
-            effectStrength = effectStrength <= 2f ? 0f : effectStrength;
-            _radiationEffectStrength = Mathf.Lerp(_radiationEffectStrength, effectStrength, 0.01f);
+            float effectStrength = (HazardTracker.TotalRadiationRate * 30f) + (HazardTracker.TotalRadiation * 0.15f);
+            effectStrength = effectStrength <= 2.75f ? 0f : effectStrength;
+            _radiationEffectStrength = Mathf.Lerp(_radiationEffectStrength, effectStrength, 0.008f);
             if (PluginConfig.ShowRadEffects.Value)
             {
                 PrismEffects.noiseIntensity = Mathf.Max(_radiationEffectStrength, 0f); 

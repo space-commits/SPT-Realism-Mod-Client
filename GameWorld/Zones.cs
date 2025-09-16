@@ -1,5 +1,4 @@
-﻿using Comfort.Common;
-using EFT;
+﻿using EFT;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using EFT.UI;
@@ -9,7 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using KeyInteractionResultClass = GClass3344;
+using KeyInteractionResultClass = GClass3424;
 
 namespace RealismMod
 {
@@ -175,11 +174,11 @@ namespace RealismMod
     //set its own status
     public class InteractionZone : InteractableObject, IZone 
     {
-        public const float VALVE_AUDIO_VOL = 0.6f;
-        public const float VALVE_STUCK_AUDIO_VOL = 0.5f;
-        public const float LEAK_AUDIO_VOL = 0.15f;
-        public const float BUTTON_AUDIO_VOL = 0.2f;
-        public const float PANEL_LOOP_VOL = 0.4f;
+        public const float VALVE_AUDIO_VOL = 0.85f;
+        public const float VALVE_STUCK_AUDIO_VOL = 0.7f;
+        public const float LEAK_AUDIO_VOL = 0.3f;
+        public const float BUTTON_AUDIO_VOL = 0.35f;
+        public const float PANEL_LOOP_VOL = 0.55f;
         public EZoneType ZoneType { get; }
         public float ZoneStrength { get; set; }
         public bool BlocksNav { get; set; }
@@ -240,7 +239,7 @@ namespace RealismMod
             if (InteractableData.Randomize) _state = UnityEngine.Random.Range(0, 100) >= 50 ? EInteractableState.On : EInteractableState.Off;
             else _state = InteractableData.StartingState;
             _groupParent = GetComponentInParent<InteractableGroupComponent>();
-            SetUpAudio();
+            StartCoroutine(SetUpAudio());
             if (!string.IsNullOrWhiteSpace(InteractableData.TargeObject)) GetChildObjects();
             GetHazardZones();
             InitActions();
@@ -297,8 +296,9 @@ namespace RealismMod
             }
         }
 
-        private void SetUpAudio() 
+        private IEnumerator SetUpAudio() 
         {
+            yield return new WaitUntil(() => Plugin.RealismAudioController.ClipsAreReady);
             SetUpValveAudio();
             SetUpValveStuckAudio();
             SetUpButtonAudio();
@@ -310,7 +310,7 @@ namespace RealismMod
         private void SetUpButtonAudio()
         {
             _buttonSource = this.gameObject.AddComponent<AudioSource>();
-            _buttonSource.clip = Plugin.InteractableClips["buttonpress.wav"];
+            _buttonSource.clip = Plugin.RealismAudioController.InteractableClips["buttonpress.wav"];
             _buttonSource.volume = BUTTON_AUDIO_VOL * GameWorldController.GetGameVolumeAsFactor(); 
             _buttonSource.loop = false;
             _buttonSource.playOnAwake = false;
@@ -323,7 +323,7 @@ namespace RealismMod
         private void SetUpValveStuckAudio()
         {
             _valveStuckSource = this.gameObject.AddComponent<AudioSource>();
-            _valveStuckSource.clip = Plugin.InteractableClips["valve_stuck.wav"];
+            _valveStuckSource.clip = Plugin.RealismAudioController.InteractableClips["valve_stuck.wav"];
             _valveStuckSource.volume = VALVE_STUCK_AUDIO_VOL * GameWorldController.GetGameVolumeAsFactor();
             _valveStuckSource.loop = false;
             _valveStuckSource.playOnAwake = false;
@@ -336,7 +336,7 @@ namespace RealismMod
         private void SetUpValveAudio()
         {
             _valveAudioSource = this.gameObject.AddComponent<AudioSource>();
-            _valveAudioSource.clip = Plugin.InteractableClips["valve_loop_3.wav"];
+            _valveAudioSource.clip = Plugin.RealismAudioController.InteractableClips["valve_loop_3.wav"];
             _valveAudioSource.volume = VALVE_AUDIO_VOL * GameWorldController.GetGameVolumeAsFactor();
             _valveAudioSource.loop = false;
             _valveAudioSource.playOnAwake = false;
@@ -349,7 +349,7 @@ namespace RealismMod
         private void SetUpPanelLoopAudio()
         {
             _panelAudioSource = this.gameObject.AddComponent<AudioSource>();
-            _panelAudioSource.clip = Plugin.InteractableClips["panel_hum_loop.wav"];
+            _panelAudioSource.clip = Plugin.RealismAudioController.InteractableClips["panel_hum_loop.wav"];
             _panelAudioSource.volume = PANEL_LOOP_VOL * GameWorldController.GetGameVolumeAsFactor();
             _panelAudioSource.loop = true;
             _panelAudioSource.playOnAwake = false;
@@ -362,7 +362,7 @@ namespace RealismMod
         private void SetUpLeakAudio()
         {
             _loopAudioSource = this.gameObject.AddComponent<AudioSource>();
-            _loopAudioSource.clip = InteractableData.InteractionType == EIneractableType.Valve ? Plugin.InteractableClips["gas_leak.wav"] : Plugin.InteractableClips["panel_hum_loop.wav"];
+            _loopAudioSource.clip = InteractableData.InteractionType == EIneractableType.Valve ? Plugin.RealismAudioController.InteractableClips["gas_leak.wav"] : Plugin.RealismAudioController.InteractableClips["panel_hum_loop.wav"];
             _loopAudioSource.volume = (InteractableData.InteractionType == EIneractableType.Valve ? LEAK_AUDIO_VOL : PANEL_LOOP_VOL) * GameWorldController.GetGameVolumeAsFactor(); 
             _baseLoopAudioVol = _loopAudioSource.volume;
             _loopLerpSpeed = InteractableData.InteractionType == EIneractableType.Valve ? 0.075f :0.5f;
@@ -394,7 +394,7 @@ namespace RealismMod
                 {
                     string[] clips = { "valve_loop_1.wav", "valve_loop_2.wav", "valve_loop_3.wav" };
                     string clip = clips[UnityEngine.Random.Range(0, clips.Length)];
-                    _valveAudioSource.clip = Plugin.InteractableClips[clip];
+                    _valveAudioSource.clip = Plugin.RealismAudioController.InteractableClips[clip];
                     _valveAudioSource.Play();
                 }
                 yield return new WaitForSeconds(_valveAudioSource.clip.length - 1f);
@@ -407,7 +407,7 @@ namespace RealismMod
             {
                 if (isBlocked || isTurningOn) PlaySoundForAI();
                 string file = isTurningOn ? "buttonpress.wav" : isBlocked ? "buttonpress_blocked.wav" : "buttonpress_do_nothing.wav";
-                _buttonSource.clip = Plugin.InteractableClips[file]; 
+                _buttonSource.clip = Plugin.RealismAudioController.InteractableClips[file]; 
                 _buttonSource.Play();
             }
             yield return new WaitForSeconds(_buttonSource.clip.length + 1f);
@@ -684,6 +684,7 @@ namespace RealismMod
                 BoxCollider box = _zoneCollider as BoxCollider;
                 Vector3 boxSize = box.size;
                 _maxDistance = boxSize.magnitude / 2f;
+                HazardPlayerSpawnManager.Register(_zoneCollider);
             }
             Name = name;
             ActiveDevices = new List<GameObject>();
@@ -828,6 +829,7 @@ namespace RealismMod
                 BoxCollider box = _zoneCollider as BoxCollider;
                 Vector3 boxSize = box.size;
                 _maxDistance = boxSize.magnitude / 2f;
+                HazardPlayerSpawnManager.Register(_zoneCollider);
             }
             Name = name;
             ActiveDevices = new List<GameObject>();
@@ -911,9 +913,9 @@ namespace RealismMod
 
     public class LabsSafeZone : TriggerWithId, IZone
     {
-        const float MAIN_VOLUME = 0.45f;
-        const float SHUT_VOLUME = 0.41f;
-        const float OPEN_VOLUME = 0.12f;
+        const float MAIN_VOLUME = 0.5f;
+        const float SHUT_VOLUME = 0.46f;
+        const float OPEN_VOLUME = 0.17f;
         public EZoneType ZoneType { get; } = EZoneType.SafeZone;
         public float ZoneStrength { get; set; } = 0f;
         public bool BlocksNav { get; set; }
@@ -944,19 +946,25 @@ namespace RealismMod
                 Utils.Logger.LogError("Realism Mod: No BoxCollider found in parent for SafeZone");
                 return;
             }
-            SetUpAndPlayMainAudio();
-            SetUpDoorShutAudio();
-            SetUpDoorOpenAudio();
+            StartCoroutine(SetUpAudio());
             CheckForDoors();
             Name = name;
             ActiveDevices = new List<GameObject>();
+        }
+
+        private IEnumerator SetUpAudio() 
+        {
+            yield return new WaitUntil(() => Plugin.RealismAudioController.ClipsAreReady);
+            SetUpAndPlayMainAudio();
+            SetUpDoorShutAudio();
+            SetUpDoorOpenAudio();
         }
 
 
         private void SetUpAndPlayMainAudio()
         {
             _mainAudioSource = this.gameObject.AddComponent<AudioSource>();
-            _mainAudioSource.clip = Plugin.HazardZoneClips["labs-hvac.wav"];
+            _mainAudioSource.clip = Plugin.RealismAudioController.HazardZoneClips["labs-hvac.wav"];
             _mainAudioSource.volume = MAIN_VOLUME * GameWorldController.GetGameVolumeAsFactor();
             _mainAudioSource.loop = true;
             _mainAudioSource.playOnAwake = false;
@@ -970,7 +978,7 @@ namespace RealismMod
         private void SetUpDoorShutAudio()
         {
             _doorShutAudioSource = this.gameObject.AddComponent<AudioSource>();
-            _doorShutAudioSource.clip = Plugin.HazardZoneClips["door_shut.wav"];
+            _doorShutAudioSource.clip = Plugin.RealismAudioController.HazardZoneClips["door_shut.wav"];
             _doorShutAudioSource.volume = SHUT_VOLUME * GameWorldController.GetGameVolumeAsFactor();
             _doorShutAudioSource.loop = false;
             _doorShutAudioSource.playOnAwake = false;
@@ -983,7 +991,7 @@ namespace RealismMod
         private void SetUpDoorOpenAudio()
         {
             _doorOpenAudioSource = this.gameObject.AddComponent<AudioSource>();
-            _doorOpenAudioSource.clip = Plugin.HazardZoneClips["door_open.wav"];
+            _doorOpenAudioSource.clip = Plugin.RealismAudioController.HazardZoneClips["door_open.wav"];
             _doorOpenAudioSource.volume = OPEN_VOLUME * GameWorldController.GetGameVolumeAsFactor();
             _doorOpenAudioSource.loop = false;
             _doorOpenAudioSource.playOnAwake = false;

@@ -9,29 +9,14 @@ using System.Reflection;
 using Systems.Effects;
 using UnityEngine;
 using static EFT.InventoryLogic.Weapon;
-using DamageTypeClass = GClass2788;
-using MalfGlobals = BackendConfigSettingsClass.GClass1521;
-using OverheatGlobals = BackendConfigSettingsClass.GClass1522;
+using DamageTypeClass = GClass2855;
+using MalfGlobals = BackendConfigSettingsClass.GClass1501;
+using OverheatGlobals = BackendConfigSettingsClass.GClass1502;
 using EFT.HealthSystem;
 using static EFT.Player;
 
 namespace RealismMod
 {
-    //bosses can induce malfunctions, unrealistic
-    public class RemoveSillyBossForcedMalf : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(ActiveHealthController).GetMethod("AddMisfireEffect", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(ActiveHealthController __instance)
-        {
-            return false;
-        }
-    }
-
     //handle caliber incompatibilities and related mechanics
     public class GetMalfunctionStatePatch : ModulePatch
     {
@@ -126,6 +111,7 @@ namespace RealismMod
             }
         }
     }
+
 
     //allows additional factors to modify weapon durability burn
     public class GetDurabilityLossOnShotPatch : ModulePatch
@@ -292,15 +278,16 @@ namespace RealismMod
         }
     }
 
-    public class RemoveForcedMalf : ModulePatch
+    //bosses can induce malfunctions, unrealistic
+    public class RemoveSillyBossForcedMalf : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.AddMisfireEffect));
+            return typeof(ActiveHealthController).GetMethod("AddMisfireEffect", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        static bool Prefix(ActiveHealthController __instance)
+        private static bool Prefix(ActiveHealthController __instance)
         {
             return false;
         }

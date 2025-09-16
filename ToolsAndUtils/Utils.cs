@@ -1,22 +1,15 @@
-﻿using BepInEx.Configuration;
-using BepInEx.Logging;
+﻿using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
-using EFT.Ballistics;
-using EFT.Interactive;
 using EFT.InventoryLogic;
-using EFT.UI;
-using HarmonyLib;
-using SPT.Reflection.Patching;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using static RealismMod.Attributes;
-using ItemWeightClass = GClass2981;
+using ItemWeightClass = GClass3050;
 
 namespace RealismMod
 {
@@ -44,7 +37,6 @@ namespace RealismMod
         public const string GAMU_DATA_ID = "670120df4f0c4c37e6be90ae";
         public const string RAMU_DATA_ID = "670120ce354987453daf3d0c";
         public const string HALLOWEEN_TRANSMITTER_ID = "6703082a766cb6d11310094e";
-
 
         public static ManualLogSource Logger;
         public static System.Random SystemRandom = new System.Random();
@@ -97,7 +89,7 @@ namespace RealismMod
 
         public static async Task LoadBundle(ResourceKey[] resources)
         {
-            await Singleton<PoolManager>.Instance.LoadBundlesAndCreatePools(PoolManager.PoolsCategory.Raid, PoolManager.AssemblyType.Local, resources, JobPriority.Immediate, null, PoolManager.DefaultCancellationToken);
+            await Singleton<PoolManagerClass>.Instance.LoadBundlesAndCreatePools(PoolManagerClass.PoolsCategory.Raid, PoolManagerClass.AssemblyType.Local, resources, JobPriorityClass.Immediate, null, PoolManagerClass.DefaultCancellationToken);
         }
 
         public static Vector3 ClampVector(Vector3 value, Vector3 min, Vector3 max)

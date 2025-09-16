@@ -5,14 +5,16 @@ using EFT.InventoryLogic;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using RaidStateClass = GClass2107;
 
 namespace RealismMod
 {
     public static class GameWorldController
     {
+        public const float GAS_OPACITY_GLOBAL_MODI = 0.85f;
         public const float RAD_RAIN_MODI = 0.15f;
         public const float BASE_MAP_RAD_STRENGTH = 0.05f;
-        public const float FOG_GAS_MODI = 2.2f;
+        public const float FOG_GAS_STRENGTH_MODI = 2.2f;
         public static bool DidExplosionClientSide { get; set; } = false;
         public static bool GameStarted { get; set; } = false;
         public static bool RanEarliestGameCheck { get; set; } = false;
@@ -35,7 +37,6 @@ namespace RealismMod
             {
                 return IsMapThatCanDoGasEvent && Plugin.ModInfo.DoGasEvent && !Plugin.ModInfo.HasExploded && !DidExplosionClientSide && !(Plugin.ModInfo.IsPreExplosion && IsRightDateForExp);
             }
-
         }
 
         public static bool DoMapRads
@@ -44,7 +45,6 @@ namespace RealismMod
             {
                 return IsMapThatCanDoRadEvent && Plugin.ModInfo.HasExploded;
             }
-
         }
 
         public static bool MuteAmbientAudio
@@ -53,6 +53,13 @@ namespace RealismMod
             {
                 return Plugin.ModInfo.DoGasEvent || (Plugin.ModInfo.IsPreExplosion && GameWorldController.IsRightDateForExp) || DidExplosionClientSide || DoMapRads || Plugin.ModInfo.HasExploded;
             }
+        }
+
+        public static bool IsInRaid()
+        {
+#pragma warning disable CS0618
+            return RaidStateClass.InRaid;
+#pragma warning disable CS0618
         }
 
         public static void Reset() 
@@ -72,10 +79,10 @@ namespace RealismMod
                 CurrentGasEventStrength = 0f;
                 return;
             }
-            bool isIndoors = PlayerValues.EnviroType == EnvironmentType.Indoor;
+            bool isIndoors = PlayerState.EnviroType == EnvironmentType.Indoor;
             float enviroFactor = isIndoors ? 0.4f : 1f;
             float fogStrength = Plugin.RealismWeatherComponent.TargetFog;
-            float baseStrength = fogStrength * FOG_GAS_MODI;
+            float baseStrength = fogStrength * FOG_GAS_STRENGTH_MODI;
             baseStrength = Mathf.Clamp(baseStrength, 0.06f, 0.2f);
             float playerStrength = baseStrength * enviroFactor;
             CurrentGasEventStrengthBot = baseStrength;
@@ -89,7 +96,7 @@ namespace RealismMod
                 CurrentMapRadStrength = 0f;
                 return;
             }
-            bool isIndoors = PlayerValues.EnviroType == EnvironmentType.Indoor;
+            bool isIndoors = PlayerState.EnviroType == EnvironmentType.Indoor;
             float enviroFactor = isIndoors ? 0.4f : 1f;
             float rainStrength = isIndoors ? 0f : Plugin.RealismWeatherComponent.TargetRain * 0.15f;
             float baseStrength = BASE_MAP_RAD_STRENGTH * enviroFactor;
@@ -130,7 +137,7 @@ namespace RealismMod
             if (instance?.Sound?.Settings == null) return 1f;
             return instance.Sound.Settings.OverallVolume?.Value * 0.1f ?? 1f;
         }
-        public static void ModifyLootResources(Item item) 
+        public static void RandomizeLootResources(Item item) 
         {
             if (Plugin.ServerConfig.bot_loot_changes)
             {

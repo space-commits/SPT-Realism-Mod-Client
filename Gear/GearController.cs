@@ -6,7 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using ArmorTemplate = GClass2550; //to find again, search for HasHinge field
+using ArmorTemplate = ArmoredEquipmentTemplateClass; //to find again, search for HasHinge field
+using MoveOperation = GStruct455<GClass3203>;
 
 namespace RealismMod
 {
@@ -164,7 +165,7 @@ namespace RealismMod
             ItemAddress itemAddress = player.InventoryController.FindSlotToPickUp(item);
             if (itemAddress != null)
             {
-                GStruct446<GClass3132> operation = InteractionsHandlerClass.Move(item, itemAddress, player.InventoryController, true);
+                MoveOperation operation = InteractionsHandlerClass.Move(item, itemAddress, player.InventoryController, true);
                 if (operation.Succeeded)
                 {
                     ItemUiContext.smethod_0(player.InventoryController, item, operation, null);
@@ -181,7 +182,7 @@ namespace RealismMod
 
         private static bool TryRemoveGasMask(Item item, Player player, ItemAddress address)
         {
-            GStruct446<GClass3132> operation = InteractionsHandlerClass.Move(item, address, player.InventoryController, true);
+            MoveOperation operation = InteractionsHandlerClass.Move(item, address, player.InventoryController, true);
             if (operation.Succeeded)
             {
                 ItemUiContext.smethod_0(player.InventoryController, item, operation, null);
@@ -216,7 +217,7 @@ namespace RealismMod
         public static void ToggleGasMask(Player player)
         {
             bool animatorBusy = player.InventoryController.IsChangingWeapon || player.MovementContext.StationaryWeapon != null || player.MovementContext.IsAnimatorInteractionOn;
-            if (PlayerValues.IsSprinting || animatorBusy || PlayerValues.IsInReloadOpertation) return; //toggling this while sprinting breaks shit
+            if (PlayerState.IsSprinting || animatorBusy || PlayerState.IsInReloadOpertation) return; //toggling this while sprinting breaks shit
             var faceCoverSlot = player?.Inventory?.Equipment?.GetSlot(EquipmentSlot.FaceCover);
             if (faceCoverSlot != null)
             {
@@ -245,7 +246,7 @@ namespace RealismMod
                 _currentRadProtection = radProtection;
                 _hadGasMask = true;
 /*                player.Say(EPhraseTrigger.OnBeingHurt, true, 0f, (ETagStatus)0, 100, false); //force to reset audio*/
-                player.SpeechSource.SetLowPassFilterParameters(0.99f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
+                player.SpeechSource.SetLowPassFilterParameters(0.99f, ESoundOcclusionType.Obstruction, 1600, 5000, 1, true);
                 player.Muffled = true;
             }
             else
@@ -256,7 +257,7 @@ namespace RealismMod
             }
 
             player.UpdateBreathStatus();
-            player.UpdateOcclusion();
+            player.UpdateMuffledState();
             player.SendVoiceMuffledState(player.Muffled);
 
             if (!HasGasMask && _hadGasMask && player.HealthStatus == ETagStatus.Dying)
@@ -452,8 +453,8 @@ namespace RealismMod
 
             totalErgo /= 100f;
             totalSpeed /= 100f;
-            PlayerValues.GearErgoPenalty = Mathf.Clamp(1f + totalErgo, 0.1f, 2f);
-            PlayerValues.GearSpeedPenalty = Mathf.Clamp(1f + totalSpeed, 0.1f, 2f);
+            PlayerState.GearErgoPenalty = Mathf.Clamp(1f + totalErgo, 0.1f, 2f);
+            PlayerState.GearSpeedPenalty = Mathf.Clamp(1f + totalSpeed, 0.1f, 2f);
 
             HandleGasMaskEffects(player, gasProtection, radProtection);
 
@@ -465,8 +466,8 @@ namespace RealismMod
 
             if (PluginConfig.EnableGeneralLogging.Value)
             {
-                Utils.Logger.LogWarning("gear speed " + PlayerValues.GearSpeedPenalty);
-                Utils.Logger.LogWarning("gear ergo " + PlayerValues.GearErgoPenalty);
+                Utils.Logger.LogWarning("gear speed " + PlayerState.GearSpeedPenalty);
+                Utils.Logger.LogWarning("gear ergo " + PlayerState.GearErgoPenalty);
             }
         }
 

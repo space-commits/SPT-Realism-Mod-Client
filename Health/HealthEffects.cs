@@ -2,10 +2,10 @@
 using EFT;
 using EFT.UI;
 using UnityEngine;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2746;
-using ExistanceClass = GClass2788;
-using InterfaceOne = GInterface296;
-using InterfaceTwo = GInterface311;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2813;
+using ExistanceClass = GClass2855;
+using InterfaceOne = GInterface308;
+using InterfaceTwo = GInterface323;
 
 namespace RealismMod
 {
@@ -417,14 +417,14 @@ namespace RealismMod
                     RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 1f, 20f, 5f, 1f);
                     RealHealthController.AddToExistingBaseEFTEffect(_Player, "Contusion", EBodyPart.Head, 1f, 20f, 5f, 0.5f);
                     RealHealthController.AddBasesEFTEffect(_Player, "Tremor", EBodyPart.Head, 1f, 20f, 5f, 1f);
-                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.6f);
+                    Plugin.RealismAudioController.PlayFoodPoisoningSFXInRaid(0.6f);
                     addedEffect = true;
                 }
 
                 TimeExisted++;
                 if (TimeExisted % 30 == 0) 
                 {
-                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.45f);
+                    Plugin.RealismAudioController.PlayFoodPoisoningSFXInRaid(0.45f);
                 }
             }
         }
@@ -517,7 +517,7 @@ namespace RealismMod
             float treatmentFactor = 1f - (Mathf.Pow(Mathf.Abs(HazardTracker.DetoxicationRate), 0.3f));
             float drainRate = 0f;
 
-            float coughingThreshold = RealismHealthController.MIN_COUGH_DAMAGE_THRESHOLD * (1f + PlayerValues.ImmuneSkillStrong);
+            float coughingThreshold = RealismHealthController.MIN_COUGH_DAMAGE_THRESHOLD * (1f + PlayerState.ImmuneSkillStrong);
             if (Plugin.RealHealthController.IsCoughingInGas && HazardTracker.TotalToxicityRate > coughingThreshold) drainRate += -8f + (-HazardTracker.TotalToxicityRate);
             switch (HazardTracker.TotalToxicity)
             {

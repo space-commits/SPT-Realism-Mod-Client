@@ -10,14 +10,13 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using static RealismMod.Attributes;
+using AmmoPenUIClass = GClass638;
 using ArmorPlateUIClass = ArmorPlateItemClass;
-using FormatArmorClass = GClass2869;
-using StatAttributeClass = GClass3103;
-using ArmorSubCLass = EFT.InventoryLogic.ArmorComponent.Class2118;
-using UIClass = GClass3485;
-using AmmoPenUIClass = GClass623;
-using UIListClass = GClass3484;
-using Diz.LanguageExtensions;
+using ArmorSubCLass = EFT.InventoryLogic.ArmorComponent.Class2165;
+using FormatArmorClass = GClass2936;
+using StatAttributeClass = GClass3174;
+using UIClass = GClass3555;
+using UIListClass = GClass3554;
 
 namespace RealismMod
 {
@@ -517,8 +516,8 @@ namespace RealismMod
                     return "No Change";
                 case <= 50:
                     return $"{malfChance}%";
-                case <= 99:
-                    return "Small Increase";
+                case <= 100:
+                    return "Moderate Increase";
                 case <= 500:
                     return "Significant Increase";
                 case <= 1000:

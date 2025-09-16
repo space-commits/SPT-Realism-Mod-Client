@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using System.IO;
+﻿using Comfort.Common;
+using EFT;
 using Newtonsoft.Json;
 using System;
-using EFT.Game.Spawning;
-using UnityEngine.Profiling;
-using EFT;
-using Comfort.Common;
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
 
 namespace RealismMod
 {
@@ -306,7 +304,7 @@ namespace RealismMod
         public string Name { get; set; }
         public float Strength { get; set; }
         public bool UsesDistanceFalloff { get; set; }
-        public bool BlockNav { get; set; }
+        public bool BlockNav { get; set; } = true;
         public Analysable Analysable { get; set; }
         public InteractableSubZone Interactable { get; set; }
         public string AudioFile { get; set; }

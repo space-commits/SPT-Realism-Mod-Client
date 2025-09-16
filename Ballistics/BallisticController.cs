@@ -190,7 +190,7 @@ namespace RealismMod
 
             if (part == EBodyPart.Head)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose * 0.6f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.RealismAudioController.HitAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose * 0.6f, EOcclusionTest.Regular);
                 return;
             }
 
@@ -204,7 +204,7 @@ namespace RealismMod
                 audioClip = rndNum == 0 ? "flesh_1.wav" : rndNum == 1 ? "flesh_2.wav" : "flesh_3.wav";
             }
 
-            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.RealismAudioController.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
         }
 
         public static EBodyHitZone GetBodyHitZone(Player player, EBodyPartColliderType partHit, DamageInfo damageInfo)

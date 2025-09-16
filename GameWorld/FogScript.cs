@@ -67,6 +67,6 @@ public class FogScript : MonoBehaviour
         _mainModule.startSize = ParticleSize; 
         _mainModule.startLifetime = _lifeTimeCurve; 
         _emissionModule.rateOverTime = ParticleRate;
-        _mainModule.startColor = new Color(1f, 1f, 1f, _alpha * OpacityModi * _dynamicOpacityModi);
+        _mainModule.startColor = new Color(1f, 1f, 1f, _alpha * OpacityModi * _dynamicOpacityModi * GameWorldController.GAS_OPACITY_GLOBAL_MODI);
     }
 }
