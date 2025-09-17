@@ -1227,7 +1227,8 @@ namespace RealismMod
 
         public bool MouthIsBlocked(Player player, Item head, Item face, InventoryEquipment equipment)
         {
-            return IsCoughingInGas || CheckIfParentGearBlocksMouth(head, face) || ToggleableItemBlocksMouth(player) || CheckIfNestedGearBlocksMouth(equipment);
+            bool gearBlocksMouth = CheckIfParentGearBlocksMouth(head, face) || ToggleableItemBlocksMouth(player) || CheckIfNestedGearBlocksMouth(equipment);
+            return IsCoughingInGas || (PluginConfig.GearBlocksEat.Value && gearBlocksMouth);
         }
 
         public bool BodyPartHasBleed(Player player, EBodyPart part)
