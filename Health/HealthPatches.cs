@@ -985,23 +985,15 @@ namespace RealismMod
                 bool canUse = true;
                 if (((MedsItemClass = (item as MedsItemClass)) != null))
                 {
-                    if (PluginConfig.EnableMedicalLogging.Value)
-                    {
-                        Logger.LogWarning("ApplyItem Med");
-                    }
+                    if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("ApplyItem Med");
+      
                     Plugin.RealHealthController.CanUseMedItem(player, bodyPart, item, ref canUse);
                 }
                 if ((foodClass = (item as FoodDrinkItemClass)) != null)
                 {
-                    if (PluginConfig.EnableMedicalLogging.Value)
-                    {
-                        Logger.LogWarning("ApplyItem Food");
-                    }
-
-                    if (PluginConfig.GearBlocksEat.Value)
-                    {
-                        Plugin.RealHealthController.CanConsume(player, item, ref canUse);
-                    }
+                    if (PluginConfig.EnableMedicalLogging.Value) Logger.LogWarning("ApplyItem Food");
+     
+                    Plugin.RealHealthController.CanConsume(player, item, ref canUse);
                 }
 
                 __result = canUse;
